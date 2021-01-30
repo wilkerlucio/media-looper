@@ -1,0 +1,9 @@
+{:deps
+ {:aliases [:dev]}
+
+ :builds
+ {:app
+  {:target     :browser
+   :output-dir "shells/chrome/js/youtube"
+   :asset-path "/js/youtube"
+   :modules    {:main {:entries [com.wsscode.media-looper.chrome.content-script.main]}}}}}

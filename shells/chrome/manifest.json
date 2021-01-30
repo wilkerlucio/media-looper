@@ -1,0 +1,21 @@
+{
+  "name": "Media Looper",
+  "version": "2021.01.09",
+  "description": "Creates loops in internet players.",
+  "manifest_version": 2,
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": [
+        "js/youtube/main.js"
+      ],
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    "js/*"
+  ]
+}
