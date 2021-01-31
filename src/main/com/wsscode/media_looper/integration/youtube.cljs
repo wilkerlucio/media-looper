@@ -194,7 +194,8 @@
         set-current (hooks/use-callback [video]
                       (fn [loop]
                         (!current loop)
-                        (video-seek-to! video (::mlm/loop-start loop))))
+                        (when-let [start (::mlm/loop-start loop)]
+                          (video-seek-to! video start))))
         create-loop (hooks/use-callback [(hash @!loops)]
                       (fn [loop]
                         (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
