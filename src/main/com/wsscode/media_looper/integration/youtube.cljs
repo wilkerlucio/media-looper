@@ -144,7 +144,7 @@
                         (on-loop-record-start {::mlm/loop-start start} e)))}
           "+ Start Loop")))))
 
-(h/defnc LoopEntry [{:keys [loop on-set selected]}]
+(h/defnc LoopEntry [{:keys [loop on-set on-update selected]}]
   (let [{::mlm/keys [loop-id loop-title loop-start loop-finish]} loop]
     (js/console.log "!! ENTRY" loop)
     (dom/div {:style (cond-> {:display    "flex"
@@ -156,13 +156,21 @@
         (if selected "Stop" "Set"))
       (dom/div {:style {:flex "1"}}
         (str loop-title))
-      (dom/button "-")
+      (dom/button
+        {:onClick #(on-update (update loop ::mlm/loop-start dec))}
+        "-")
       (dom/div (str loop-start))
-      (dom/button "+")
+      (dom/button
+        {:onClick #(on-update (update loop ::mlm/loop-start inc))}
+        "+")
       (dom/div "/")
-      (dom/button "-")
+      (dom/button
+        {:onClick #(on-update (update loop ::mlm/loop-finish dec))}
+        "-")
       (dom/div (str loop-finish))
-      (dom/button "+")
+      (dom/button
+        {:onClick #(on-update (update loop ::mlm/loop-finish inc))}
+        "+")
       (dom/button {} "X"))))
 
 (defn use-loop [video loop]
@@ -176,32 +184,47 @@
 
 (h/defnc ActiveLoop [{:keys [loop video]}]
   (let [duration (video-duration video)
-        el       (hooks/use-memo [duration]
-                   (create-progress-bar loop duration))]
-    (hooks/use-effect []
+        el       (create-progress-bar loop duration)]
+    (hooks/use-effect [(hash loop) duration]
       (gdom/appendChild (video-progress-bar-node)
         el)
       #(gdom/removeNode el))
     (use-loop video loop)
     nil))
 
+(defn same-loop? [l1 l2]
+  (= (::mlm/loop-id l1)
+     (::mlm/loop-id l2)))
+
 (h/defnc LooperControl []
-  (let [video       (hooks/use-memo [] (video-player-node))
-        !loops      (use-fstate [{::mlm/loop-id     (random-uuid)
-                                  ::mlm/loop-start  10
-                                  ::mlm/loop-title  "Some Loop"
-                                  ::mlm/loop-finish 13}])
-        !current    (use-fstate nil)
-        set-current (hooks/use-callback [video]
-                      (fn [loop]
-                        (!current loop)
-                        (when-let [start (::mlm/loop-start loop)]
-                          (video-seek-to! video start))))
-        create-loop (hooks/use-callback [(hash @!loops)]
-                      (fn [loop]
-                        (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
-                                                ::mlm/loop-title "New loop")]
-                          (!loops (conj @!loops loop')))))]
+  (let [video        (hooks/use-memo [] (video-player-node))
+        !loops       (use-fstate [{::mlm/loop-id     (random-uuid)
+                                   ::mlm/loop-start  10
+                                   ::mlm/loop-title  "Some Loop"
+                                   ::mlm/loop-finish 13}])
+        !current     (use-fstate nil)
+        set-current! (hooks/use-callback [video]
+                       (fn [loop]
+                         (!current loop)
+                         (when-let [start (::mlm/loop-start loop)]
+                           (video-seek-to! video start))))
+        update-loop! (hooks/use-callback [(hash @!loops)]
+                       (fn [updated-loop]
+                         (!loops
+                           (into []
+                                 (map
+                                   (fn [loop]
+                                     (if (same-loop? loop updated-loop)
+                                       updated-loop
+                                       loop)))
+                                 @!loops))
+                         (if (same-loop? @!current updated-loop)
+                           (!current updated-loop))))
+        create-loop  (hooks/use-callback [(hash @!loops)]
+                       (fn [loop]
+                         (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
+                                                 ::mlm/loop-title "New loop")]
+                           (!loops (conj @!loops loop')))))]
     (dom/div {:style {:width   "400px"
                       :padding "10px"}}
       (if @!current
@@ -210,11 +233,12 @@
       (h/$ CreateLoop {:video                 video
                        :on-loop-record-finish create-loop})
       (for [loop @!loops]
-        (h/$ LoopEntry {:key      (::mlm/loop-id loop)
-                        :selected (= (::mlm/loop-id @!current)
-                                     (::mlm/loop-id loop))
-                        :loop     loop
-                        :on-set   set-current}))
+        (h/$ LoopEntry {:key       (::mlm/loop-id loop)
+                        :selected  (= (::mlm/loop-id @!current)
+                                      (::mlm/loop-id loop))
+                        :loop      loop
+                        :on-update update-loop!
+                        :on-set    set-current!}))
       (h/$ SpeedControl {:video video}))))
 
 (defn create-popup-container []
