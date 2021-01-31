@@ -60,7 +60,22 @@
     (video-controls-node)
     control 0))
 
-(defn create-progress-bar [])
+(defn create-progress-bar
+  [{::mlm/keys [loop-start loop-finish]} duration]
+  (let [offset (-> (/ loop-start duration)
+                   (* 100))
+        size   (-> (- loop-finish loop-start)
+                   (/ duration)
+                   (* 100))]
+    (wdom/el "div" {:style
+                    {:position   "absolute"
+                     :height     "3px"
+                     :background "#00ff0085"
+                     :top        "1px"
+                     :z-index    "100"
+
+                     :left       (str offset "%")
+                     :width      (str size "%")}})))
 
 (defn create-looper-button [popup]
   (wdom/el "button"
@@ -161,22 +176,8 @@
 
 (h/defnc ActiveLoop [{:keys [loop video]}]
   (let [duration (video-duration video)
-        {::mlm/keys [loop-start loop-finish]} loop
         el       (hooks/use-memo [duration]
-                   (let [offset (-> (/ loop-start duration)
-                                    (* 100))
-                         size   (-> (- loop-finish loop-start)
-                                    (/ duration)
-                                    (* 100))]
-                     (wdom/el "div" {:style
-                                     {:position   "absolute"
-                                      :height     "3px"
-                                      :background "#00ff0085"
-                                      :top        "1px"
-                                      :z-index    "100"
-
-                                      :left       (str offset "%")
-                                      :width      (str size "%")}})))]
+                   (create-progress-bar loop duration))]
     (hooks/use-effect []
       (gdom/appendChild (video-progress-bar-node)
         el)
