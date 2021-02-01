@@ -288,7 +288,8 @@
                        (fn [loop]
                          (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                                                  ::mlm/loop-title "New loop")]
-                           (!loops (conj @!loops loop')))))]
+                           (!loops (conj @!loops loop'))
+                           (set-current! loop'))))]
     (dom/div {:style {:width   "400px"
                       :padding "10px"}}
       (if @!current
