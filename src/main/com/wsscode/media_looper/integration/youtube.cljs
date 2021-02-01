@@ -144,6 +144,25 @@
                         (on-loop-record-start {::mlm/loop-start start} e)))}
           "+ Start Loop")))))
 
+(h/defnc EditableText [{:keys [text onChange]}]
+  (let [!current-value (use-fstate nil)]
+    (if @!current-value
+      (dom/input {:value     @!current-value
+                  :onKeyDown (fn [e]
+                               (let [code (gobj/get e "keyCode")]
+                                 (case code
+                                   13
+                                   (do
+                                     (onChange @!current-value)
+                                     (!current-value nil))
+
+                                   27
+                                   (!current-value nil)
+
+                                   nil)))
+                  :onChange  #(!current-value (.. % -target -value))})
+      (dom/div {:onClick #(!current-value text)} text))))
+
 (h/defnc LoopEntry [{:keys [loop on-set on-update selected]}]
   (let [{::mlm/keys [loop-id loop-title loop-start loop-finish]} loop]
     (js/console.log "!! ENTRY" loop)
@@ -155,7 +174,8 @@
       (dom/button {:onClick #(on-set (if selected nil loop))}
         (if selected "Stop" "Set"))
       (dom/div {:style {:flex "1"}}
-        (str loop-title))
+        (h/$ EditableText {:text     (str loop-title)
+                           :onChange #(on-update (assoc loop ::mlm/loop-title %))}))
       (dom/button
         {:onClick #(on-update (update loop ::mlm/loop-start dec))}
         "-")
@@ -218,7 +238,8 @@
                                        updated-loop
                                        loop)))
                                  @!loops))
-                         (if (same-loop? @!current updated-loop)
+                         (if (and @!current
+                                  (same-loop? @!current updated-loop))
                            (!current updated-loop))))
         create-loop  (hooks/use-callback [(hash @!loops)]
                        (fn [loop]
