@@ -1,6 +1,6 @@
 {
   "name": "Media Looper",
-  "version": "2021.01.09",
+  "version": "2021.02.01",
   "description": "Creates loops in internet players.",
   "manifest_version": 2,
   "permissions": [
