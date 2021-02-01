@@ -141,6 +141,10 @@
   (let [[rate set-rate!] (use-playback-rate-property video)]
     (dom/div {:style {:display    "flex"
                       :alignItems "center"}}
+      (dom/div
+        (dom/a {:href   "https://www.patreon.com/wsscode"
+                :target "_blank"}
+          "Support My Work"))
       (dom/div {:style {:flex "1"}})
       (dom/div {:onClick #(set-rate! 100)} "Speed")
       (dom/input {:type     "range"
