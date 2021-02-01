@@ -226,8 +226,25 @@
       {:rel  "stylesheet"
        :href "//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"})))
 
+(def SHIFT_KEY 16)
+
+(defn use-shift-track []
+  (let [!active? (use-fstate false)]
+    (use-event-listener js/document.body "keydown"
+      (fn [e]
+        (if (= (.-keyCode e) SHIFT_KEY)
+          (!active? true))))
+
+    (use-event-listener js/document.body "keyup"
+      (fn [e]
+        (if (= (.-keyCode e) SHIFT_KEY)
+          (!active? false))))
+
+    @!active?))
+
 (h/defnc LoopEntry [{:keys [loop on-set on-update on-delete selected]}]
-  (let [{::mlm/keys [loop-id loop-title loop-start loop-finish]} loop]
+  (let [{::mlm/keys [loop-title loop-start loop-finish]} loop
+        precise-time? (use-shift-track)]
     (dom/div {:style (cond-> {:display    "flex"
                               :alignItems "center"
                               :padding    "4px 0"}
@@ -245,7 +262,7 @@
                                 (if (.-shiftKey %)
                                   dec-fine
                                   dec)))})
-      (dom/div (seconds->time loop-start))
+      (dom/div (seconds->time loop-start (if precise-time? 3 0)))
       (icon "plus-circle"
         {:onClick #(on-update (update loop ::mlm/loop-start
                                 (if (.-shiftKey %)
@@ -257,7 +274,7 @@
                                 (if (.-shiftKey %)
                                   dec-fine
                                   dec)))})
-      (dom/div (seconds->time loop-finish))
+      (dom/div (seconds->time loop-finish (if precise-time? 3 0)))
       (icon "plus-circle"
         {:onClick #(on-update (update loop ::mlm/loop-finish
                                 (if (.-shiftKey %)
