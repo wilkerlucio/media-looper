@@ -161,7 +161,8 @@
    (icon ico {}))
   ([ico props]
    (dom/i {:className (str "fa fa-" ico)
-           :style     {:font-size "18px"
+           :style     {:cursor    "pointer"
+                       :font-size "18px"
                        :padding   "0 4px"}
            :&         props})))
 
@@ -172,9 +173,11 @@
     :or   {on-loop-record-start  identity
            on-loop-record-finish identity}}]
   (let [!start-time (use-fstate nil)]
-    (dom/div {:style {:display      "flex"
-                      :alignItems   "center"
-                      :marginBottom "4px"}}
+    (dom/div {:style (cond-> {:display    "flex"
+                              :alignItems "center"
+                              :padding    "4px 0"}
+                       @!start-time
+                       (assoc :background "#ff000085"))}
       (if @!start-time
         (h/<>
           (icon "stop-circle"
@@ -213,7 +216,8 @@
                                    nil)))
                   :onChange  #(!current-value (.. % -target -value))})
       (dom/div {:onClick #(!current-value text)
-                :style   {:textOverflow "ellipsis"}} text))))
+                :style   {:cursor       "pointer"
+                          :textOverflow "ellipsis"}} text))))
 
 (defn dec-fine [x] (- x 0.1))
 
@@ -348,6 +352,7 @@
         (h/$ ActiveLoop {:video video
                          :loop  @!current}))
       (h/$ CreateLoop {:video                 video
+                       :on-loop-record-start  #(set-current! nil)
                        :on-loop-record-finish create-loop!})
       (for [loop (sort-by ::mlm/loop-start @!loops)]
         (h/$ LoopEntry {:key       (::mlm/loop-id loop)
