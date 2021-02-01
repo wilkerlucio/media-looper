@@ -140,7 +140,8 @@
 (h/defnc SpeedControl [{:keys [video]}]
   (let [[rate set-rate!] (use-playback-rate-property video)]
     (dom/div {:style {:display    "flex"
-                      :alignItems "center"}}
+                      :alignItems "center"
+                      :marginTop  "6px"}}
       (dom/div
         (dom/a {:href   "https://www.patreon.com/wsscode"
                 :target "_blank"}
@@ -155,6 +156,15 @@
                   :value    rate})
       (str rate "%"))))
 
+(defn icon
+  ([ico]
+   (icon ico {}))
+  ([ico props]
+   (dom/i {:className (str "fa fa-" ico)
+           :style     {:font-size "18px"
+                       :padding   "0 4px"}
+           :&         props})))
+
 (h/defnc CreateLoop
   [{:keys [video
            on-loop-record-start
@@ -162,26 +172,31 @@
     :or   {on-loop-record-start  identity
            on-loop-record-finish identity}}]
   (let [!start-time (use-fstate nil)]
-    (dom/div
+    (dom/div {:style {:display      "flex"
+                      :alignItems   "center"
+                      :marginBottom "4px"}}
       (if @!start-time
-        (dom/div
-          {:onClick (fn []
-                      (let [finish (video-current-time video)]
-                        (on-loop-record-finish {::mlm/loop-start  @!start-time
-                                                ::mlm/loop-finish finish})
-                        (!start-time nil)))}
-          "- Stop recording")
-        (dom/div
-          {:onClick (fn [e]
-                      (let [start (video-current-time video)]
-                        (!start-time start)
-                        (on-loop-record-start {::mlm/loop-start start} e)))}
-          "+ Start Loop")))))
+        (h/<>
+          (icon "stop-circle"
+            {:onClick (fn []
+                        (let [finish (video-current-time video)]
+                          (on-loop-record-finish {::mlm/loop-start  @!start-time
+                                                  ::mlm/loop-finish finish})
+                          (!start-time nil)))})
+          "Stop recording")
+        (h/<>
+          (icon "plus-circle"
+            {:onClick (fn [e]
+                        (let [start (video-current-time video)]
+                          (!start-time start)
+                          (on-loop-record-start {::mlm/loop-start start} e)))})
+          "Start new loop")))))
 
 (h/defnc EditableText [{:keys [text onChange]}]
   (let [!current-value (use-fstate nil)]
     (if @!current-value
       (dom/input {:value     @!current-value
+                  :style     {:fontSize "11px"}
                   :autoFocus true
                   :onKeyDown (fn [e]
                                (.stopPropagation e)
@@ -197,51 +212,58 @@
 
                                    nil)))
                   :onChange  #(!current-value (.. % -target -value))})
-      (dom/div {:onClick #(!current-value text)} text))))
+      (dom/div {:onClick #(!current-value text)
+                :style   {:textOverflow "ellipsis"}} text))))
 
 (defn dec-fine [x] (- x 0.1))
+
 (defn inc-fine [x] (+ x 0.1))
 
-(h/defnc LoopEntry [{:keys [loop on-set on-update selected]}]
+(defn inject-font-awesome-css []
+  (gdom/appendChild
+    ($ "head")
+    (wdom/el "link"
+      {:rel  "stylesheet"
+       :href "//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"})))
+
+(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete selected]}]
   (let [{::mlm/keys [loop-id loop-title loop-start loop-finish]} loop]
     (dom/div {:style (cond-> {:display    "flex"
                               :alignItems "center"
-                              :padding    "6px"}
+                              :padding    "4px 0"}
                        selected
                        (assoc :background "#ff000085"))}
-      (dom/button {:onClick #(on-set (if selected nil loop))}
-        (if selected "Stop" "Set"))
+      (icon (if selected
+              "stop-circle"
+              "play-circle")
+        {:onClick #(on-set (if selected nil loop))})
       (dom/div {:style {:flex "1"}}
         (h/$ EditableText {:text     (str loop-title)
                            :onChange #(on-update (assoc loop ::mlm/loop-title %))}))
-      (dom/button
+      (icon "minus-circle"
         {:onClick #(on-update (update loop ::mlm/loop-start
                                 (if (.-shiftKey %)
                                   dec-fine
-                                  dec)))}
-        "-")
+                                  dec)))})
       (dom/div (seconds->time loop-start))
-      (dom/button
+      (icon "plus-circle"
         {:onClick #(on-update (update loop ::mlm/loop-start
                                 (if (.-shiftKey %)
                                   inc-fine
-                                  inc)))}
-        "+")
+                                  inc)))})
       (dom/div "/")
-      (dom/button
+      (icon "minus-circle"
         {:onClick #(on-update (update loop ::mlm/loop-finish
                                 (if (.-shiftKey %)
                                   dec-fine
-                                  dec)))}
-        "-")
+                                  dec)))})
       (dom/div (seconds->time loop-finish))
-      (dom/button
+      (icon "plus-circle"
         {:onClick #(on-update (update loop ::mlm/loop-finish
                                 (if (.-shiftKey %)
                                   inc-fine
-                                  inc)))}
-        "+")
-      (dom/button {} "X"))))
+                                  inc)))})
+      (icon "trash" {:onClick #(on-delete loop)}))))
 
 (defn use-loop [video loop]
   (let [{::mlm/keys [loop-finish loop-start]} loop
@@ -288,7 +310,16 @@
                          (if (and @!current
                                   (same-loop? @!current updated-loop))
                            (!current updated-loop))))
-        create-loop  (hooks/use-callback [(hash @!loops)]
+        remove-loop! (hooks/use-callback [(hash @!loops)]
+                       (fn [loop]
+                         (!loops
+                           (into []
+                                 (remove #(same-loop? % loop))
+                                 @!loops))
+                         (if (and @!current
+                                  (same-loop? @!current loop))
+                           (!current nil))))
+        create-loop! (hooks/use-callback [(hash @!loops)]
                        (fn [loop]
                          (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                                                  ::mlm/loop-title "New loop")]
@@ -300,14 +331,15 @@
         (h/$ ActiveLoop {:video video
                          :loop  @!current}))
       (h/$ CreateLoop {:video                 video
-                       :on-loop-record-finish create-loop})
+                       :on-loop-record-finish create-loop!})
       (for [loop (sort-by ::mlm/loop-start @!loops)]
         (h/$ LoopEntry {:key       (::mlm/loop-id loop)
                         :selected  (= (::mlm/loop-id @!current)
                                       (::mlm/loop-id loop))
                         :loop      loop
                         :on-update update-loop!
-                        :on-set    set-current!}))
+                        :on-set    set-current!
+                        :on-delete remove-loop!}))
       (h/$ SpeedControl {:video video}))))
 
 (defn create-popup-container []
@@ -317,6 +349,8 @@
     container))
 
 (defn integrate-looper []
+  (inject-font-awesome-css)
+
   (let [popup (create-popup-container)]
     (gdom/insertChildAt (video-player-container-node) popup)
     (add-control (create-looper-button popup))))
