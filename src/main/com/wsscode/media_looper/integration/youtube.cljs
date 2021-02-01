@@ -6,6 +6,7 @@
             [goog.events :as gevents]
             [goog.object :as gobj]
             [goog.style :as gstyle]
+            [com.wsscode.media-looper.local-storage :as ls]
             [helix.core :as h]
             [helix.dom :as dom]
             [helix.hooks :as hooks]))
@@ -20,6 +21,13 @@
 (defn use-fstate [initial-value]
   (let [[value set-value!] (hooks/use-state initial-value)]
     (->ReactFnState value set-value!)))
+
+(defn use-persistent-state [store-key initial-value]
+  (let [[value set-value!] (hooks/use-state (ls/get store-key initial-value))
+        set-persistent! (fn [x]
+                          (ls/set store-key x)
+                          (doto x set-value!))]
+    (->ReactFnState value set-persistent!)))
 
 (defn use-event-listener
   ([element event-name handler]
@@ -39,6 +47,13 @@
 
 (defn $ [sel]
   (js/document.querySelector sel))
+
+(defn video-id []
+  (if-let [[_ vid] (re-find #"v=([^&]+)" js/location.href)]
+    vid))
+
+(defn source-id []
+  (str "youtube:" (video-id)))
 
 (defn video-player-node []
   ($ "video"))
@@ -150,6 +165,7 @@
       (dom/input {:value     @!current-value
                   :autoFocus true
                   :onKeyDown (fn [e]
+                               (.stopPropagation e)
                                (let [code (gobj/get e "keyCode")]
                                  (case code
                                    13
@@ -164,9 +180,11 @@
                   :onChange  #(!current-value (.. % -target -value))})
       (dom/div {:onClick #(!current-value text)} text))))
 
+(defn dec-fine [x] (- x 0.1))
+(defn inc-fine [x] (+ x 0.1))
+
 (h/defnc LoopEntry [{:keys [loop on-set on-update selected]}]
   (let [{::mlm/keys [loop-id loop-title loop-start loop-finish]} loop]
-    (js/console.log "!! ENTRY" loop)
     (dom/div {:style (cond-> {:display    "flex"
                               :alignItems "center"
                               :padding    "6px"}
@@ -178,19 +196,31 @@
         (h/$ EditableText {:text     (str loop-title)
                            :onChange #(on-update (assoc loop ::mlm/loop-title %))}))
       (dom/button
-        {:onClick #(on-update (update loop ::mlm/loop-start dec))}
+        {:onClick #(on-update (update loop ::mlm/loop-start
+                                (if (.-shiftKey %)
+                                  dec-fine
+                                  dec)))}
         "-")
       (dom/div (str loop-start))
       (dom/button
-        {:onClick #(on-update (update loop ::mlm/loop-start inc))}
+        {:onClick #(on-update (update loop ::mlm/loop-start
+                                (if (.-shiftKey %)
+                                  inc-fine
+                                  inc)))}
         "+")
       (dom/div "/")
       (dom/button
-        {:onClick #(on-update (update loop ::mlm/loop-finish dec))}
+        {:onClick #(on-update (update loop ::mlm/loop-finish
+                                (if (.-shiftKey %)
+                                  dec-fine
+                                  dec)))}
         "-")
       (dom/div (str loop-finish))
       (dom/button
-        {:onClick #(on-update (update loop ::mlm/loop-finish inc))}
+        {:onClick #(on-update (update loop ::mlm/loop-finish
+                                (if (.-shiftKey %)
+                                  inc-fine
+                                  inc)))}
         "+")
       (dom/button {} "X"))))
 
@@ -219,10 +249,7 @@
 
 (h/defnc LooperControl []
   (let [video        (hooks/use-memo [] (video-player-node))
-        !loops       (use-fstate [{::mlm/loop-id     (random-uuid)
-                                   ::mlm/loop-start  10
-                                   ::mlm/loop-title  "Some Loop"
-                                   ::mlm/loop-finish 13}])
+        !loops       (use-persistent-state (source-id) [])
         !current     (use-fstate nil)
         set-current! (hooks/use-callback [video]
                        (fn [loop]
