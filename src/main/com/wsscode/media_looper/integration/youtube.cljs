@@ -148,6 +148,7 @@
   (let [!current-value (use-fstate nil)]
     (if @!current-value
       (dom/input {:value     @!current-value
+                  :autoFocus true
                   :onKeyDown (fn [e]
                                (let [code (gobj/get e "keyCode")]
                                  (case code
@@ -253,7 +254,7 @@
                          :loop  @!current}))
       (h/$ CreateLoop {:video                 video
                        :on-loop-record-finish create-loop})
-      (for [loop @!loops]
+      (for [loop (sort-by ::mlm/loop-start @!loops)]
         (h/$ LoopEntry {:key       (::mlm/loop-id loop)
                         :selected  (= (::mlm/loop-id @!current)
                                       (::mlm/loop-id loop))
