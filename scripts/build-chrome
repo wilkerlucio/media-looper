@@ -2,4 +2,4 @@
 
 shadow-cljs release app
 cd shells/chrome
-zip -r ../../releases/media-looper-chrome-$(jq -r '.version' manifest.json).zip *
+zip -r ../../releases/youtube-looper-chrome-$(jq -r '.version' manifest.json).zip *

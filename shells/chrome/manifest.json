@@ -1,7 +1,7 @@
 {
-  "name": "Media Looper",
-  "version": "2021.02.01",
-  "description": "Creates loops in internet players.",
+  "name": "Youtube Looper",
+  "version": "2021.02.02",
+  "description": "Custom loops extension for Youtube videos",
   "manifest_version": 2,
   "content_scripts": [
     {
