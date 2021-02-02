@@ -64,7 +64,7 @@
   (js/document.querySelector sel))
 
 (defn video-id []
-  (if-let [[_ vid] (re-find #"v=([^&]+)" js/location.href)]
+  (if-let [[_ vid] (re-find #"watch.+v=([^&]+)" js/location.href)]
     vid))
 
 (defn source-id []
@@ -370,9 +370,31 @@
     (rdom/render (h/$ LooperControl) container)
     container))
 
+(defn listen-url-changes [cb]
+  (let [url*  (atom nil)
+        timer (js/setInterval
+                (fn []
+                  (let [new-url js/location.href]
+                    (when (not= new-url @url*)
+                      (cb new-url)
+                      (reset! url* new-url))))
+                500)]
+    #(js/clearInterval timer)))
+
 (defn integrate-looper []
   (inject-font-awesome-css)
 
-  (let [popup (create-popup-container)]
-    (gdom/insertChildAt (video-player-container-node) popup)
-    (add-control (create-looper-button popup))))
+  (let [nodes* (atom [])]
+    (listen-url-changes
+      (fn [e]
+        (doseq [n @nodes*]
+          (gdom/removeNode n))
+
+        (reset! nodes* [])
+
+        (when (video-id)
+          (let [popup   (create-popup-container)
+                control (create-looper-button popup)]
+            (gdom/insertChildAt (video-player-container-node) popup)
+            (add-control control)
+            (reset! nodes* [popup control])))))))
