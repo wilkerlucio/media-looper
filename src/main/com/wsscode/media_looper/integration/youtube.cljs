@@ -387,8 +387,8 @@
   (let [nodes* (atom [])]
     (listen-url-changes
       (fn [e]
-        (doseq [n @nodes*]
-          (gdom/removeNode n))
+        (doseq [f @nodes*]
+          (f))
 
         (reset! nodes* [])
 
@@ -397,4 +397,7 @@
                 control (create-looper-button popup)]
             (gdom/insertChildAt (video-player-container-node) popup)
             (add-control control)
-            (reset! nodes* [popup control])))))))
+            (reset! nodes* [#(do
+                               (rdom/unmountComponentAtNode popup)
+                               (gdom/removeNode popup))
+                            #(gdom/removeNode control)])))))))
