@@ -350,8 +350,7 @@
                          (if loop
                            (log "Start Loop" {:title  (::mlm/loop-title loop)
                                               :start  (seconds->time (::mlm/loop-start loop))
-                                              :finish (seconds->time (::mlm/loop-finish loop))})
-                           (log "Stop Loop"))
+                                              :finish (seconds->time (::mlm/loop-finish loop))}))
 
                          (!current loop)
                          (when-let [start (::mlm/loop-start loop)]
