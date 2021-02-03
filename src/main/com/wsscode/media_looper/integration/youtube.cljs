@@ -10,6 +10,7 @@
             [goog.style :as gstyle]
             [helix.core :as h]
             [helix.dom :as dom]
+            [com.wsscode.amplitude :as amplitude]
             [helix.hooks :as hooks]
             [promesa.core :as p]))
 
@@ -100,6 +101,12 @@
   (gdom/insertChildAt
     (video-controls-node)
     control 0))
+
+(defn log
+  ([event] (log event {}))
+  ([event details]
+   (js/console.log "!! LOG AMPL" event details)
+   (amplitude/log event (merge details {:source-id (source-id)}))))
 
 (defn create-progress-bar
   [{::mlm/keys [loop-start loop-finish]} duration]
@@ -341,6 +348,12 @@
         !current     (use-fstate nil)
         set-current! (hooks/use-callback [video]
                        (fn [loop offset]
+                         (if loop
+                           (log "Start Loop" {:title  (::mlm/loop-title loop)
+                                              :start  (seconds->time (::mlm/loop-start loop))
+                                              :finish (seconds->time (::mlm/loop-finish loop))})
+                           (log "Stop Loop"))
+
                          (!current loop)
                          (when-let [start (::mlm/loop-start loop)]
                            (video-seek-to! video (- start (or offset 0))))))
@@ -359,6 +372,7 @@
                            (!current updated-loop))))
         remove-loop! (hooks/use-callback [(hash @!loops)]
                        (fn [loop]
+                         (log "Remove Loop" {:title (::mlm/loop-title loop)})
                          (!loops
                            (into []
                                  (remove #(same-loop? % loop))
@@ -368,6 +382,8 @@
                            (!current nil))))
         create-loop! (hooks/use-callback [(hash @!loops)]
                        (fn [loop]
+                         (log "Create Loop")
+
                          (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                                                  ::mlm/loop-title "New loop")]
                            (!loops (conj @!loops loop'))
