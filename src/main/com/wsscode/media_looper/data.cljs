@@ -21,6 +21,17 @@
                {::marker-title (gdom/getTextContent (.querySelector node "h4"))
                 ::marker-time  (gdom/getTextContent (.querySelector node "#time"))}))))
 
+(defn markers->loops [markers video-duration]
+  (if (seq markers)
+    (->> (conj markers {::marker-title "END"
+                        ::marker-time  (time/seconds->time video-duration)})
+         (partition 2 1)
+         (mapv (fn [[a b]]
+                 {::mlm/loop-id     (random-uuid)
+                  ::mlm/loop-title  (::marker-title a)
+                  ::mlm/loop-start  (time/time->seconds (::marker-time a))
+                  ::mlm/loop-finish (time/time->seconds (::marker-time b))})))))
+
 (pco/defresolver loops-from-markers [{::keys [video-duration]}]
   {::pco/output
    [{::markers-loops
@@ -28,17 +39,8 @@
       ::mlm/loop-title
       ::mlm/loop-start
       ::mlm/loop-finish]}]}
-  (let [markers (markers-data)]
-    (if (seq markers)
-      (let [loops (->> (conj markers {::marker-title "END"
-                                      ::marker-time  (time/seconds->time video-duration)})
-                       (partition 2 1)
-                       (mapv (fn [[a b]]
-                               {::mlm/loop-id     (random-uuid)
-                                ::mlm/loop-title  (::marker-title a)
-                                ::mlm/loop-start  (time/time->seconds (::marker-time a))
-                                ::mlm/loop-finish (time/time->seconds (::marker-time b))})))]
-        {::markers-loops loops}))))
+  {::markers-loops
+   (markers->loops (markers-data) video-duration)})
 
 (def plan-cache* (atom {}))
 
