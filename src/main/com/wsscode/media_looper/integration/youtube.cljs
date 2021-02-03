@@ -11,6 +11,15 @@
             [helix.dom :as dom]
             [helix.hooks :as hooks]))
 
+(defn create-portal [child container]
+  (rdom/createPortal child container))
+
+(defn mount [comp container]
+  (rdom/render comp container))
+
+(defn unmount [container]
+  (rdom/unmountComponentAtNode container))
+
 (defn seconds->time
   ([seconds] (seconds->time seconds 0))
   ([seconds precision]
@@ -364,12 +373,6 @@
                         :on-delete remove-loop!}))
       (h/$ SpeedControl {:video video}))))
 
-(defn create-popup-container []
-  (let [container (wdom/el "div" {:class "ytp-popup ytp-settings-menu"
-                                  :style {:display "none"}})]
-    (rdom/render (h/$ LooperControl) container)
-    container))
-
 (defn listen-url-changes [cb]
   (let [url*  (atom nil)
         timer (js/setInterval
@@ -381,23 +384,31 @@
                 500)]
     #(js/clearInterval timer)))
 
+(defn create-popup-container []
+  (wdom/el "div" {:class "ytp-popup ytp-settings-menu"
+                  :style {:display "none"}}))
+
+(h/defnc YoutubeLooper []
+  (let [popup   (hooks/use-memo [] (create-popup-container))
+        control (hooks/use-memo [] (create-looper-button popup))]
+    (hooks/use-effect []
+      (gdom/insertChildAt (video-player-container-node) popup)
+      #(gdom/removeNode popup))
+
+    (hooks/use-effect []
+      (add-control control)
+      #(gdom/removeNode control))
+
+    (create-portal #js [(h/$ LooperControl)] popup)))
+
 (defn integrate-looper []
   (inject-font-awesome-css)
 
-  (let [nodes* (atom [])]
+  (let [app-node (wdom/el "div" {:class "media-looper-container"})]
+    (gdom/appendChild js/document.body app-node)
     (listen-url-changes
       (fn [e]
-        (doseq [f @nodes*]
-          (f))
-
-        (reset! nodes* [])
+        (unmount app-node)
 
         (when (video-id)
-          (let [popup   (create-popup-container)
-                control (create-looper-button popup)]
-            (gdom/insertChildAt (video-player-container-node) popup)
-            (add-control control)
-            (reset! nodes* [#(do
-                               (rdom/unmountComponentAtNode popup)
-                               (gdom/removeNode popup))
-                            #(gdom/removeNode control)])))))))
+          (mount (h/$ YoutubeLooper) app-node))))))
