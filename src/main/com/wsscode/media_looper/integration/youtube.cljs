@@ -105,7 +105,6 @@
 (defn log
   ([event] (log event {}))
   ([event details]
-   (js/console.log "!! LOG AMPL" event details)
    (amplitude/log event (merge details {:source-id (source-id)}))))
 
 (defn create-progress-bar
