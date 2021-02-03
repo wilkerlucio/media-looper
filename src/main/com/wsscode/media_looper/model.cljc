@@ -5,6 +5,9 @@
 (>def ::time-unit "Unit of time, in seconds."
   (s/and number? pos?))
 
+(>def ::loop-id uuid?)
+(>def ::loop-title string?)
+
 (>def ::loop-start ::time-unit)
 (>def ::loop-finish ::time-unit)
 

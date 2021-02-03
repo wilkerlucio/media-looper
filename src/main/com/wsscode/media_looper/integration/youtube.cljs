@@ -1,12 +1,13 @@
 (ns com.wsscode.media-looper.integration.youtube
   (:require ["react-dom" :as rdom]
             [com.wsscode.dom :as wdom]
+            [com.wsscode.media-looper.data :as data]
+            [com.wsscode.media-looper.local-storage :as ls]
             [com.wsscode.media-looper.model :as mlm]
             [goog.dom :as gdom]
             [goog.events :as gevents]
             [goog.object :as gobj]
             [goog.style :as gstyle]
-            [com.wsscode.media-looper.local-storage :as ls]
             [helix.core :as h]
             [helix.dom :as dom]
             [helix.hooks :as hooks]))
@@ -268,32 +269,39 @@
               "play-circle")
         {:onClick #(on-set (if selected nil loop))})
       (dom/div {:style {:flex "1"}}
-        (h/$ EditableText {:text     (str loop-title)
-                           :onChange #(on-update (assoc loop ::mlm/loop-title %))}))
-      (icon "minus-circle"
-        {:onClick #(on-update (update loop ::mlm/loop-start
-                                (if (.-shiftKey %)
-                                  dec-fine
-                                  dec)))})
+        (if on-update
+          (h/$ EditableText {:text     (str loop-title)
+                             :onChange #(on-update (assoc loop ::mlm/loop-title %))})
+          (dom/div loop-title)))
+      (if on-update
+        (icon "minus-circle"
+          {:onClick #(on-update (update loop ::mlm/loop-start
+                                  (if (.-shiftKey %)
+                                    dec-fine
+                                    dec)))}))
       (dom/div (seconds->time loop-start (if precise-time? 3 0)))
-      (icon "plus-circle"
-        {:onClick #(on-update (update loop ::mlm/loop-start
-                                (if (.-shiftKey %)
-                                  inc-fine
-                                  inc)))})
+      (if on-update
+        (icon "plus-circle"
+          {:onClick #(on-update (update loop ::mlm/loop-start
+                                  (if (.-shiftKey %)
+                                    inc-fine
+                                    inc)))}))
       (dom/div "/")
-      (icon "minus-circle"
-        {:onClick #(on-update (update loop ::mlm/loop-finish
-                                (if (.-shiftKey %)
-                                  dec-fine
-                                  dec)))})
+      (if on-update
+        (icon "minus-circle"
+          {:onClick #(on-update (update loop ::mlm/loop-finish
+                                  (if (.-shiftKey %)
+                                    dec-fine
+                                    dec)))}))
       (dom/div (seconds->time loop-finish (if precise-time? 3 0)))
-      (icon "plus-circle"
-        {:onClick #(on-update (update loop ::mlm/loop-finish
-                                (if (.-shiftKey %)
-                                  inc-fine
-                                  inc)))})
-      (icon "trash" {:onClick #(on-delete loop)}))))
+      (if on-update
+        (icon "plus-circle"
+          {:onClick #(on-update (update loop ::mlm/loop-finish
+                                  (if (.-shiftKey %)
+                                    inc-fine
+                                    inc)))}))
+      (if on-delete
+        (icon "trash" {:onClick #(on-delete loop)})))))
 
 (defn use-loop [video loop]
   (let [{::mlm/keys [loop-finish loop-start]} loop
@@ -317,6 +325,13 @@
 (defn same-loop? [l1 l2]
   (= (::mlm/loop-id l1)
      (::mlm/loop-id l2)))
+
+(defn use-server-prop [attr]
+  (let [!state (use-fstate nil)]
+    (hooks/use-effect [(pr-str attr)]
+      (let [res (data/request {::data/video-duration (video-duration (video-player-node))} [attr])]
+        (!state (get res attr))))
+    @!state))
 
 (h/defnc LooperControl []
   (let [video        (hooks/use-memo [] (video-player-node))
@@ -354,7 +369,8 @@
                          (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                                                  ::mlm/loop-title "New loop")]
                            (!loops (conj @!loops loop'))
-                           (set-current! loop'))))]
+                           (set-current! loop'))))
+        auto-loops   (use-server-prop ::data/markers-loops)]
     (dom/div {:style {:width   "400px"
                       :padding "10px"}}
       (if @!current
@@ -371,6 +387,12 @@
                         :on-update update-loop!
                         :on-set    set-current!
                         :on-delete remove-loop!}))
+      (for [loop (sort-by ::mlm/loop-start auto-loops)]
+        (h/$ LoopEntry {:key      (::mlm/loop-id loop)
+                        :selected (= (::mlm/loop-id @!current)
+                                     (::mlm/loop-id loop))
+                        :loop     loop
+                        :on-set   set-current!}))
       (h/$ SpeedControl {:video video}))))
 
 (defn listen-url-changes [cb]
