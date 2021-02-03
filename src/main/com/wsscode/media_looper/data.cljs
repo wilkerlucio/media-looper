@@ -5,7 +5,9 @@
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.connect.planner :as pcp]
             [com.wsscode.pathom3.interface.eql :as p.eql]
-            [goog.dom :as gdom]))
+            [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
+            [goog.dom :as gdom]
+            [promesa.core :as p]))
 
 (pco/defresolver loops-for-source [{::keys [source-id]}]
   [{::pco/output
@@ -32,15 +34,28 @@
                   ::mlm/loop-start  (time/time->seconds (::marker-time a))
                   ::mlm/loop-finish (time/time->seconds (::marker-time b))})))))
 
+(defn async-retry-transform [config]
+  (update config ::pco/resolve
+    (fn [resolve]
+      (fn [env input]
+        (p/let [result (resolve env input)]
+          (if-not result
+            (p/delay 2000))
+          (or result (resolve env input)))))))
+
 (pco/defresolver loops-from-markers [{::keys [video-duration]}]
   {::pco/output
    [{::markers-loops
      [::mlm/loop-id
       ::mlm/loop-title
       ::mlm/loop-start
-      ::mlm/loop-finish]}]}
-  {::markers-loops
-   (markers->loops (markers-data) video-duration)})
+      ::mlm/loop-finish]}]
+
+   ::pco/transform
+   async-retry-transform}
+  (when-let [loops (markers->loops (markers-data) video-duration)]
+    {::markers-loops
+     loops}))
 
 (def plan-cache* (atom {}))
 
@@ -51,4 +66,4 @@
       (pcp/with-plan-cache plan-cache*)))
 
 (defn request [data tx]
-  (p.eql/process env data tx))
+  (p.a.eql/process env data tx))

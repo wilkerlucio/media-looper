@@ -10,7 +10,8 @@
             [goog.style :as gstyle]
             [helix.core :as h]
             [helix.dom :as dom]
-            [helix.hooks :as hooks]))
+            [helix.hooks :as hooks]
+            [promesa.core :as p]))
 
 (defn create-portal [child container]
   (rdom/createPortal child container))
@@ -329,7 +330,7 @@
 (defn use-server-prop [attr]
   (let [!state (use-fstate nil)]
     (hooks/use-effect [(pr-str attr)]
-      (let [res (data/request {::data/video-duration (video-duration (video-player-node))} [attr])]
+      (p/let [res (data/request {::data/video-duration (video-duration (video-player-node))} [attr])]
         (!state (get res attr))))
     @!state))
 
