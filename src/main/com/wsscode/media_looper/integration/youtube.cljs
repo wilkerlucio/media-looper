@@ -203,7 +203,7 @@
                           (on-loop-record-finish {::mlm/loop-start  @!start-time
                                                   ::mlm/loop-finish finish})
                           (!start-time nil)))})
-          "Stop recording [" (seconds->time @!start-time) "]")
+          "Stop recording [" (seconds->time @!start-time 3) "]")
         (h/<>
           (icon "plus-circle"
             {:onClick (fn [e]
