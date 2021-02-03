@@ -9,14 +9,6 @@
             [goog.dom :as gdom]
             [promesa.core :as p]))
 
-(pco/defresolver loops-for-source [{::keys [source-id]}]
-  [{::pco/output
-    [{::mlm/loops
-      [::mlm/loop-id
-       ::mlm/loop-start
-       ::mlm/loop-finish]}]}]
-  {})
-
 (defn markers-data []
   (->> (js/document.querySelectorAll ".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")
        (mapv (fn [node]
@@ -61,8 +53,7 @@
 
 (def env
   (-> (pci/register
-        [loops-for-source
-         loops-from-markers])
+        [loops-from-markers])
       (pcp/with-plan-cache plan-cache*)))
 
 (defn request [data tx]
