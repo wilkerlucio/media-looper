@@ -268,7 +268,8 @@
       (icon (if selected
               "stop-circle"
               "play-circle")
-        {:onClick #(on-set (if selected nil loop))})
+        {:onClick #(on-set (if selected nil loop)
+                     (if (.-shiftKey %) 3 0))})
       (dom/div {:style {:flex "1"}}
         (if on-update
           (h/$ EditableText {:text     (str loop-title)
@@ -339,10 +340,10 @@
         !loops       (use-persistent-state (source-id) [])
         !current     (use-fstate nil)
         set-current! (hooks/use-callback [video]
-                       (fn [loop]
+                       (fn [loop offset]
                          (!current loop)
                          (when-let [start (::mlm/loop-start loop)]
-                           (video-seek-to! video start))))
+                           (video-seek-to! video (- start (or offset 0))))))
         update-loop! (hooks/use-callback [(hash @!loops)]
                        (fn [updated-loop]
                          (!loops
