@@ -279,7 +279,9 @@
       (dom/div {:style {:flex "1"}}
         (if on-update
           (h/$ EditableText {:text     (str loop-title)
-                             :onChange #(on-update (assoc loop ::mlm/loop-title %))})
+                             :onChange (fn [loop-title]
+                                         (log "Update loop title" {::mlm/loop-title loop-title})
+                                         (on-update (assoc loop ::mlm/loop-title loop-title)))})
           (dom/div loop-title)))
       (if on-update
         (icon "minus-circle"
