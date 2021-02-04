@@ -202,8 +202,14 @@
   (let [!current-value (use-fstate nil)]
     (if @!current-value
       (dom/input {:value     @!current-value
-                  :style     {:fontSize "11px"}
+                  :style     {:fontSize "11px"
+                              :padding "0"
+                              :width "100%"
+                              :background "transparent"
+                              :border "none"
+                              :color "#fff"}
                   :autoFocus true
+                  :onBlur    #(!current-value nil)
                   :onKeyDown (fn [e]
                                (.stopPropagation e)
                                (let [code (gobj/get e "keyCode")]
