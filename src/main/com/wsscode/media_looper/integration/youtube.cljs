@@ -198,16 +198,18 @@
                           (on-loop-record-start {::mlm/loop-start start} e)))})
           "Start new loop")))))
 
-(h/defnc EditableText [{:keys [text onChange]}]
+(h/defnc EditableText [{:keys [text label onChange style]}]
   (let [!current-value (use-fstate nil)]
     (if @!current-value
       (dom/input {:value     @!current-value
-                  :style     {:fontSize "11px"
-                              :padding "0"
-                              :width "100%"
-                              :background "transparent"
-                              :border "none"
-                              :color "#fff"}
+                  :style     (merge {:fontSize   "11px"
+                                     :padding    "1px 2px"
+                                     :boxSizing "border-box"
+                                     :width      "100%"
+                                     :background "transparent"
+                                     :border     "none"
+                                     :color      "#fff"}
+                               style)
                   :autoFocus true
                   :onBlur    #(!current-value nil)
                   :onKeyDown (fn [e]
@@ -226,7 +228,8 @@
                   :onChange  #(!current-value (.. % -target -value))})
       (dom/div {:onClick #(!current-value text)
                 :style   {:cursor       "pointer"
-                          :textOverflow "ellipsis"}} text))))
+                          :textOverflow "ellipsis"}}
+        (or label text)))))
 
 (defn dec-fine [x] (- x 0.1))
 
@@ -281,7 +284,14 @@
                                   (if (.-shiftKey %)
                                     dec-fine
                                     dec)))}))
-      (dom/div (time/seconds->time loop-start (if precise-time? 3 0)))
+      (if on-update
+        (h/$ EditableText {:text     (time/seconds->time loop-start 3)
+                           :label    (time/seconds->time loop-start (if precise-time? 3 0))
+                           :style    {:width "60px"}
+                           :onChange (fn [new-time]
+                                       (when-let [time (time/time->seconds new-time)]
+                                         (on-update (assoc loop ::mlm/loop-start time))))})
+        (dom/div (time/seconds->time loop-start (if precise-time? 3 0))))
       (if on-update
         (icon "plus-circle"
           {:onClick #(on-update (update loop ::mlm/loop-start
@@ -295,7 +305,14 @@
                                   (if (.-shiftKey %)
                                     dec-fine
                                     dec)))}))
-      (dom/div (time/seconds->time loop-finish (if precise-time? 3 0)))
+      (if on-update
+        (h/$ EditableText {:text     (time/seconds->time loop-finish 3)
+                           :label    (time/seconds->time loop-finish (if precise-time? 3 0))
+                           :style    {:width "60px"}
+                           :onChange (fn [new-time]
+                                       (when-let [time (time/time->seconds new-time)]
+                                         (on-update (assoc loop ::mlm/loop-finish time))))})
+        (dom/div (time/seconds->time loop-finish (if precise-time? 3 0))))
       (if on-update
         (icon "plus-circle"
           {:onClick #(on-update (update loop ::mlm/loop-finish

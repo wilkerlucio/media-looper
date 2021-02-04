@@ -45,7 +45,7 @@
        (str (goog.string/format "%02d" seconds))))))
 
 (defn time->seconds [time]
-  (let [[_ hours minutes seconds] (re-find #"^(?:(\d{1,2}):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$" time)]
+  (when-let [[_ hours minutes seconds] (re-find #"^(?:(\d{1,2}):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$" time)]
     (+
       (if hours (* (js/parseInt hours) 3600) 0)
       (* (js/parseInt minutes) 60)
