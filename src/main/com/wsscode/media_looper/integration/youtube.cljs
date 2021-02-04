@@ -407,7 +407,9 @@
                                     (!current nil))))
         create-loop!          (hooks/use-callback [(hash @!loops)]
                                 (fn [loop]
-                                  (log "Create Loop")
+                                  (log "Create Loop"
+                                    {:start  (time/seconds->time (::mlm/loop-start loop))
+                                     :finish (time/seconds->time (::mlm/loop-finish loop))})
 
                                   (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                                                           ::mlm/loop-title "New loop")]
