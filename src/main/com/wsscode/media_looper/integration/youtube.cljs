@@ -372,9 +372,7 @@
                                     (log "Start Loop" {:title  (::mlm/loop-title loop)
                                                        :start  (time/seconds->time (::mlm/loop-start loop))
                                                        :finish (time/seconds->time (::mlm/loop-finish loop))})
-                                    (log "Stop Loop" {:title  (::mlm/loop-title loop)
-                                                      :start  (time/seconds->time (::mlm/loop-start loop))
-                                                      :finish (time/seconds->time (::mlm/loop-finish loop))}))
+                                    (log "Stop Loop"))
 
                                   (set-current! loop offset)))
         update-loop!          (hooks/use-callback [(hash @!loops)]
