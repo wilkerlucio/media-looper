@@ -353,51 +353,62 @@
     @!state))
 
 (h/defnc LooperControl []
-  (let [video        (hooks/use-memo [] (video-player-node))
-        !loops       (use-persistent-state (source-id) [])
-        !current     (use-fstate nil)
-        set-current! (hooks/use-callback [video]
-                       (fn [loop offset]
-                         (if loop
-                           (log "Start Loop" {:title  (::mlm/loop-title loop)
-                                              :start  (time/seconds->time (::mlm/loop-start loop))
-                                              :finish (time/seconds->time (::mlm/loop-finish loop))}))
+  (let [video                 (hooks/use-memo [] (video-player-node))
+        !loops                (use-persistent-state (source-id) [])
+        !current              (use-fstate nil)
+        set-current!          (hooks/use-callback [video]
+                                (fn [loop offset]
+                                  (if loop
+                                    (log "Start Loop" {:title  (::mlm/loop-title loop)
+                                                       :start  (time/seconds->time (::mlm/loop-start loop))
+                                                       :finish (time/seconds->time (::mlm/loop-finish loop))}))
 
-                         (!current loop)
-                         (when-let [start (::mlm/loop-start loop)]
-                           (video-seek-to! video (- start (or offset 0))))))
-        update-loop! (hooks/use-callback [(hash @!loops)]
-                       (fn [updated-loop]
-                         (!loops
-                           (into []
-                                 (map
-                                   (fn [loop]
-                                     (if (same-loop? loop updated-loop)
-                                       updated-loop
-                                       loop)))
-                                 @!loops))
-                         (if (and @!current
-                                  (same-loop? @!current updated-loop))
-                           (!current updated-loop))))
-        remove-loop! (hooks/use-callback [(hash @!loops)]
-                       (fn [loop]
-                         (log "Remove Loop" {:title (::mlm/loop-title loop)})
-                         (!loops
-                           (into []
-                                 (remove #(same-loop? % loop))
-                                 @!loops))
-                         (if (and @!current
-                                  (same-loop? @!current loop))
-                           (!current nil))))
-        create-loop! (hooks/use-callback [(hash @!loops)]
-                       (fn [loop]
-                         (log "Create Loop")
+                                  (!current loop)
+                                  (when-let [start (::mlm/loop-start loop)]
+                                    (video-seek-to! video (- start (or offset 0))))))
+        set-current-with-log! (hooks/use-callback [set-current!]
+                                (fn [loop offset]
+                                  (if loop
+                                    (log "Start Loop" {:title  (::mlm/loop-title loop)
+                                                       :start  (time/seconds->time (::mlm/loop-start loop))
+                                                       :finish (time/seconds->time (::mlm/loop-finish loop))})
+                                    (log "Stop Loop" {:title  (::mlm/loop-title loop)
+                                                      :start  (time/seconds->time (::mlm/loop-start loop))
+                                                      :finish (time/seconds->time (::mlm/loop-finish loop))}))
 
-                         (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
-                                                 ::mlm/loop-title "New loop")]
-                           (!loops (conj @!loops loop'))
-                           (set-current! loop'))))
-        auto-loops   (use-server-prop ::data/markers-loops)]
+                                  (set-current! loop offset)))
+        update-loop!          (hooks/use-callback [(hash @!loops)]
+                                (fn [updated-loop]
+                                  (!loops
+                                    (into []
+                                          (map
+                                            (fn [loop]
+                                              (if (same-loop? loop updated-loop)
+                                                updated-loop
+                                                loop)))
+                                          @!loops))
+                                  (if (and @!current
+                                           (same-loop? @!current updated-loop))
+                                    (!current updated-loop))))
+        remove-loop!          (hooks/use-callback [(hash @!loops)]
+                                (fn [loop]
+                                  (log "Remove Loop" {:title (::mlm/loop-title loop)})
+                                  (!loops
+                                    (into []
+                                          (remove #(same-loop? % loop))
+                                          @!loops))
+                                  (if (and @!current
+                                           (same-loop? @!current loop))
+                                    (!current nil))))
+        create-loop!          (hooks/use-callback [(hash @!loops)]
+                                (fn [loop]
+                                  (log "Create Loop")
+
+                                  (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
+                                                          ::mlm/loop-title "New loop")]
+                                    (!loops (conj @!loops loop'))
+                                    (set-current! loop'))))
+        auto-loops            (use-server-prop ::data/markers-loops)]
     (dom/div {:style {:width   "400px"
                       :padding "10px"}}
       (if @!current
@@ -412,14 +423,14 @@
                                       (::mlm/loop-id loop))
                         :loop      loop
                         :on-update update-loop!
-                        :on-set    set-current!
+                        :on-set    set-current-with-log!
                         :on-delete remove-loop!}))
       (for [loop (sort-by ::mlm/loop-start auto-loops)]
         (h/$ LoopEntry {:key      (::mlm/loop-id loop)
                         :selected (= (::mlm/loop-id @!current)
                                      (::mlm/loop-id loop))
                         :loop     loop
-                        :on-set   set-current!}))
+                        :on-set   set-current-with-log!}))
       (h/$ SpeedControl {:video video}))))
 
 (defn listen-url-changes [cb]
