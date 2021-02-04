@@ -169,32 +169,43 @@
                        :padding   "0 4px"}
            :&         props})))
 
+(defn ensure-loop-direction
+  [{::mlm/keys [loop-start loop-finish] :as loop}]
+  (if (< loop-start loop-finish)
+    loop
+    (assoc loop
+      ::mlm/loop-start loop-finish
+      ::mlm/loop-finish loop-start)))
+
 (h/defnc CreateLoop
   [{:keys [video
            on-loop-record-start
            on-loop-record-finish]
     :or   {on-loop-record-start  identity
            on-loop-record-finish identity}}]
-  (let [!start-time (use-fstate nil)]
+  (let [start-time! (use-fstate nil)]
     (dom/div {:style (cond-> {:display    "flex"
                               :alignItems "center"
                               :padding    "4px 0"}
-                       @!start-time
+                       @start-time!
                        (assoc :background "#ff000085"))}
-      (if @!start-time
+      (if @start-time!
         (h/<>
           (icon "stop-circle"
             {:onClick (fn []
                         (let [finish (video-current-time video)]
-                          (on-loop-record-finish {::mlm/loop-start  @!start-time
-                                                  ::mlm/loop-finish finish})
-                          (!start-time nil)))})
-          "Stop recording [" (time/seconds->time @!start-time 3) "]")
+                          (let [start @start-time!
+                                loop  (ensure-loop-direction
+                                        {::mlm/loop-start  start
+                                         ::mlm/loop-finish finish})]
+                            (on-loop-record-finish loop))
+                          (start-time! nil)))})
+          "Stop recording [" (time/seconds->time @start-time! 3) "]")
         (h/<>
           (icon "plus-circle"
             {:onClick (fn [e]
                         (let [start (video-current-time video)]
-                          (!start-time start)
+                          (start-time! start)
                           (on-loop-record-start {::mlm/loop-start start} e)))})
           "Start new loop")))))
 
