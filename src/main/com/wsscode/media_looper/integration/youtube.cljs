@@ -388,17 +388,18 @@
                                   (set-current! loop offset)))
         update-loop!          (hooks/use-callback [(hash @!loops)]
                                 (fn [updated-loop]
-                                  (!loops
-                                    (into []
-                                          (map
-                                            (fn [loop]
-                                              (if (same-loop? loop updated-loop)
-                                                updated-loop
-                                                loop)))
-                                          @!loops))
-                                  (if (and @!current
-                                           (same-loop? @!current updated-loop))
-                                    (!current updated-loop))))
+                                  (let [updated-loop (ensure-loop-direction updated-loop)]
+                                    (!loops
+                                      (into []
+                                            (map
+                                              (fn [loop]
+                                                (if (same-loop? loop updated-loop)
+                                                  updated-loop
+                                                  loop)))
+                                            @!loops))
+                                    (if (and @!current
+                                             (same-loop? @!current updated-loop))
+                                      (!current updated-loop)))))
         remove-loop!          (hooks/use-callback [(hash @!loops)]
                                 (fn [loop]
                                   (log "Remove Loop" {:title (::mlm/loop-title loop)})
