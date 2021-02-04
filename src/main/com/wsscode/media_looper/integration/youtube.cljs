@@ -12,7 +12,8 @@
             [helix.dom :as dom]
             [com.wsscode.amplitude :as amplitude]
             [helix.hooks :as hooks]
-            [promesa.core :as p]))
+            [promesa.core :as p]
+            [com.wsscode.media-looper.time :as time]))
 
 (defn create-portal [child container]
   (rdom/createPortal child container))
@@ -22,21 +23,6 @@
 
 (defn unmount [container]
   (rdom/unmountComponentAtNode container))
-
-(defn seconds->time
-  ([seconds] (seconds->time seconds 0))
-  ([seconds precision]
-   (let [minutes (->> (/ seconds 60)
-                      (.floor js/Math))
-         seconds (mod seconds 60)]
-     (if (> precision 0)
-       (goog.string/format (str "%02d:%0" (+ 3 precision) "." precision "f") minutes seconds)
-       (goog.string/format "%02d:%02d" minutes seconds)))))
-
-(defn time->seconds [time]
-  (let [[_ minutes seconds] (re-find #"^(\d{1,2}):(\d{1,2}(?:\.\d+)?)$" time)]
-    (+ (* (js/parseInt minutes) 60)
-      (js/parseFloat seconds))))
 
 (deftype ReactFnState [value set-value!]
   IDeref
@@ -203,7 +189,7 @@
                           (on-loop-record-finish {::mlm/loop-start  @!start-time
                                                   ::mlm/loop-finish finish})
                           (!start-time nil)))})
-          "Stop recording [" (seconds->time @!start-time 3) "]")
+          "Stop recording [" (time/seconds->time @!start-time 3) "]")
         (h/<>
           (icon "plus-circle"
             {:onClick (fn [e]
@@ -289,7 +275,7 @@
                                   (if (.-shiftKey %)
                                     dec-fine
                                     dec)))}))
-      (dom/div (seconds->time loop-start (if precise-time? 3 0)))
+      (dom/div (time/seconds->time loop-start (if precise-time? 3 0)))
       (if on-update
         (icon "plus-circle"
           {:onClick #(on-update (update loop ::mlm/loop-start
@@ -303,7 +289,7 @@
                                   (if (.-shiftKey %)
                                     dec-fine
                                     dec)))}))
-      (dom/div (seconds->time loop-finish (if precise-time? 3 0)))
+      (dom/div (time/seconds->time loop-finish (if precise-time? 3 0)))
       (if on-update
         (icon "plus-circle"
           {:onClick #(on-update (update loop ::mlm/loop-finish
@@ -351,8 +337,8 @@
                        (fn [loop offset]
                          (if loop
                            (log "Start Loop" {:title  (::mlm/loop-title loop)
-                                              :start  (seconds->time (::mlm/loop-start loop))
-                                              :finish (seconds->time (::mlm/loop-finish loop))}))
+                                              :start  (time/seconds->time (::mlm/loop-start loop))
+                                              :finish (time/seconds->time (::mlm/loop-finish loop))}))
 
                          (!current loop)
                          (when-let [start (::mlm/loop-start loop)]
