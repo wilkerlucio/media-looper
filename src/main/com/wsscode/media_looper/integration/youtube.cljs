@@ -369,11 +369,6 @@
         !current              (use-fstate nil)
         set-current!          (hooks/use-callback [video]
                                 (fn [loop offset]
-                                  (if loop
-                                    (log "Start Loop" {:title  (::mlm/loop-title loop)
-                                                       :start  (time/seconds->time (::mlm/loop-start loop))
-                                                       :finish (time/seconds->time (::mlm/loop-finish loop))}))
-
                                   (!current loop)
                                   (when-let [start (::mlm/loop-start loop)]
                                     (video-seek-to! video (- start (or offset 0))))))
