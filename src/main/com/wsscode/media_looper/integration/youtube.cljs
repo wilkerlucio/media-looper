@@ -160,7 +160,9 @@
                 :target "_blank"}
           "Support My Work"))
       (dom/div {:style {:flex "1"}})
-      (dom/div {:onClick #(set-rate! 100)} "Speed")
+      (dom/div {:style {:cursor "pointer"}
+                :title "Reset speed to 100%"
+                :onClick #(set-rate! 100)} "Speed")
       (icon "minus-circle"
         {:style   {:margin "0 3px"}
          :onClick #(set-rate! (max 10 (- rate (if (.-shiftKey %) 1 10))))})
