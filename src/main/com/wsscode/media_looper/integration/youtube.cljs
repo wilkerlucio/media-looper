@@ -140,6 +140,16 @@
 (defn video-duration [video]
   (gobj/get video "duration"))
 
+(defn icon
+  ([ico]
+   (icon ico {}))
+  ([ico props]
+   (let [props (update props :style merge {:cursor    "pointer"
+                                           :font-size "18px"
+                                           :padding   "0 4px"})]
+     (dom/i {:className (str "fa fa-" ico)
+             :&         props}))))
+
 (h/defnc SpeedControl [{:keys [video]}]
   (let [[rate set-rate!] (use-playback-rate-property video)]
     (dom/div {:style {:display    "flex"
@@ -151,23 +161,18 @@
           "Support My Work"))
       (dom/div {:style {:flex "1"}})
       (dom/div {:onClick #(set-rate! 100)} "Speed")
+      (icon "minus-circle"
+        {:style   {:margin "0 3px"}
+         :onClick #(set-rate! (max 10 (- rate (if (.-shiftKey %) 1 10))))})
       (dom/input {:type     "range"
                   :onChange #(set-rate! (js/parseInt (.. % -target -value)))
-                  :style    {:margin "0 6px"}
                   :min      10
                   :max      200
                   :value    rate})
-      (str rate "%"))))
-
-(defn icon
-  ([ico]
-   (icon ico {}))
-  ([ico props]
-   (dom/i {:className (str "fa fa-" ico)
-           :style     {:cursor    "pointer"
-                       :font-size "18px"
-                       :padding   "0 4px"}
-           :&         props})))
+      (icon "plus-circle"
+        {:style   {:margin "0 3px"}
+         :onClick #(set-rate! (min 200 (+ rate (if (.-shiftKey %) 1 10))))})
+      (dom/div {:style {:width "35px"}} (str rate "%")))))
 
 (defn ensure-loop-direction
   [{::mlm/keys [loop-start loop-finish] :as loop}]
@@ -416,7 +421,7 @@
                                     (!loops (conj @!loops loop'))
                                     (set-current! loop'))))
         auto-loops            (use-server-prop ::data/markers-loops)]
-    (dom/div {:style {:width   "400px"
+    (dom/div {:style {:width   "500px"
                       :padding "10px"}}
       (if @!current
         (h/$ ActiveLoop {:video video
