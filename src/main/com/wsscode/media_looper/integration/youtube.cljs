@@ -293,7 +293,10 @@
         (if on-update
           (h/$ EditableText {:text     (str loop-title)
                              :onChange (fn [loop-title]
-                                         (log "Update loop title" {::mlm/loop-title loop-title})
+                                         (log "Update loop title"
+                                           {:title  loop-title
+                                            :start  (time/seconds->time (::mlm/loop-start loop))
+                                            :finish (time/seconds->time (::mlm/loop-finish loop))})
                                          (on-update (assoc loop ::mlm/loop-title loop-title)))})
           (dom/div loop-title)))
       (if on-update
