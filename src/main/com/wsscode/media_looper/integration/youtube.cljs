@@ -156,8 +156,9 @@
                       :alignItems "center"
                       :marginTop  "6px"}}
       (dom/div
-        (dom/a {:href   "https://www.patreon.com/wsscode"
-                :target "_blank"}
+        (dom/a {:href    "https://www.patreon.com/wsscode"
+                :onClick #(log "Click support link")
+                :target  "_blank"}
           "Support My Work"))
       (dom/div {:style {:flex "1"}})
       (dom/div {:style {:cursor "pointer"}
