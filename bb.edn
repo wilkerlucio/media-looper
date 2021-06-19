@@ -1,0 +1,14 @@
+{:tasks
+ {:requires
+  ([babashka.fs :as fs])
+
+  lint-deps
+  (when (fs/modified-since ".clj-kondo/.cache" "deps.edn")
+    (shell "bash -c" "clj-kondo --copy-configs --dependencies --lint \"$(clojure -Spath -A:dev)\" --parallel"))
+
+  lint
+  {:depends [lint-deps]
+   :task    (shell "clj-kondo --lint src")}
+
+  dev
+  (shell "shadow-cljs watch app -A:dev")}}

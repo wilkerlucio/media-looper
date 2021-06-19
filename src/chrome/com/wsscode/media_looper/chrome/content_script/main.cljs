@@ -1,6 +1,5 @@
 (ns com.wsscode.media-looper.chrome.content-script.main
   (:require [com.wsscode.media-looper.integration.youtube :as youtube]
-            ["react-dom" :as rdom]
             [com.wsscode.amplitude :as amplitude]))
 
 (defn init []

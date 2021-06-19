@@ -2,6 +2,7 @@
 .nrepl-port
 .shadow-cljs
 .idea
+.clj-kondo/.cache
 node_modules
 shells/chrome/js
 releases

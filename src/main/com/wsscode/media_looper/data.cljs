@@ -4,7 +4,6 @@
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.connect.planner :as pcp]
-            [com.wsscode.pathom3.interface.eql :as p.eql]
             [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
             [goog.dom :as gdom]
             [promesa.core :as p]))

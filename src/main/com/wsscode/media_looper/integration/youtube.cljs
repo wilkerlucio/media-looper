@@ -26,10 +26,10 @@
 
 (deftype ReactFnState [value set-value!]
   IDeref
-  (-deref [o] value)
+  (-deref [_] value)
 
   IFn
-  (-invoke [o x] (set-value! x)))
+  (-invoke [_ x] (set-value! x)))
 
 (defn use-fstate [initial-value]
   (let [[value set-value!] (hooks/use-state initial-value)]
@@ -113,7 +113,7 @@
 (defn create-looper-button [popup]
   (wdom/el "button"
     {:class   "ytp-button"
-     :onclick (fn [e]
+     :onclick (fn [_]
                 (let [display (gobj/getValueByKeys popup "style" "display")]
                   (if (= "none" display)
                     (gstyle/setStyle popup "display" "")
@@ -490,7 +490,7 @@
   (let [app-node (wdom/el "div" {:class "media-looper-container"})]
     (gdom/appendChild js/document.body app-node)
     (listen-url-changes
-      (fn [e]
+      (fn [_]
         (unmount app-node)
 
         (when (video-id)
