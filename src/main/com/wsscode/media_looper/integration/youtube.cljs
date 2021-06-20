@@ -1,24 +1,17 @@
 (ns com.wsscode.media-looper.integration.youtube
   (:require
-    ["react" :as react]
     ["react-dom" :as rdom]
     [clojure.string :as str]
     [com.fulcrologic.fulcro.mutations :as fm]
     [com.fulcrologic.fulcro.raw.application :as rapp]
-    [com.fulcrologic.fulcro.raw.components :as rc]
-    [com.fulcrologic.fulcro.react.hooks :as f.hooks]
     [com.wsscode.amplitude :as amplitude]
     [com.wsscode.dom :as wdom]
     [com.wsscode.fulcro3.raw-support :as frs]
     [com.wsscode.media-looper.data :as data]
+    [com.wsscode.media-looper.data.graph :as mdg]
     [com.wsscode.media-looper.local-storage :as ls]
     [com.wsscode.media-looper.model :as mlm]
     [com.wsscode.media-looper.time :as time]
-    [com.wsscode.pathom3.connect.built-in.plugins :as pbip]
-    [com.wsscode.pathom3.connect.indexes :as pci]
-    [com.wsscode.pathom3.connect.operation :as pco]
-    [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
-    [com.wsscode.pathom3.plugin :as p.plugin]
     [goog.dom :as gdom]
     [goog.events :as gevents]
     [goog.object :as gobj]
@@ -28,47 +21,14 @@
     [helix.hooks :as hooks]
     [promesa.core :as p]))
 
-; region pathom
-
-(defonce counters
-  (atom {1 {:counter/count 10}}))
-
-(pco/defresolver youtube-storage-id [{:keys [youtube.video/id]}]
-  {::mlm/storage-id (str "youtube:" id)})
-
-(pco/defresolver media-data [{::mlm/keys [storage-id]}]
-  {::pco/output [{::mlm/loops
-                  [::mlm/loop-id
-                   ::mlm/loop-title
-                   ::mlm/loop-start
-                   ::mlm/loop-finish]}]}
-  {::mlm/loops (ls/get storage-id [])})
-
-(pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
-  {::pco/op-name `update-loops}
-  (ls/set storage-id loops)
-  entry)
-
-(defonce plan-cache* (atom {}))
-
-(def env
-  (-> {:com.wsscode.pathom3.connect.planner/plan-cache* plan-cache*}
-      (pci/register
-        [youtube-storage-id media-data server-update-loops])
-      (p.plugin/register pbip/mutation-resolve-params)))
-
-(def pathom (p.a.eql/boundary-interface env))
-
-; endregion
-
 (def app
   (doto (rapp/fulcro-app
           {:batch-notifications (fn [render!] (rdom/unstable_batchedUpdates render!))
-           :remotes             {:remote (frs/pathom-remote pathom)}})
+           :remotes             {:remote (frs/pathom-remote mdg/graph)}})
     (frs/app-started!)))
 
-(defn include-ref-param [{:keys [ast ref]}]
-  (cond-> ast
+(defn make-remote [{:keys [ast ref]} name]
+  (cond-> (assoc ast :key name :dispatch-key name)
     ref
     (update :params conj ref)))
 
@@ -76,7 +36,7 @@
   (action [{:keys [state ref]}]
     (swap! state update-in ref assoc ::mlm/loops loops))
   (remote [env]
-    (include-ref-param env)))
+    (make-remote env 'media-looper/update-loops)))
 
 (defn create-portal [child container]
   (rdom/createPortal child container))
@@ -560,11 +520,6 @@
       #(gdom/removeNode control))
 
     (create-portal #js [(h/$ LooperWrapper)] popup)))
-
-(defn load-all []
-  (let [item-keys (->> (js/Object.keys js/localStorage)
-                       (filter #(str/starts-with? % "\"youtube:")))]
-    ))
 
 (defn integrate-looper []
   (inject-font-awesome-css)
