@@ -448,6 +448,58 @@
 
   (set-current! loop offset))
 
+(defn copy-to-clipboard [string]
+  (let [el       (doto (js/document.createElement "textarea")
+                   (gobj/set "value" string)
+                   (.setAttribute "readonly" "")
+                   (gobj/set "style" #js {:position "absolute" :left "-9999px"}))
+        selected (when (> (gobj/get (js/document.getSelection) "rangeCount") 0)
+                   (.getRangeAt (js/document.getSelection) 0))]
+    (js/document.body.appendChild el)
+    (.focus el)
+    (.select el)
+    (js/document.execCommand "copy")
+    (js/document.body.removeChild el)
+    (when selected
+      (.removeAllRanges (js/document.getSelection))
+      (.addRange (js/document.getSelection) selected))))
+
+(defn export-loops [media]
+  (let [content  (pr-str media)
+        filename (str (:youtube.video/id media) "-loops.edn")
+        blob     (js/Blob. #js [content] #js {:type "text/plain"})
+        ^js link (js/document.createElement "a")]
+    (.setAttribute link "download" filename)
+    (.setAttribute link "href" (js/window.URL.createObjectURL blob))
+    (.click link)
+    nil))
+
+(defn pick-file []
+  (p/create
+    (fn [resolve reject]
+      (let [^js input (js/document.createElement "input")]
+        (gobj/set input "type" "file")
+        (gobj/set input "accept" ".edn")
+        (gobj/set input "onchange"
+          (fn [^js e]
+            (resolve (-> e .-target .-files (aget 0)))))
+        (.click input)))))
+
+(defn read-text [file]
+  (p/create
+    (fn [resolve reject]
+      (let [reader (js/FileReader.)]
+        (gobj/set reader "onload"
+          (fn [^js e]
+            (resolve (-> e .-target .-result))))
+        (.readAsText reader file "UTF-8")))))
+
+(defn import-loops [media]
+  (p/let [file (pick-file)
+          s    (read-text file)
+          {::mlm/keys [loops]} (ls/safe-read s)]
+    (update-media-loops! media (fn [_] loops))))
+
 (h/defnc LooperControl [{:keys [props]}]
   (let [video                 (hooks/use-memo [] (video-player-node))
         {::mlm/keys [loops] :as media}
@@ -488,6 +540,16 @@
                                      (::mlm/loop-id loop))
                         :loop     loop
                         :on-set   set-current-with-log!}))
+
+      (dom/div {:style {:display "flex"}}
+        (dom/div {:style {:flex "1"}})
+        (dom/div
+          {:on-click #(import-loops media)}
+          "Import loops")
+        (dom/div
+          {:style    {:margin-left "10px"}
+           :on-click #(export-loops media)}
+          "Export loops"))
       (h/$ SpeedControl {:video video}))))
 
 (h/defnc LooperWrapper []
