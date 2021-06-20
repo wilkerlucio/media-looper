@@ -27,9 +27,7 @@
                    ::mlm/loop-title
                    ::mlm/loop-start
                    ::mlm/loop-finish]}]}
-  (js/console.log "!! GET " storage-id)
   (p/let [loops (cs/sync-get storage-id [])]
-    (js/console.log "!! READ" loops)
     {::mlm/loops loops}))
 
 #_(pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
@@ -39,10 +37,8 @@
 
 (pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
   {::pco/op-name 'media-looper/update-loops}
-  (js/console.log "!! SAVE SYNC")
   (p/do!
     (cs/sync-set storage-id loops)
-    (js/console.log "!! save done")
     entry))
 
 (defonce plan-cache* (atom {}))
