@@ -3,6 +3,9 @@
   "version": "2021.02.05",
   "description": "Custom loops extension for Youtube videos",
   "manifest_version": 2,
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
