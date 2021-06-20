@@ -2,13 +2,23 @@
   (:require
     ["react" :as react]
     ["react-dom" :as rdom]
+    [clojure.string :as str]
+    [com.fulcrologic.fulcro.mutations :as fm]
+    [com.fulcrologic.fulcro.raw.application :as rapp]
+    [com.fulcrologic.fulcro.raw.components :as rc]
     [com.fulcrologic.fulcro.react.hooks :as f.hooks]
     [com.wsscode.amplitude :as amplitude]
     [com.wsscode.dom :as wdom]
+    [com.wsscode.fulcro3.raw-support :as frs]
     [com.wsscode.media-looper.data :as data]
     [com.wsscode.media-looper.local-storage :as ls]
     [com.wsscode.media-looper.model :as mlm]
     [com.wsscode.media-looper.time :as time]
+    [com.wsscode.pathom3.connect.built-in.plugins :as pbip]
+    [com.wsscode.pathom3.connect.indexes :as pci]
+    [com.wsscode.pathom3.connect.operation :as pco]
+    [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
+    [com.wsscode.pathom3.plugin :as p.plugin]
     [goog.dom :as gdom]
     [goog.events :as gevents]
     [goog.object :as gobj]
@@ -16,14 +26,7 @@
     [helix.core :as h]
     [helix.dom :as dom]
     [helix.hooks :as hooks]
-    [promesa.core :as p]
-    [clojure.string :as str]
-    [com.wsscode.fulcro3.raw-support :as frs]
-    [com.wsscode.pathom3.connect.operation :as pco]
-    [com.wsscode.pathom3.connect.indexes :as pci]
-    [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
-    [com.fulcrologic.fulcro.raw.application :as rapp]
-    [com.fulcrologic.fulcro.raw.components :as rc]))
+    [promesa.core :as p]))
 
 ; region pathom
 
@@ -41,21 +44,20 @@
                    ::mlm/loop-finish]}]}
   {::mlm/loops (ls/get storage-id [])})
 
-(pco/defmutation server-update-counter! [{:keys [counter/id counter/count] :as counter}]
-  {::pco/op-name `update-counter!}
-  (swap! counters assoc-in [id :counter/count] count)
-  counter)
+(pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
+  {::pco/op-name `update-loops}
+  (ls/set storage-id loops)
+  entry)
+
+(defonce plan-cache* (atom {}))
 
 (def env
-  (-> (pci/register
-        [counter-data server-update-counter!])))
+  (-> {:com.wsscode.pathom3.connect.planner/plan-cache* plan-cache*}
+      (pci/register
+        [youtube-storage-id media-data server-update-loops])
+      (p.plugin/register pbip/mutation-resolve-params)))
 
 (def pathom (p.a.eql/boundary-interface env))
-
-(comment
-  (p/let [res (pathom {:pathom/eql    [::mlm/loops]
-                       :pathom/entity {:youtube.video/id "-n0_YQKLMzQ"}})]
-    (js/console.log "!! res" res)))
 
 ; endregion
 
@@ -64,6 +66,17 @@
           {:batch-notifications (fn [render!] (rdom/unstable_batchedUpdates render!))
            :remotes             {:remote (frs/pathom-remote pathom)}})
     (frs/app-started!)))
+
+(defn include-ref-param [{:keys [ast ref]}]
+  (cond-> ast
+    ref
+    (update :params conj ref)))
+
+(fm/defmutation update-loops [{::mlm/keys [loops]}]
+  (action [{:keys [state ref]}]
+    (swap! state update-in ref assoc ::mlm/loops loops))
+  (remote [env]
+    (include-ref-param env)))
 
 (defn create-portal [child container]
   (rdom/createPortal child container))
@@ -424,36 +437,39 @@
         (!state (get res attr))))
     @!state))
 
-(defn create-loop! [!loops set-current! loop]
+(defn update-media-loops! [media f]
+  (frs/transact! media [(update-loops {::mlm/loops (f (::mlm/loops media))})]))
+
+(defn create-loop! [media set-current! loop]
   (log "Create Loop"
     {:start  (time/seconds->time (::mlm/loop-start loop))
      :finish (time/seconds->time (::mlm/loop-finish loop))})
 
   (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                           ::mlm/loop-title "New loop")]
-    (!loops (conj @!loops loop'))
+    (update-media-loops! media #(conj % loop'))
     (set-current! loop')))
 
-(defn update-loop! [!loops !current updated-loop]
+(defn update-loop! [media !current updated-loop]
   (let [updated-loop (ensure-loop-direction updated-loop)]
-    (!loops
-      (into []
-            (map
-              (fn [loop]
-                (if (same-loop? loop updated-loop)
-                  updated-loop
-                  loop)))
-            @!loops))
+    (update-media-loops! media
+      #(into []
+             (map
+               (fn [loop]
+                 (if (same-loop? loop updated-loop)
+                   updated-loop
+                   loop)))
+             %))
     (if (and @!current
              (same-loop? @!current updated-loop))
       (!current updated-loop))))
 
-(defn remove-loop! [!loops !current loop]
+(defn remove-loop! [media !current loop]
   (log "Remove Loop" {:title (::mlm/loop-title loop)})
-  (!loops
-    (into []
-          (remove #(same-loop? % loop))
-          @!loops))
+  (update-media-loops! media
+    (fn [loops] (into []
+                      (remove #(same-loop? % loop))
+                      loops)))
   (if (and @!current
            (same-loop? @!current loop))
     (!current nil)))
@@ -472,23 +488,23 @@
 
   (set-current! loop offset))
 
-(h/defnc LooperControl [props]
+(h/defnc LooperControl [{:keys [props]}]
   (let [video                 (hooks/use-memo [] (video-player-node))
-        media                 (frs/use-entity app
-                                (assoc props ::mlm/loops [])
-                                {::frs/query [:youtube.video/id
-                                              {::mlm/loops
-                                               [::mlm/loop-id
-                                                ::mlm/loop-title
-                                                ::mlm/loop-start
-                                                ::mlm/loop-finish]}]})
-        !loops                (use-persistent-state (source-id) [])
+        {::mlm/keys [loops] :as media}
+        (frs/use-entity app
+          (assoc props ::mlm/loops [])
+          {::frs/query [:youtube.video/id
+                        {::mlm/loops
+                         [::mlm/loop-id
+                          ::mlm/loop-title
+                          ::mlm/loop-start
+                          ::mlm/loop-finish]}]})
         !current              (use-fstate nil)
         set-current!          (hooks/use-callback [video] #(set-current! !current video % %2))
         set-current-with-log! (hooks/use-callback [set-current!] #(toggle-loop! set-current! % %2))
-        update-loop!          (hooks/use-callback [(hash @!loops)] #(update-loop! !loops !current %))
-        remove-loop!          (hooks/use-callback [(hash @!loops)] #(remove-loop! !loops !current %))
-        create-loop!          (hooks/use-callback [(hash @!loops)] #(create-loop! !loops set-current! %))
+        update-loop!          (hooks/use-callback [(hash loops)] #(update-loop! media !current %))
+        remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
+        create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))
         auto-loops            (use-server-prop ::data/markers-loops)]
     (dom/div {:style {:width   "500px"
                       :padding "10px"}}
@@ -498,7 +514,7 @@
       (h/$ CreateLoop {:video                 video
                        :on-loop-record-start  #(set-current! nil)
                        :on-loop-record-finish create-loop!})
-      (for [loop (sort-by ::mlm/loop-start @!loops)]
+      (for [loop (sort-by ::mlm/loop-start loops)]
         (h/$ LoopEntry {:key       (::mlm/loop-id loop)
                         :selected  (= (::mlm/loop-id @!current)
                                       (::mlm/loop-id loop))
@@ -515,8 +531,7 @@
       (h/$ SpeedControl {:video video}))))
 
 (h/defnc LooperWrapper []
-  (h/$ react/Suspense {:fallback (dom/div "Loading...")}
-    (h/$ LooperControl (frs/load {:youtube.video/id (video-id)}))))
+  (h/$ LooperControl {:props (frs/load {:youtube.video/id (video-id)})}))
 
 (defn listen-url-changes [cb]
   (let [url*  (atom nil)

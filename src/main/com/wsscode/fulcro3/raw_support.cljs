@@ -3,7 +3,6 @@
     [com.fulcrologic.fulcro.algorithms.tx-processing :as txn]
     [com.fulcrologic.fulcro.data-fetch :as df]
     [com.fulcrologic.fulcro.inspect.inspect-client :as inspect-client]
-    [com.fulcrologic.fulcro.inspect.websocket-preload]
     [com.fulcrologic.fulcro.raw.components :as rc]
     [com.fulcrologic.fulcro.react.hooks :as f.hooks]
     [com.wsscode.misc.coll :as coll]
