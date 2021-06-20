@@ -518,30 +518,37 @@
         remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
         create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))
         auto-loops            (use-server-prop ::data/markers-loops)]
-    (dom/div {:style {:width   "500px"
-                      :padding "10px"}}
+    (dom/div {:style {:width          "500px"
+                      :height         "100%"
+                      :box-sizing     "border-box"
+                      :display        "flex"
+                      :flex-direction "column"
+                      :padding        "10px"}}
       (if @!current
         (h/$ ActiveLoop {:video video
                          :loop  @!current}))
       (h/$ CreateLoop {:video                 video
                        :on-loop-record-start  #(set-current! nil)
                        :on-loop-record-finish create-loop!})
-      (for [loop (sort-by ::mlm/loop-start loops)]
-        (h/$ LoopEntry {:key       (::mlm/loop-id loop)
-                        :selected  (= (::mlm/loop-id @!current)
-                                      (::mlm/loop-id loop))
-                        :loop      loop
-                        :on-update update-loop!
-                        :on-set    set-current-with-log!
-                        :on-delete remove-loop!}))
-      (for [loop (sort-by ::mlm/loop-start auto-loops)]
-        (h/$ LoopEntry {:key      (::mlm/loop-id loop)
-                        :selected (= (::mlm/loop-id @!current)
-                                     (::mlm/loop-id loop))
-                        :loop     loop
-                        :on-set   set-current-with-log!}))
 
-      (dom/div {:style {:display "flex"}}
+      (dom/div {:style {:flex     "1"
+                        :overflow "auto"}}
+        (for [loop (sort-by ::mlm/loop-start loops)]
+          (h/$ LoopEntry {:key       (::mlm/loop-id loop)
+                          :selected  (= (::mlm/loop-id @!current)
+                                        (::mlm/loop-id loop))
+                          :loop      loop
+                          :on-update update-loop!
+                          :on-set    set-current-with-log!
+                          :on-delete remove-loop!}))
+        (for [loop (sort-by ::mlm/loop-start auto-loops)]
+          (h/$ LoopEntry {:key      (::mlm/loop-id loop)
+                          :selected (= (::mlm/loop-id @!current)
+                                       (::mlm/loop-id loop))
+                          :loop     loop
+                          :on-set   set-current-with-log!})))
+
+      (dom/div {:style {:display "flex" :margin "3px 0"}}
         (dom/div {:style {:flex "1"}})
         (dom/div
           {:on-click #(import-loops media)}
@@ -568,7 +575,9 @@
 
 (defn create-popup-container []
   (wdom/el "div" {:class "ytp-popup ytp-settings-menu"
-                  :style {:display "none"}}))
+                  :style {:display  "none"
+                          :height   "calc(100% - 64px)"
+                          :overflow "hidden"}}))
 
 (h/defnc YoutubeLooper []
   (let [popup   (hooks/use-memo [] (create-popup-container))
