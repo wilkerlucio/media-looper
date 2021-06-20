@@ -11,3 +11,7 @@
 (>def ::loop-start ::time-unit)
 (>def ::loop-finish ::time-unit)
 
+(>def ::loops (s/coll-of (s/keys)))
+
+(>def ::storage-id string?)
+

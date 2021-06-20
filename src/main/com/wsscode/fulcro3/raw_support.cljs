@@ -8,7 +8,8 @@
     [com.fulcrologic.fulcro.react.hooks :as f.hooks]
     [com.wsscode.misc.coll :as coll]
     [edn-query-language.core :as eql]
-    [promesa.core :as p]))
+    [promesa.core :as p]
+    [cljs.spec.alpha :as s]))
 
 (defn pathom-remote [interface]
   {:transmit! (fn transmit! [_ {::txn/keys [ast result-handler]}]
@@ -42,19 +43,25 @@
                                                                   :fulcro.inspect.client/initial-state @state*})
     (add-watch state* app-uuid #(inspect-client/db-changed! app %3 %4))))
 
-(defn load-remote [app component {:keys [load-remote]}]
-  (f.hooks/use-effect
-    (fn []
-      (if load-remote
-        (let [state (rc/get-initial-state component {})
-              ident (rc/ident component state)
-              query (rc/query component)]
-          (df/load! app ident component))))
-    [load-remote]))
+(s/def ::load-remote any?)
 
-(defn use-component [app component options]
-  (let [props (f.hooks/use-component app component options)]
-    (load-remote app component options)
+(defn load-remote
+  [app component entity-props]
+  (let [ident (rc/ident component entity-props)
+        load? (some-> entity-props meta ::load-remote)]
+    (f.hooks/use-effect
+      (fn []
+        (if load?
+          (df/load! app ident component)))
+      [load? (hash ident)])))
+
+(defn use-entity [app entity-props {::keys [query] :as options}]
+  (let [options   (merge {:initialize?    true
+                          :keep-existing? true} options)
+        component (f.hooks/use-memo #(rc/nc query {:initial-state (fn [] entity-props)})
+                    [(hash query) (hash entity-props)])
+        props     (f.hooks/use-component app component options)]
+    (load-remote app component entity-props)
     (vary-meta props assoc :fulcro/app app :fulcro/component component)))
 
 (defn prop-component? [x]
@@ -64,9 +71,10 @@
 (defn transact!
   ([app-or-component tx] (transact! app-or-component tx {}))
   ([app-or-component tx options]
-   (let [options (merge {:initialize?    true
-                         :keep-existing? true} options)]
-     (if prop-component?
-       (let [{:fulcro/keys [app component]} (meta app-or-component)]
-         (rc/transact! app tx (coll/merge-defaults options {:ref (rc/ident component app-or-component)})))
-       (rc/transact! app-or-component tx options)))))
+   (if prop-component?
+     (let [{:fulcro/keys [app component]} (meta app-or-component)]
+       (rc/transact! app tx (coll/merge-defaults options {:ref (rc/ident component app-or-component)})))
+     (rc/transact! app-or-component tx options))))
+
+(defn load [props]
+  (vary-meta props assoc ::load-remote true))

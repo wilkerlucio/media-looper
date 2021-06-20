@@ -1,5 +1,6 @@
 (ns com.wsscode.media-looper.integration.youtube
   (:require
+    ["react" :as react]
     ["react-dom" :as rdom]
     [com.fulcrologic.fulcro.react.hooks :as f.hooks]
     [com.wsscode.amplitude :as amplitude]
@@ -15,7 +16,54 @@
     [helix.core :as h]
     [helix.dom :as dom]
     [helix.hooks :as hooks]
-    [promesa.core :as p]))
+    [promesa.core :as p]
+    [clojure.string :as str]
+    [com.wsscode.fulcro3.raw-support :as frs]
+    [com.wsscode.pathom3.connect.operation :as pco]
+    [com.wsscode.pathom3.connect.indexes :as pci]
+    [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
+    [com.fulcrologic.fulcro.raw.application :as rapp]
+    [com.fulcrologic.fulcro.raw.components :as rc]))
+
+; region pathom
+
+(defonce counters
+  (atom {1 {:counter/count 10}}))
+
+(pco/defresolver youtube-storage-id [{:keys [youtube.video/id]}]
+  {::mlm/storage-id (str "youtube:" id)})
+
+(pco/defresolver media-data [{::mlm/keys [storage-id]}]
+  {::pco/output [{::mlm/loops
+                  [::mlm/loop-id
+                   ::mlm/loop-title
+                   ::mlm/loop-start
+                   ::mlm/loop-finish]}]}
+  {::mlm/loops (ls/get storage-id [])})
+
+(pco/defmutation server-update-counter! [{:keys [counter/id counter/count] :as counter}]
+  {::pco/op-name `update-counter!}
+  (swap! counters assoc-in [id :counter/count] count)
+  counter)
+
+(def env
+  (-> (pci/register
+        [counter-data server-update-counter!])))
+
+(def pathom (p.a.eql/boundary-interface env))
+
+(comment
+  (p/let [res (pathom {:pathom/eql    [::mlm/loops]
+                       :pathom/entity {:youtube.video/id "-n0_YQKLMzQ"}})]
+    (js/console.log "!! res" res)))
+
+; endregion
+
+(def app
+  (doto (rapp/fulcro-app
+          {:batch-notifications (fn [render!] (rdom/unstable_batchedUpdates render!))
+           :remotes             {:remote (frs/pathom-remote pathom)}})
+    (frs/app-started!)))
 
 (defn create-portal [child container]
   (rdom/createPortal child container))
@@ -424,8 +472,16 @@
 
   (set-current! loop offset))
 
-(h/defnc LooperControl []
+(h/defnc LooperControl [props]
   (let [video                 (hooks/use-memo [] (video-player-node))
+        media                 (frs/use-entity app
+                                (assoc props ::mlm/loops [])
+                                {::frs/query [:youtube.video/id
+                                              {::mlm/loops
+                                               [::mlm/loop-id
+                                                ::mlm/loop-title
+                                                ::mlm/loop-start
+                                                ::mlm/loop-finish]}]})
         !loops                (use-persistent-state (source-id) [])
         !current              (use-fstate nil)
         set-current!          (hooks/use-callback [video] #(set-current! !current video % %2))
@@ -458,6 +514,10 @@
                         :on-set   set-current-with-log!}))
       (h/$ SpeedControl {:video video}))))
 
+(h/defnc LooperWrapper []
+  (h/$ react/Suspense {:fallback (dom/div "Loading...")}
+    (h/$ LooperControl (frs/load {:youtube.video/id (video-id)}))))
+
 (defn listen-url-changes [cb]
   (let [url*  (atom nil)
         timer (js/setInterval
@@ -484,7 +544,12 @@
       (add-control control)
       #(gdom/removeNode control))
 
-    (create-portal #js [(h/$ LooperControl)] popup)))
+    (create-portal #js [(h/$ LooperWrapper)] popup)))
+
+(defn load-all []
+  (let [item-keys (->> (js/Object.keys js/localStorage)
+                       (filter #(str/starts-with? % "\"youtube:")))]
+    ))
 
 (defn integrate-looper []
   (inject-font-awesome-css)

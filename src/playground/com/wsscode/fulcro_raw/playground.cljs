@@ -13,7 +13,7 @@
     [com.wsscode.pathom3.connect.indexes :as pci]
     [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
     [promesa.core :as p]
-    [com.wsscode.fulcro3.raw-support :as fs]))
+    [com.wsscode.fulcro3.raw-support :as frs]))
 
 ; region pathom
 
@@ -45,8 +45,8 @@
 (def app
   (doto (rapp/fulcro-app
           {:batch-notifications (fn [render!] (rdom/unstable_batchedUpdates render!))
-           :remotes             {:remote (fs/pathom-remote pathom)}})
-    (fs/app-started!)))
+           :remotes             {:remote (frs/pathom-remote pathom)}})
+    (frs/app-started!)))
 
 (fm/defmutation update-counter! [{:keys [counter/count]}]
   (action [{:keys [state ref]}]
@@ -55,12 +55,12 @@
 
 (h/defnc Main []
   (let [counter
-        (fs/use-component app
-          (rc/entity->component {:counter/id 1 :counter/count 0})
-          {:load-remote true})]
+        (frs/use-entity app
+          (frs/load {:counter/id 1 :counter/count 0})
+          {::frs/query [:counter/id :counter/count]})]
     (dom/div "Hello World"
       (pr-str counter)
-      (dom/button {:on-click #(fs/transact! counter [(update-counter! (update counter :counter/count inc))])} "Inc"))))
+      (dom/button {:on-click #(frs/transact! counter [(update-counter! (update counter :counter/count inc))])} "Inc"))))
 
 (defn ^:dev/after-load render! []
   (rdom/render (h/$ Main) (js/document.getElementById "app")))
