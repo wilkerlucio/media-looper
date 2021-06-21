@@ -1,6 +1,7 @@
 {:tasks
  {:requires
-  ([babashka.fs :as fs])
+  ([babashka.fs :as fs]
+   [cheshire.core :as json])
 
   lint-deps
   (when (fs/modified-since ".clj-kondo/.cache" "deps.edn")
@@ -13,5 +14,17 @@
   dev
   (shell "shadow-cljs watch app -A:dev")
 
+  clean
+  (do
+    (println "Cleaning app output...")
+    (fs/delete-tree ".shadow-cljs")
+    (fs/delete-tree "shells/chrome/js"))
+
   build
-  (shell "shadow-cljs release app -A:dev")}}
+  {:depends [clean]
+   :task    (let [version (-> (slurp "shells/chrome/manifest.json")
+                            (json/parse-string keyword)
+                            :version)]
+              (shell "shadow-cljs release app -A:dev")
+              (shell "mkdir -p releases")
+              (shell {:dir "shells/chrome"} (str "zip -r ../../releases/youtube-looper-chrome-" version ".zip . -i *")))}}}
