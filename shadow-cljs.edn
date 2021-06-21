@@ -6,7 +6,4 @@
   {:target     :browser
    :output-dir "shells/chrome/js/youtube"
    :asset-path "/js/youtube"
-   :modules    {:main {:entries [com.wsscode.media-looper.chrome.content-script.main]}}}
-
-  :play
-  {:compiler-options {:closure-defines {com.fulcrologic.fulcro.inspect.inspect-client/INSPECT true}}}}}
+   :modules    {:main {:entries [com.wsscode.media-looper.chrome.content-script.main]}}}}}

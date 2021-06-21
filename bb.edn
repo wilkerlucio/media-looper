@@ -11,4 +11,7 @@
    :task    (shell "clj-kondo --lint src")}
 
   dev
-  (shell "shadow-cljs watch app -A:dev")}}
+  (shell "shadow-cljs watch app -A:dev")
+
+  build
+  (shell "shadow-cljs release app -A:dev")}}
