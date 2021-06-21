@@ -49,18 +49,22 @@
 
 (s/def ::load-remote any?)
 
+(defn load-component! [app component entity-props {::keys [entity-data]}]
+  (let [ident (rc/ident component entity-props)]
+    (df/load! app ident component
+      {:update-query (fn [query]
+                       (cond-> query
+                         entity-data
+                         (vary-meta assoc :pathom/entity entity-data)))})))
+
 (defn load-remote
-  [app component entity-props {::keys [entity-data]}]
+  [app component entity-props options]
   (let [ident (rc/ident component entity-props)
         load? (some-> entity-props meta ::load-remote)]
     (f.hooks/use-effect
       (fn []
         (if load?
-          (df/load! app ident component
-            {:update-query (fn [query]
-                             (cond-> query
-                               entity-data
-                               (vary-meta assoc :pathom/entity entity-data)))})))
+          (load-component! app component entity-props options)))
       [load? (hash ident)])))
 
 (defn use-entity [app entity-props {::keys [query] :as options}]
@@ -70,18 +74,23 @@
                     [(hash query) (hash entity-props)])
         props     (f.hooks/use-component app component options)]
     (load-remote app component entity-props options)
-    (vary-meta props assoc :fulcro/app app :fulcro/component component)))
+    (vary-meta props assoc ::fulcro-app app ::fulcro-component component
+      ::entity-props entity-props ::entity-options options)))
 
 (defn prop-component? [x]
   (and (map? x)
-       (some-> x meta :fulcro/component)))
+       (some-> x meta ::fulcro-component)))
+
+(defn refresh! [x]
+  (let [{::keys [fulcro-app fulcro-component entity-props entity-options]} (meta x)]
+    (load-component! fulcro-app fulcro-component entity-props entity-options)))
 
 (defn transact!
   ([app-or-component tx] (transact! app-or-component tx {}))
   ([app-or-component tx options]
-   (if prop-component?
-     (let [{:fulcro/keys [app component]} (meta app-or-component)]
-       (rc/transact! app tx (coll/merge-defaults options {:ref (rc/ident component app-or-component)})))
+   (if (prop-component? app-or-component)
+     (let [{::keys [fulcro-app fulcro-component]} (meta app-or-component)]
+       (rc/transact! fulcro-app tx (coll/merge-defaults options {:ref (rc/ident fulcro-component app-or-component)})))
      (rc/transact! app-or-component tx options))))
 
 (defn load [props]

@@ -7,7 +7,9 @@
             [com.wsscode.pathom3.connect.planner :as pcp]
             [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
             [goog.dom :as gdom]
-            [promesa.core :as p]))
+            [promesa.core :as p]
+            [com.wsscode.pathom3.connect.built-in.plugins :as pbip]
+            [com.wsscode.pathom3.plugin :as p.plugin]))
 
 (defn markers-data []
   (->> (js/document.querySelectorAll ".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")
@@ -74,6 +76,7 @@
   (-> (pci/register
         [loops-from-markers
          youtube-storage-id media-data server-update-loops])
-      (pcp/with-plan-cache plan-cache*)))
+      (pcp/with-plan-cache plan-cache*)
+      (p.plugin/register pbip/mutation-resolve-params)))
 
 (def request (p.a.eql/boundary-interface env))

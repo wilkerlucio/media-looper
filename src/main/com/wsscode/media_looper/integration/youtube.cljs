@@ -8,7 +8,6 @@
     [com.wsscode.dom :as wdom]
     [com.wsscode.fulcro3.raw-support :as frs]
     [com.wsscode.media-looper.data :as data]
-    [com.wsscode.media-looper.data.graph :as mdg]
     [com.wsscode.media-looper.local-storage :as ls]
     [com.wsscode.media-looper.model :as mlm]
     [com.wsscode.media-looper.time :as time]
@@ -522,10 +521,6 @@
         update-loop!          (hooks/use-callback [(hash loops)] #(update-loop! media !current %))
         remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
         create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))]
-    (use-storage-change-listener
-      (hooks/use-memo [(hash props)]
-        (fn [changes ns]
-          (js/console.log "!! CHANGES" changes ns))))
     (dom/div {:style {:width          "500px"
                       :height         "100%"
                       :box-sizing     "border-box"
