@@ -19,12 +19,13 @@
     [helix.core :as h]
     [helix.dom :as dom]
     [helix.hooks :as hooks]
-    [promesa.core :as p]))
+    [promesa.core :as p]
+    [com.wsscode.chrome.storage :as cs]))
 
 (def app
   (doto (rapp/fulcro-app
           {:batch-notifications (fn [render!] (rdom/unstable_batchedUpdates render!))
-           :remotes             {:remote (frs/pathom-remote mdg/graph)}})
+           :remotes             {:remote (frs/pathom-remote data/request)}})
     (frs/app-started!)))
 
 (defn make-remote [{:keys [ast ref]} name]
@@ -390,13 +391,6 @@
   (= (::mlm/loop-id l1)
      (::mlm/loop-id l2)))
 
-(defn use-server-prop [attr]
-  (let [!state (use-fstate nil)]
-    (hooks/use-effect [(pr-str attr)]
-      (p/let [res (data/request {::data/video-duration (video-duration (video-player-node))} [attr])]
-        (!state (get res attr))))
-    @!state))
-
 (defn update-media-loops! [media f]
   (frs/transact! media [(update-loops {::mlm/loops (f (::mlm/loops media))})]))
 
@@ -500,24 +494,38 @@
           {::mlm/keys [loops]} (ls/safe-read s)]
     (update-media-loops! media (fn [_] loops))))
 
+(defn use-storage-change-listener [f]
+  (hooks/use-effect [f]
+    (cs/change-listener f)
+    #(cs/remove-listener f)))
+
 (h/defnc LooperControl [{:keys [props]}]
   (let [video                 (hooks/use-memo [] (video-player-node))
-        {::mlm/keys [loops] :as media}
+        {::mlm/keys [loops] ::data/keys [markers-loops] :as media}
         (frs/use-entity app
           (assoc props ::mlm/loops [])
-          {::frs/query [:youtube.video/id
-                        {::mlm/loops
-                         [::mlm/loop-id
-                          ::mlm/loop-title
-                          ::mlm/loop-start
-                          ::mlm/loop-finish]}]})
+          {::frs/query       [:youtube.video/id
+                              {::mlm/loops
+                               [::mlm/loop-id
+                                ::mlm/loop-title
+                                ::mlm/loop-start
+                                ::mlm/loop-finish]}
+                              {::data/markers-loops
+                               [::mlm/loop-id
+                                ::mlm/loop-title
+                                ::mlm/loop-start
+                                ::mlm/loop-finish]}]
+           ::frs/entity-data {::data/video-duration (video-duration (video-player-node))}})
         !current              (use-fstate nil)
         set-current!          (hooks/use-callback [video] #(set-current! !current video % %2))
         set-current-with-log! (hooks/use-callback [set-current!] #(toggle-loop! set-current! % %2))
         update-loop!          (hooks/use-callback [(hash loops)] #(update-loop! media !current %))
         remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
-        create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))
-        auto-loops            (use-server-prop ::data/markers-loops)]
+        create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))]
+    (use-storage-change-listener
+      (hooks/use-memo [(hash props)]
+        (fn [changes ns]
+          (js/console.log "!! CHANGES" changes ns))))
     (dom/div {:style {:width          "500px"
                       :height         "100%"
                       :box-sizing     "border-box"
@@ -541,7 +549,7 @@
                           :on-update update-loop!
                           :on-set    set-current-with-log!
                           :on-delete remove-loop!}))
-        (for [loop (sort-by ::mlm/loop-start auto-loops)]
+        (for [loop (sort-by ::mlm/loop-start markers-loops)]
           (h/$ LoopEntry {:key      (::mlm/loop-id loop)
                           :selected (= (::mlm/loop-id @!current)
                                        (::mlm/loop-id loop))

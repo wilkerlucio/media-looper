@@ -18,7 +18,6 @@
                      ::mlm/loop-title
                      ::mlm/loop-start
                      ::mlm/loop-finish]}]}
-    (js/console.log "!! GET FROM" storage-id)
     {::mlm/loops (ls/get storage-id [])})
 
 (pco/defresolver media-data [{::mlm/keys [storage-id]}]

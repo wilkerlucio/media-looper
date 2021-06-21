@@ -31,3 +31,9 @@
 
 (defn sync-set [k v]
   (sync-set-raw! (js-obj (pr-str k) (pr-str v))))
+
+(defn change-listener [f]
+  (js/chrome.storage.sync.onChanged.addListener f))
+
+(defn remove-listener [f]
+  (js/chrome.storage.sync.onChanged.removeListener f))

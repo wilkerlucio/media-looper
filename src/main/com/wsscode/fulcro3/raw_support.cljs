@@ -21,8 +21,13 @@
                                       (try
                                         (result-handler (merge error-result {:status-code 500}))
                                         (catch :default e
-                                          (js/console.error e "Error handler for remote failed with an exception."))))]
-                  (-> (p/let [res (interface {:pathom/ast ast})]
+                                          (js/console.error e "Error handler for remote failed with an exception."))))
+                      key           (-> ast :children first :key)
+                      entity        (some-> ast :children first :query meta :pathom/entity)
+                      ident-ent     {key (conj entity key)}]
+                  (-> (p/let [res (interface
+                                    (cond-> {:pathom/ast ast}
+                                      entity (assoc :pathom/entity ident-ent)))]
                         (ok-handler {:transaction (eql/ast->query ast)
                                      :body        res}))
                       (p/catch (fn [e] (error-handler {:body e}))))))})
@@ -45,13 +50,17 @@
 (s/def ::load-remote any?)
 
 (defn load-remote
-  [app component entity-props]
+  [app component entity-props {::keys [entity-data]}]
   (let [ident (rc/ident component entity-props)
         load? (some-> entity-props meta ::load-remote)]
     (f.hooks/use-effect
       (fn []
         (if load?
-          (df/load! app ident component)))
+          (df/load! app ident component
+            {:update-query (fn [query]
+                             (cond-> query
+                               entity-data
+                               (vary-meta assoc :pathom/entity entity-data)))})))
       [load? (hash ident)])))
 
 (defn use-entity [app entity-props {::keys [query] :as options}]
@@ -60,7 +69,7 @@
         component (f.hooks/use-memo #(rc/nc query {:initial-state (fn [] entity-props)})
                     [(hash query) (hash entity-props)])
         props     (f.hooks/use-component app component options)]
-    (load-remote app component entity-props)
+    (load-remote app component entity-props options)
     (vary-meta props assoc :fulcro/app app :fulcro/component component)))
 
 (defn prop-component? [x]

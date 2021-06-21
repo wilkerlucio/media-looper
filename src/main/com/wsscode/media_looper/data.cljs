@@ -1,5 +1,6 @@
 (ns com.wsscode.media-looper.data
-  (:require [com.wsscode.media-looper.model :as mlm]
+  (:require [com.wsscode.chrome.storage :as cs]
+            [com.wsscode.media-looper.model :as mlm]
             [com.wsscode.media-looper.time :as time]
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
@@ -48,12 +49,31 @@
     {::markers-loops
      loops}))
 
+(pco/defresolver youtube-storage-id [{:keys [youtube.video/id]}]
+  {::mlm/storage-id (str "media-looper:youtube:" id)})
+
+(pco/defresolver media-data [{::mlm/keys [storage-id]}]
+  {::pco/output
+   [{::mlm/loops
+     [::mlm/loop-id
+      ::mlm/loop-title
+      ::mlm/loop-start
+      ::mlm/loop-finish]}]}
+  (p/let [loops (cs/sync-get storage-id [])]
+    {::mlm/loops loops}))
+
+(pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
+  {::pco/op-name 'media-looper/update-loops}
+  (p/do!
+    (cs/sync-set storage-id loops)
+    entry))
+
 (def plan-cache* (atom {}))
 
 (def env
   (-> (pci/register
-        [loops-from-markers])
+        [loops-from-markers
+         youtube-storage-id media-data server-update-loops])
       (pcp/with-plan-cache plan-cache*)))
 
-(defn request [data tx]
-  (p.a.eql/process env data tx))
+(def request (p.a.eql/boundary-interface env))
