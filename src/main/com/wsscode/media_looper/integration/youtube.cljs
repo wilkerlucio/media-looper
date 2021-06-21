@@ -11,6 +11,7 @@
     [com.wsscode.media-looper.local-storage :as ls]
     [com.wsscode.media-looper.model :as mlm]
     [com.wsscode.media-looper.time :as time]
+    [com.wsscode.media-looper.event.tree :as event-tree]
     [goog.dom :as gdom]
     [goog.events :as gevents]
     [goog.object :as gobj]
@@ -300,72 +301,84 @@
 
     @!active?))
 
-(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete selected]}]
-  (let [{::mlm/keys [loop-title loop-start loop-finish]} loop
-        precise-time? (use-shift-track)]
-    (dom/div {:style (cond-> {:display    "flex"
-                              :alignItems "center"
-                              :padding    "4px 0"}
-                       selected
-                       (assoc :background "#ff000085"))}
-      (icon (if selected
-              "stop-circle"
-              "play-circle")
-        {:onClick #(on-set (if selected nil loop)
-                     (if (.-shiftKey %) 3 0))})
-      (dom/div {:style {:flex "1"}}
+(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete current]}]
+  (let [{::mlm/keys [loop-title loop-start loop-finish children]} loop
+        precise-time? (use-shift-track)
+        selected      (= (::mlm/loop-id current)
+                         (::mlm/loop-id loop))]
+    (h/<>
+      (dom/div {:style (cond-> {:display    "flex"
+                                :alignItems "center"
+                                :padding    "4px 0"}
+                         selected
+                         (assoc :background "#ff000085"))}
+        (icon (if selected
+                "stop-circle"
+                "play-circle")
+          {:onClick #(on-set (if selected nil loop)
+                       (if (.-shiftKey %) 3 0))})
+        (dom/div {:style {:flex "1"}}
+          (if on-update
+            (h/$ EditableText {:text     (str loop-title)
+                               :onChange (fn [loop-title]
+                                           (log "Update loop title"
+                                             {:title  loop-title
+                                              :start  (time/seconds->time (::mlm/loop-start loop))
+                                              :finish (time/seconds->time (::mlm/loop-finish loop))})
+                                           (on-update (assoc loop ::mlm/loop-title loop-title)))})
+            (dom/div loop-title)))
         (if on-update
-          (h/$ EditableText {:text     (str loop-title)
-                             :onChange (fn [loop-title]
-                                         (log "Update loop title"
-                                           {:title  loop-title
-                                            :start  (time/seconds->time (::mlm/loop-start loop))
-                                            :finish (time/seconds->time (::mlm/loop-finish loop))})
-                                         (on-update (assoc loop ::mlm/loop-title loop-title)))})
-          (dom/div loop-title)))
-      (if on-update
-        (icon "minus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-start
-                                  (if (.-shiftKey %)
-                                    dec-fine
-                                    dec)))}))
-      (if on-update
-        (h/$ EditableText {:text     (time/seconds->time loop-start 3)
-                           :label    (time/seconds->time loop-start (if precise-time? 3 0))
-                           :style    {:width "60px"}
-                           :onChange (fn [new-time]
-                                       (when-let [time (time/time->seconds new-time)]
-                                         (on-update (assoc loop ::mlm/loop-start time))))})
-        (dom/div (time/seconds->time loop-start (if precise-time? 3 0))))
-      (if on-update
-        (icon "plus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-start
-                                  (if (.-shiftKey %)
-                                    inc-fine
-                                    inc)))}))
-      (dom/div "/")
-      (if on-update
-        (icon "minus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-finish
-                                  (if (.-shiftKey %)
-                                    dec-fine
-                                    dec)))}))
-      (if on-update
-        (h/$ EditableText {:text     (time/seconds->time loop-finish 3)
-                           :label    (time/seconds->time loop-finish (if precise-time? 3 0))
-                           :style    {:width "60px"}
-                           :onChange (fn [new-time]
-                                       (when-let [time (time/time->seconds new-time)]
-                                         (on-update (assoc loop ::mlm/loop-finish time))))})
-        (dom/div (time/seconds->time loop-finish (if precise-time? 3 0))))
-      (if on-update
-        (icon "plus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-finish
-                                  (if (.-shiftKey %)
-                                    inc-fine
-                                    inc)))}))
-      (if on-delete
-        (icon "trash" {:onClick #(on-delete loop)})))))
+          (icon "minus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-start
+                                    (if (.-shiftKey %)
+                                      dec-fine
+                                      dec)))}))
+        (if on-update
+          (h/$ EditableText {:text     (time/seconds->time loop-start 3)
+                             :label    (time/seconds->time loop-start (if precise-time? 3 0))
+                             :style    {:width "60px"}
+                             :onChange (fn [new-time]
+                                         (when-let [time (time/time->seconds new-time)]
+                                           (on-update (assoc loop ::mlm/loop-start time))))})
+          (dom/div (time/seconds->time loop-start (if precise-time? 3 0))))
+        (if on-update
+          (icon "plus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-start
+                                    (if (.-shiftKey %)
+                                      inc-fine
+                                      inc)))}))
+        (dom/div "/")
+        (if on-update
+          (icon "minus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-finish
+                                    (if (.-shiftKey %)
+                                      dec-fine
+                                      dec)))}))
+        (if on-update
+          (h/$ EditableText {:text     (time/seconds->time loop-finish 3)
+                             :label    (time/seconds->time loop-finish (if precise-time? 3 0))
+                             :style    {:width "60px"}
+                             :onChange (fn [new-time]
+                                         (when-let [time (time/time->seconds new-time)]
+                                           (on-update (assoc loop ::mlm/loop-finish time))))})
+          (dom/div (time/seconds->time loop-finish (if precise-time? 3 0))))
+        (if on-update
+          (icon "plus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-finish
+                                    (if (.-shiftKey %)
+                                      inc-fine
+                                      inc)))}))
+        (if on-delete
+          (icon "trash" {:onClick #(on-delete loop)})))
+      (if (seq children)
+        (dom/div {:style {:margin-left "13px"}}
+          (for [loop children]
+            (h/$ LoopEntry {:key       (::mlm/loop-id loop)
+                            :current   current
+                            :loop      loop
+                            :on-update on-update
+                            :on-set    on-set
+                            :on-delete on-delete})))))))
 
 (defn use-loop [video loop]
   (let [{::mlm/keys [loop-finish loop-start]} loop
@@ -440,22 +453,6 @@
     (log "Stop Loop"))
 
   (set-current! loop offset))
-
-(defn copy-to-clipboard [string]
-  (let [el       (doto (js/document.createElement "textarea")
-                   (gobj/set "value" string)
-                   (.setAttribute "readonly" "")
-                   (gobj/set "style" #js {:position "absolute" :left "-9999px"}))
-        selected (when (> (gobj/get (js/document.getSelection) "rangeCount") 0)
-                   (.getRangeAt (js/document.getSelection) 0))]
-    (js/document.body.appendChild el)
-    (.focus el)
-    (.select el)
-    (js/document.execCommand "copy")
-    (js/document.body.removeChild el)
-    (when selected
-      (.removeAllRanges (js/document.getSelection))
-      (.addRange (js/document.getSelection) selected))))
 
 (defn export-loops [media]
   (let [content  (pr-str media)
@@ -536,20 +533,20 @@
 
       (dom/div {:style {:flex     "1"
                         :overflow "auto"}}
-        (for [loop (sort-by ::mlm/loop-start loops)]
+        (js/console.log "!! loop tree"
+          (event-tree/loop-tree loops))
+        (for [loop (event-tree/loop-tree loops)]
           (h/$ LoopEntry {:key       (::mlm/loop-id loop)
-                          :selected  (= (::mlm/loop-id @!current)
-                                        (::mlm/loop-id loop))
+                          :current   @!current
                           :loop      loop
                           :on-update update-loop!
                           :on-set    set-current-with-log!
                           :on-delete remove-loop!}))
-        (for [loop (sort-by ::mlm/loop-start markers-loops)]
-          (h/$ LoopEntry {:key      (::mlm/loop-id loop)
-                          :selected (= (::mlm/loop-id @!current)
-                                       (::mlm/loop-id loop))
-                          :loop     loop
-                          :on-set   set-current-with-log!})))
+        (for [loop (event-tree/loop-tree markers-loops)]
+          (h/$ LoopEntry {:key     (::mlm/loop-id loop)
+                          :current @!current
+                          :loop    loop
+                          :on-set  set-current-with-log!})))
 
       (dom/div {:style {:display "flex" :margin "3px 0"}}
         (dom/div {:style {:flex "1"}})
