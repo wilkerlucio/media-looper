@@ -34,7 +34,7 @@
       (fn [env input]
         (p/let [result (resolve env input)]
           (if-not result
-            (p/delay 2000))
+            (p/delay 500))
           (or result (resolve env input)))))))
 
 (pco/defresolver loops-from-markers [{::keys [video-duration]}]

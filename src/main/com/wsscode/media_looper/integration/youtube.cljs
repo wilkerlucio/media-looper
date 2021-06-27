@@ -301,7 +301,12 @@
 
     @!active?))
 
-(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete current]}]
+(defn pd [f]
+  (fn [^js e]
+    (.preventDefault e)
+    (f e)))
+
+(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete on-cut on-duplicate current]}]
   (let [{::mlm/keys [loop-title loop-start loop-finish children]} loop
         precise-time? (use-shift-track)
         selected      (= (::mlm/loop-id current)
@@ -368,17 +373,34 @@
                                     (if (.-shiftKey %)
                                       inc-fine
                                       inc)))}))
-        (if on-delete
-          (icon "trash" {:onClick #(on-delete loop)})))
+
+        (dom/div {:class "looper-dropdown"}
+          (icon "ellipsis-h")
+          (dom/div {:class "looper-dropdown-content"}
+            (if on-duplicate
+              (dom/a {:href     "#"
+                      :on-click (pd #(on-duplicate loop))}
+                "Duplicate"))
+            (if on-cut
+              (dom/a {:href     "#"
+                      :on-click (pd #(on-cut loop))}
+                "Cut"))
+            (if on-delete
+              (dom/a {:href     "#"
+                      :on-click (pd #(on-delete loop))}
+                "Delete")))))
+
       (if (seq children)
         (dom/div {:style {:margin-left "13px"}}
           (for [loop children]
-            (h/$ LoopEntry {:key       (::mlm/loop-id loop)
-                            :current   current
-                            :loop      loop
-                            :on-update on-update
-                            :on-set    on-set
-                            :on-delete on-delete})))))))
+            (h/$ LoopEntry {:key          (::mlm/loop-id loop)
+                            :current      current
+                            :loop         loop
+                            :on-set       on-set
+                            :on-duplicate on-duplicate
+                            :on-cut       on-cut
+                            :on-update    on-update
+                            :on-delete    on-delete})))))))
 
 (defn use-loop [video loop]
   (let [{::mlm/keys [loop-finish loop-start]} loop
@@ -415,6 +437,10 @@
                           ::mlm/loop-title "New loop")]
     (update-media-loops! media #(conj % loop'))
     (set-current! loop')))
+
+(defn duplicate-loop! [media loop]
+  (let [new-loop (assoc loop ::mlm/loop-id (random-uuid))]
+    (update-media-loops! media #(conj % new-loop))))
 
 (defn update-loop! [media !current updated-loop]
   (let [updated-loop (ensure-loop-direction updated-loop)]
@@ -515,6 +541,7 @@
         !current              (use-fstate nil)
         set-current!          (hooks/use-callback [video] #(set-current! !current video % %2))
         set-current-with-log! (hooks/use-callback [set-current!] #(toggle-loop! set-current! % %2))
+        duplicate-loop!       (hooks/use-callback [(hash loops)] #(duplicate-loop! media %))
         update-loop!          (hooks/use-callback [(hash loops)] #(update-loop! media !current %))
         remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
         create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))]
@@ -536,17 +563,19 @@
         (js/console.log "!! loop tree"
           (event-tree/loop-tree loops))
         (for [loop (event-tree/loop-tree loops)]
-          (h/$ LoopEntry {:key       (::mlm/loop-id loop)
-                          :current   @!current
-                          :loop      loop
-                          :on-update update-loop!
-                          :on-set    set-current-with-log!
-                          :on-delete remove-loop!}))
+          (h/$ LoopEntry {:key          (::mlm/loop-id loop)
+                          :current      @!current
+                          :loop         loop
+                          :on-set       set-current-with-log!
+                          :on-duplicate duplicate-loop!
+                          :on-update    update-loop!
+                          :on-delete    remove-loop!}))
         (for [loop (event-tree/loop-tree markers-loops)]
-          (h/$ LoopEntry {:key     (::mlm/loop-id loop)
-                          :current @!current
-                          :loop    loop
-                          :on-set  set-current-with-log!})))
+          (h/$ LoopEntry {:key          (::mlm/loop-id loop)
+                          :current      @!current
+                          :loop         loop
+                          :on-set       set-current-with-log!
+                          :on-duplicate duplicate-loop!})))
 
       (dom/div {:style {:display "flex" :margin "3px 0"}}
         (dom/div {:style {:flex "1"}})
