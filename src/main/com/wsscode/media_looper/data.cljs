@@ -1,13 +1,15 @@
 (ns com.wsscode.media-looper.data
-  (:require [com.wsscode.media-looper.model :as mlm]
+  (:require [com.wsscode.chrome.storage :as cs]
+            [com.wsscode.media-looper.model :as mlm]
             [com.wsscode.media-looper.time :as time]
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.connect.planner :as pcp]
-            [com.wsscode.pathom3.interface.eql :as p.eql]
             [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
             [goog.dom :as gdom]
-            [promesa.core :as p]))
+            [promesa.core :as p]
+            [com.wsscode.pathom3.connect.built-in.plugins :as pbip]
+            [com.wsscode.pathom3.plugin :as p.plugin]))
 
 (defn markers-data []
   (->> (js/document.querySelectorAll ".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")
@@ -32,7 +34,7 @@
       (fn [env input]
         (p/let [result (resolve env input)]
           (if-not result
-            (p/delay 2000))
+            (p/delay 500))
           (or result (resolve env input)))))))
 
 (pco/defresolver loops-from-markers [{::keys [video-duration]}]
@@ -49,12 +51,32 @@
     {::markers-loops
      loops}))
 
+(pco/defresolver youtube-storage-id [{:keys [youtube.video/id]}]
+  {::mlm/storage-id (str "media-looper:youtube:" id)})
+
+(pco/defresolver media-data [{::mlm/keys [storage-id]}]
+  {::pco/output
+   [{::mlm/loops
+     [::mlm/loop-id
+      ::mlm/loop-title
+      ::mlm/loop-start
+      ::mlm/loop-finish]}]}
+  (p/let [loops (cs/sync-get storage-id [])]
+    {::mlm/loops loops}))
+
+(pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
+  {::pco/op-name 'media-looper/update-loops}
+  (p/do!
+    (cs/sync-set storage-id loops)
+    entry))
+
 (def plan-cache* (atom {}))
 
 (def env
   (-> (pci/register
-        [loops-from-markers])
-      (pcp/with-plan-cache plan-cache*)))
+        [loops-from-markers
+         youtube-storage-id media-data server-update-loops])
+      (pcp/with-plan-cache plan-cache*)
+      (p.plugin/register pbip/mutation-resolve-params)))
 
-(defn request [data tx]
-  (p.a.eql/process env data tx))
+(def request (p.a.eql/boundary-interface env))

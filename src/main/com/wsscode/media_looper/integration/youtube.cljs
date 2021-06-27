@@ -1,19 +1,43 @@
 (ns com.wsscode.media-looper.integration.youtube
-  (:require ["react-dom" :as rdom]
-            [com.wsscode.dom :as wdom]
-            [com.wsscode.media-looper.data :as data]
-            [com.wsscode.media-looper.local-storage :as ls]
-            [com.wsscode.media-looper.model :as mlm]
-            [goog.dom :as gdom]
-            [goog.events :as gevents]
-            [goog.object :as gobj]
-            [goog.style :as gstyle]
-            [helix.core :as h]
-            [helix.dom :as dom]
-            [com.wsscode.amplitude :as amplitude]
-            [helix.hooks :as hooks]
-            [promesa.core :as p]
-            [com.wsscode.media-looper.time :as time]))
+  (:require
+    ["react-dom" :as rdom]
+    [clojure.string :as str]
+    [com.fulcrologic.fulcro.mutations :as fm]
+    [com.fulcrologic.fulcro.raw.application :as rapp]
+    [com.wsscode.amplitude :as amplitude]
+    [com.wsscode.dom :as wdom]
+    [com.wsscode.fulcro3.raw-support :as frs]
+    [com.wsscode.media-looper.data :as data]
+    [com.wsscode.media-looper.local-storage :as ls]
+    [com.wsscode.media-looper.model :as mlm]
+    [com.wsscode.media-looper.time :as time]
+    [com.wsscode.media-looper.event.tree :as event-tree]
+    [goog.dom :as gdom]
+    [goog.events :as gevents]
+    [goog.object :as gobj]
+    [goog.style :as gstyle]
+    [helix.core :as h]
+    [helix.dom :as dom]
+    [helix.hooks :as hooks]
+    [promesa.core :as p]
+    [com.wsscode.chrome.storage :as cs]))
+
+(def app
+  (doto (rapp/fulcro-app
+          {:batch-notifications (fn [render!] (rdom/unstable_batchedUpdates render!))
+           :remotes             {:remote (frs/pathom-remote data/request)}})
+    (frs/app-started!)))
+
+(defn make-remote [{:keys [ast ref]} name]
+  (cond-> (assoc ast :key name :dispatch-key name)
+    ref
+    (update :params conj ref)))
+
+(fm/defmutation update-loops [{::mlm/keys [loops]}]
+  (action [{:keys [state ref]}]
+    (swap! state update-in ref assoc ::mlm/loops loops))
+  (remote [env]
+    (make-remote env 'media-looper/update-loops)))
 
 (defn create-portal [child container]
   (rdom/createPortal child container))
@@ -26,10 +50,10 @@
 
 (deftype ReactFnState [value set-value!]
   IDeref
-  (-deref [o] value)
+  (-deref [_] value)
 
   IFn
-  (-invoke [o x] (set-value! x)))
+  (-invoke [_ x] (set-value! x)))
 
 (defn use-fstate [initial-value]
   (let [[value set-value!] (hooks/use-state initial-value)]
@@ -113,7 +137,7 @@
 (defn create-looper-button [popup]
   (wdom/el "button"
     {:class   "ytp-button"
-     :onclick (fn [e]
+     :onclick (fn [_]
                 (let [display (gobj/getValueByKeys popup "style" "display")]
                   (if (= "none" display)
                     (gstyle/setStyle popup "display" "")
@@ -277,72 +301,106 @@
 
     @!active?))
 
-(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete selected]}]
-  (let [{::mlm/keys [loop-title loop-start loop-finish]} loop
-        precise-time? (use-shift-track)]
-    (dom/div {:style (cond-> {:display    "flex"
-                              :alignItems "center"
-                              :padding    "4px 0"}
-                       selected
-                       (assoc :background "#ff000085"))}
-      (icon (if selected
-              "stop-circle"
-              "play-circle")
-        {:onClick #(on-set (if selected nil loop)
-                     (if (.-shiftKey %) 3 0))})
-      (dom/div {:style {:flex "1"}}
+(defn pd [f]
+  (fn [^js e]
+    (.preventDefault e)
+    (f e)))
+
+(h/defnc LoopEntry [{:keys [loop on-set on-update on-delete on-cut on-duplicate current]}]
+  (let [{::mlm/keys [loop-title loop-start loop-finish children]} loop
+        precise-time? (use-shift-track)
+        selected      (= (::mlm/loop-id current)
+                         (::mlm/loop-id loop))]
+    (h/<>
+      (dom/div {:style (cond-> {:display    "flex"
+                                :alignItems "center"
+                                :padding    "4px 0"}
+                         selected
+                         (assoc :background "#ff000085"))}
+        (icon (if selected
+                "stop-circle"
+                "play-circle")
+          {:onClick #(on-set (if selected nil loop)
+                       (if (.-shiftKey %) 3 0))})
+        (dom/div {:style {:flex "1"}}
+          (if on-update
+            (h/$ EditableText {:text     (str loop-title)
+                               :onChange (fn [loop-title]
+                                           (log "Update loop title"
+                                             {:title  loop-title
+                                              :start  (time/seconds->time (::mlm/loop-start loop))
+                                              :finish (time/seconds->time (::mlm/loop-finish loop))})
+                                           (on-update (assoc loop ::mlm/loop-title loop-title)))})
+            (dom/div loop-title)))
         (if on-update
-          (h/$ EditableText {:text     (str loop-title)
-                             :onChange (fn [loop-title]
-                                         (log "Update loop title"
-                                           {:title  loop-title
-                                            :start  (time/seconds->time (::mlm/loop-start loop))
-                                            :finish (time/seconds->time (::mlm/loop-finish loop))})
-                                         (on-update (assoc loop ::mlm/loop-title loop-title)))})
-          (dom/div loop-title)))
-      (if on-update
-        (icon "minus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-start
-                                  (if (.-shiftKey %)
-                                    dec-fine
-                                    dec)))}))
-      (if on-update
-        (h/$ EditableText {:text     (time/seconds->time loop-start 3)
-                           :label    (time/seconds->time loop-start (if precise-time? 3 0))
-                           :style    {:width "60px"}
-                           :onChange (fn [new-time]
-                                       (when-let [time (time/time->seconds new-time)]
-                                         (on-update (assoc loop ::mlm/loop-start time))))})
-        (dom/div (time/seconds->time loop-start (if precise-time? 3 0))))
-      (if on-update
-        (icon "plus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-start
-                                  (if (.-shiftKey %)
-                                    inc-fine
-                                    inc)))}))
-      (dom/div "/")
-      (if on-update
-        (icon "minus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-finish
-                                  (if (.-shiftKey %)
-                                    dec-fine
-                                    dec)))}))
-      (if on-update
-        (h/$ EditableText {:text     (time/seconds->time loop-finish 3)
-                           :label    (time/seconds->time loop-finish (if precise-time? 3 0))
-                           :style    {:width "60px"}
-                           :onChange (fn [new-time]
-                                       (when-let [time (time/time->seconds new-time)]
-                                         (on-update (assoc loop ::mlm/loop-finish time))))})
-        (dom/div (time/seconds->time loop-finish (if precise-time? 3 0))))
-      (if on-update
-        (icon "plus-circle"
-          {:onClick #(on-update (update loop ::mlm/loop-finish
-                                  (if (.-shiftKey %)
-                                    inc-fine
-                                    inc)))}))
-      (if on-delete
-        (icon "trash" {:onClick #(on-delete loop)})))))
+          (icon "minus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-start
+                                    (if (.-shiftKey %)
+                                      dec-fine
+                                      dec)))}))
+        (if on-update
+          (h/$ EditableText {:text     (time/seconds->time loop-start 3)
+                             :label    (time/seconds->time loop-start (if precise-time? 3 0))
+                             :style    {:width "60px"}
+                             :onChange (fn [new-time]
+                                         (when-let [time (time/time->seconds new-time)]
+                                           (on-update (assoc loop ::mlm/loop-start time))))})
+          (dom/div (time/seconds->time loop-start (if precise-time? 3 0))))
+        (if on-update
+          (icon "plus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-start
+                                    (if (.-shiftKey %)
+                                      inc-fine
+                                      inc)))}))
+        (dom/div "/")
+        (if on-update
+          (icon "minus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-finish
+                                    (if (.-shiftKey %)
+                                      dec-fine
+                                      dec)))}))
+        (if on-update
+          (h/$ EditableText {:text     (time/seconds->time loop-finish 3)
+                             :label    (time/seconds->time loop-finish (if precise-time? 3 0))
+                             :style    {:width "60px"}
+                             :onChange (fn [new-time]
+                                         (when-let [time (time/time->seconds new-time)]
+                                           (on-update (assoc loop ::mlm/loop-finish time))))})
+          (dom/div (time/seconds->time loop-finish (if precise-time? 3 0))))
+        (if on-update
+          (icon "plus-circle"
+            {:onClick #(on-update (update loop ::mlm/loop-finish
+                                    (if (.-shiftKey %)
+                                      inc-fine
+                                      inc)))}))
+
+        (dom/div {:class "looper-dropdown"}
+          (icon "ellipsis-h")
+          (dom/div {:class "looper-dropdown-content"}
+            (if on-duplicate
+              (dom/a {:href     "#"
+                      :on-click (pd #(on-duplicate loop))}
+                "Duplicate"))
+            (if on-cut
+              (dom/a {:href     "#"
+                      :on-click (pd #(on-cut loop))}
+                "Split"))
+            (if on-delete
+              (dom/a {:href     "#"
+                      :on-click (pd #(on-delete loop))}
+                "Delete")))))
+
+      (if (seq children)
+        (dom/div {:style {:margin-left "13px"}}
+          (for [loop children]
+            (h/$ LoopEntry {:key          (::mlm/loop-id loop)
+                            :current      current
+                            :loop         loop
+                            :on-set       on-set
+                            :on-duplicate on-duplicate
+                            :on-cut       on-cut
+                            :on-update    on-update
+                            :on-delete    on-delete})))))))
 
 (defn use-loop [video loop]
   (let [{::mlm/keys [loop-finish loop-start]} loop
@@ -367,43 +425,54 @@
   (= (::mlm/loop-id l1)
      (::mlm/loop-id l2)))
 
-(defn use-server-prop [attr]
-  (let [!state (use-fstate nil)]
-    (hooks/use-effect [(pr-str attr)]
-      (p/let [res (data/request {::data/video-duration (video-duration (video-player-node))} [attr])]
-        (!state (get res attr))))
-    @!state))
+(defn update-media-loops! [media f]
+  (frs/transact! media [(update-loops {::mlm/loops (f (::mlm/loops media))})]))
 
-(defn create-loop! [!loops set-current! loop]
+(defn create-loop! [media set-current! loop]
   (log "Create Loop"
     {:start  (time/seconds->time (::mlm/loop-start loop))
      :finish (time/seconds->time (::mlm/loop-finish loop))})
 
   (let [loop' (assoc loop ::mlm/loop-id (random-uuid)
                           ::mlm/loop-title "New loop")]
-    (!loops (conj @!loops loop'))
+    (update-media-loops! media #(conj % loop'))
     (set-current! loop')))
 
-(defn update-loop! [!loops !current updated-loop]
+(defn duplicate-loop! [media loop]
+  (let [new-loop (assoc loop ::mlm/loop-id (random-uuid))]
+    (update-media-loops! media #(conj % new-loop))))
+
+(defn cut-loop! [media loop cut-at]
+  (if (and (> cut-at (::mlm/loop-start loop))
+           (< cut-at (::mlm/loop-finish loop)))
+    (let [left  (assoc loop ::mlm/loop-finish cut-at)
+          right (assoc loop ::mlm/loop-start cut-at ::mlm/loop-id (random-uuid))]
+      (update-media-loops! media
+        (fn [loops]
+          (-> (remove #(same-loop? % loop) loops)
+              (conj left right)))))
+    (js/console.log "!! Invalid cut")))
+
+(defn update-loop! [media !current updated-loop]
   (let [updated-loop (ensure-loop-direction updated-loop)]
-    (!loops
-      (into []
-            (map
-              (fn [loop]
-                (if (same-loop? loop updated-loop)
-                  updated-loop
-                  loop)))
-            @!loops))
+    (update-media-loops! media
+      #(into []
+             (map
+               (fn [loop]
+                 (if (same-loop? loop updated-loop)
+                   updated-loop
+                   loop)))
+             %))
     (if (and @!current
              (same-loop? @!current updated-loop))
       (!current updated-loop))))
 
-(defn remove-loop! [!loops !current loop]
+(defn remove-loop! [media !current loop]
   (log "Remove Loop" {:title (::mlm/loop-title loop)})
-  (!loops
-    (into []
-          (remove #(same-loop? % loop))
-          @!loops))
+  (update-media-loops! media
+    (fn [loops] (into []
+                      (remove #(same-loop? % loop))
+                      loops)))
   (if (and @!current
            (same-loop? @!current loop))
     (!current nil)))
@@ -422,39 +491,117 @@
 
   (set-current! loop offset))
 
-(h/defnc LooperControl []
+(defn export-loops [media]
+  (let [content  (pr-str media)
+        filename (str (:youtube.video/id media) "-loops.edn")
+        blob     (js/Blob. #js [content] #js {:type "text/plain"})
+        ^js link (js/document.createElement "a")]
+    (.setAttribute link "download" filename)
+    (.setAttribute link "href" (js/window.URL.createObjectURL blob))
+    (.click link)
+    nil))
+
+(defn pick-file []
+  (p/create
+    (fn [resolve reject]
+      (let [^js input (js/document.createElement "input")]
+        (gobj/set input "type" "file")
+        (gobj/set input "accept" ".edn")
+        (gobj/set input "onchange"
+          (fn [^js e]
+            (resolve (-> e .-target .-files (aget 0)))))
+        (.click input)))))
+
+(defn read-text [file]
+  (p/create
+    (fn [resolve reject]
+      (let [reader (js/FileReader.)]
+        (gobj/set reader "onload"
+          (fn [^js e]
+            (resolve (-> e .-target .-result))))
+        (.readAsText reader file "UTF-8")))))
+
+(defn import-loops [media]
+  (p/let [file (pick-file)
+          s    (read-text file)
+          {::mlm/keys [loops]} (ls/safe-read s)]
+    (update-media-loops! media (fn [_] loops))))
+
+(defn use-storage-change-listener [f]
+  (hooks/use-effect [f]
+    (cs/change-listener f)
+    #(cs/remove-listener f)))
+
+(h/defnc LooperControl [{:keys [props]}]
   (let [video                 (hooks/use-memo [] (video-player-node))
-        !loops                (use-persistent-state (source-id) [])
+        {::mlm/keys [loops] ::data/keys [markers-loops] :as media}
+        (frs/use-entity app
+          (assoc props ::mlm/loops [])
+          {::frs/query       [:youtube.video/id
+                              {::mlm/loops
+                               [::mlm/loop-id
+                                ::mlm/loop-title
+                                ::mlm/loop-start
+                                ::mlm/loop-finish]}
+                              {::data/markers-loops
+                               [::mlm/loop-id
+                                ::mlm/loop-title
+                                ::mlm/loop-start
+                                ::mlm/loop-finish]}]
+           ::frs/entity-data {::data/video-duration (video-duration (video-player-node))}})
         !current              (use-fstate nil)
         set-current!          (hooks/use-callback [video] #(set-current! !current video % %2))
         set-current-with-log! (hooks/use-callback [set-current!] #(toggle-loop! set-current! % %2))
-        update-loop!          (hooks/use-callback [(hash @!loops)] #(update-loop! !loops !current %))
-        remove-loop!          (hooks/use-callback [(hash @!loops)] #(remove-loop! !loops !current %))
-        create-loop!          (hooks/use-callback [(hash @!loops)] #(create-loop! !loops set-current! %))
-        auto-loops            (use-server-prop ::data/markers-loops)]
-    (dom/div {:style {:width   "500px"
-                      :padding "10px"}}
+        duplicate-loop!       (hooks/use-callback [(hash loops)] #(duplicate-loop! media %))
+        cut-loop!             (hooks/use-callback [(hash loops)] #(cut-loop! media % (video-current-time (video-player-node))))
+        update-loop!          (hooks/use-callback [(hash loops)] #(update-loop! media !current %))
+        remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
+        create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))]
+    (dom/div {:style {:width          "500px"
+                      :height         "100%"
+                      :box-sizing     "border-box"
+                      :display        "flex"
+                      :flex-direction "column"
+                      :padding        "10px"}}
       (if @!current
         (h/$ ActiveLoop {:video video
                          :loop  @!current}))
       (h/$ CreateLoop {:video                 video
                        :on-loop-record-start  #(set-current! nil)
                        :on-loop-record-finish create-loop!})
-      (for [loop (sort-by ::mlm/loop-start @!loops)]
-        (h/$ LoopEntry {:key       (::mlm/loop-id loop)
-                        :selected  (= (::mlm/loop-id @!current)
-                                      (::mlm/loop-id loop))
-                        :loop      loop
-                        :on-update update-loop!
-                        :on-set    set-current-with-log!
-                        :on-delete remove-loop!}))
-      (for [loop (sort-by ::mlm/loop-start auto-loops)]
-        (h/$ LoopEntry {:key      (::mlm/loop-id loop)
-                        :selected (= (::mlm/loop-id @!current)
-                                     (::mlm/loop-id loop))
-                        :loop     loop
-                        :on-set   set-current-with-log!}))
+
+      (dom/div {:style {:flex     "1"
+                        :overflow "auto"}}
+        (for [loop (event-tree/loop-tree loops)]
+          (h/$ LoopEntry {:key          (::mlm/loop-id loop)
+                          :current      @!current
+                          :loop         loop
+                          :on-set       set-current-with-log!
+                          :on-duplicate duplicate-loop!
+                          :on-cut       cut-loop!
+                          :on-update    update-loop!
+                          :on-delete    remove-loop!}))
+        (for [loop (event-tree/loop-tree markers-loops)]
+          (h/$ LoopEntry {:key          (::mlm/loop-id loop)
+                          :current      @!current
+                          :loop         loop
+                          :on-set       set-current-with-log!
+                          :on-duplicate duplicate-loop!
+                          :on-cut       cut-loop!})))
+
+      (dom/div {:style {:display "flex" :margin "3px 0"}}
+        (dom/div {:style {:flex "1"}})
+        (dom/div
+          {:on-click #(import-loops media)}
+          "Import loops")
+        (dom/div
+          {:style    {:margin-left "10px"}
+           :on-click #(export-loops media)}
+          "Export loops"))
       (h/$ SpeedControl {:video video}))))
+
+(h/defnc LooperWrapper []
+  (h/$ LooperControl {:props (frs/load {:youtube.video/id (video-id)})}))
 
 (defn listen-url-changes [cb]
   (let [url*  (atom nil)
@@ -469,7 +616,9 @@
 
 (defn create-popup-container []
   (wdom/el "div" {:class "ytp-popup ytp-settings-menu"
-                  :style {:display "none"}}))
+                  :style {:display  "none"
+                          :height   "calc(100% - 64px)"
+                          :overflow "hidden"}}))
 
 (h/defnc YoutubeLooper []
   (let [popup   (hooks/use-memo [] (create-popup-container))
@@ -482,7 +631,7 @@
       (add-control control)
       #(gdom/removeNode control))
 
-    (create-portal #js [(h/$ LooperControl)] popup)))
+    (create-portal #js [(h/$ LooperWrapper)] popup)))
 
 (defn integrate-looper []
   (inject-font-awesome-css)
@@ -490,7 +639,7 @@
   (let [app-node (wdom/el "div" {:class "media-looper-container"})]
     (gdom/appendChild js/document.body app-node)
     (listen-url-changes
-      (fn [e]
+      (fn [_]
         (unmount app-node)
 
         (when (video-id)
