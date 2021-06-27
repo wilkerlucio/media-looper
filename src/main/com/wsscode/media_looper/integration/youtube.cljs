@@ -384,7 +384,7 @@
             (if on-cut
               (dom/a {:href     "#"
                       :on-click (pd #(on-cut loop))}
-                "Cut"))
+                "Split"))
             (if on-delete
               (dom/a {:href     "#"
                       :on-click (pd #(on-delete loop))}
@@ -441,6 +441,17 @@
 (defn duplicate-loop! [media loop]
   (let [new-loop (assoc loop ::mlm/loop-id (random-uuid))]
     (update-media-loops! media #(conj % new-loop))))
+
+(defn cut-loop! [media loop cut-at]
+  (if (and (> cut-at (::mlm/loop-start loop))
+           (< cut-at (::mlm/loop-finish loop)))
+    (let [left  (assoc loop ::mlm/loop-finish cut-at)
+          right (assoc loop ::mlm/loop-start cut-at ::mlm/loop-id (random-uuid))]
+      (update-media-loops! media
+        (fn [loops]
+          (-> (remove #(same-loop? % loop) loops)
+              (conj left right)))))
+    (js/console.log "!! Invalid cut")))
 
 (defn update-loop! [media !current updated-loop]
   (let [updated-loop (ensure-loop-direction updated-loop)]
@@ -542,6 +553,7 @@
         set-current!          (hooks/use-callback [video] #(set-current! !current video % %2))
         set-current-with-log! (hooks/use-callback [set-current!] #(toggle-loop! set-current! % %2))
         duplicate-loop!       (hooks/use-callback [(hash loops)] #(duplicate-loop! media %))
+        cut-loop!             (hooks/use-callback [(hash loops)] #(cut-loop! media % (video-current-time (video-player-node))))
         update-loop!          (hooks/use-callback [(hash loops)] #(update-loop! media !current %))
         remove-loop!          (hooks/use-callback [(hash loops)] #(remove-loop! media !current %))
         create-loop!          (hooks/use-callback [(hash loops)] #(create-loop! media set-current! %))]
@@ -560,14 +572,13 @@
 
       (dom/div {:style {:flex     "1"
                         :overflow "auto"}}
-        (js/console.log "!! loop tree"
-          (event-tree/loop-tree loops))
         (for [loop (event-tree/loop-tree loops)]
           (h/$ LoopEntry {:key          (::mlm/loop-id loop)
                           :current      @!current
                           :loop         loop
                           :on-set       set-current-with-log!
                           :on-duplicate duplicate-loop!
+                          :on-cut       cut-loop!
                           :on-update    update-loop!
                           :on-delete    remove-loop!}))
         (for [loop (event-tree/loop-tree markers-loops)]
@@ -575,7 +586,8 @@
                           :current      @!current
                           :loop         loop
                           :on-set       set-current-with-log!
-                          :on-duplicate duplicate-loop!})))
+                          :on-duplicate duplicate-loop!
+                          :on-cut       cut-loop!})))
 
       (dom/div {:style {:display "flex" :margin "3px 0"}}
         (dom/div {:style {:flex "1"}})
