@@ -3,7 +3,7 @@
 
 (defn iterate-break [[{::mlm/keys [loop-finish] :as first} & rest]]
   (if first
-    (let [[children others] (split-with #(<= (- (::mlm/loop-finish %) 0.001) loop-finish) rest)]
+    (let [[children others] (split-with #(<= (::mlm/loop-finish %) loop-finish) rest)]
       (into
         [(cond-> first
            (seq children)
