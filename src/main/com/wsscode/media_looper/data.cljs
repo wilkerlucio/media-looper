@@ -9,7 +9,10 @@
             [goog.dom :as gdom]
             [promesa.core :as p]
             [com.wsscode.pathom3.connect.built-in.plugins :as pbip]
-            [com.wsscode.pathom3.plugin :as p.plugin]))
+            [com.wsscode.pathom3.plugin :as p.plugin]
+            [com.wsscode.misc.coll :as coll]
+            [clojure.string :as str]
+            [com.wsscode.pathom3.connect.built-in.resolvers :as pbir]))
 
 (defn markers-data []
   (->> (js/document.querySelectorAll ".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")
@@ -54,6 +57,16 @@
 (pco/defresolver youtube-storage-id [{:keys [youtube.video/id]}]
   {::mlm/storage-id (str "media-looper:youtube:" id)})
 
+(pco/defresolver youtube-id-from-storage [{::mlm/keys [storage-id]}]
+  {:youtube.video/id
+   (if-let [[_ video-id] (re-find #"^media-looper:youtube:(.+)" storage-id)]
+     video-id
+     ::pco/unknown-value)})
+
+(pco/defresolver youtube-video-url [{:youtube.video/keys [id]}]
+  {::mlm/view-url
+   (str "https://www.youtube.com/watch?v=" id)})
+
 (pco/defresolver media-data [{::mlm/keys [storage-id]}]
   {::pco/output
    [{::mlm/loops
@@ -63,6 +76,25 @@
       ::mlm/loop-finish]}]}
   (p/let [loops (cs/sync-get storage-id [])]
     {::mlm/loops loops}))
+
+(pco/defresolver all-sources []
+  {::pco/output
+   [{:media-looper/all-sources
+     [::mlm/storage-id
+      {::mlm/loops
+       [::mlm/loop-id
+        ::mlm/loop-title
+        ::mlm/loop-start
+        ::mlm/loop-finish]}]}]}
+  (p/let [res (cs/sync-get-all)]
+    {:media-looper/all-sources
+     (->> res
+          (js->clj)
+          (coll/filter-keys #(str/starts-with? % "\"media-looper:"))
+          (into []
+                (map (fn [[k v]]
+                       {::mlm/storage-id (cs/safe-read k)
+                        ::mlm/loops      (cs/safe-read v)}))))}))
 
 (pco/defmutation server-update-loops [{::mlm/keys [storage-id loops] :as entry}]
   {::pco/op-name 'media-looper/update-loops}
@@ -75,7 +107,13 @@
 (def env
   (-> (pci/register
         [loops-from-markers
-         youtube-storage-id media-data server-update-loops])
+         youtube-storage-id
+         youtube-id-from-storage
+         youtube-video-url
+         media-data
+         server-update-loops
+         all-sources
+         (pbir/single-attr-resolver ::mlm/loops ::mlm/loops-count count)])
       (pcp/with-plan-cache plan-cache*)
       (p.plugin/register pbip/mutation-resolve-params)))
 

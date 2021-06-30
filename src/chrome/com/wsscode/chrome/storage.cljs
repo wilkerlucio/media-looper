@@ -9,6 +9,15 @@
     (read-string s)
     (catch :default _ nil)))
 
+(defn sync-get-all []
+  (p/create
+    (fn [resolve reject]
+      (js/chrome.storage.sync.get nil
+        (fn [^js items]
+          (if-let [err js/chrome.runtime.lastError]
+            (reject err)
+            (resolve items)))))))
+
 (defn sync-get
   [k initial]
   (p/create

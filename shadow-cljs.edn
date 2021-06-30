@@ -1,9 +1,17 @@
 {:deps
  {:aliases [:dev]}
 
+ :dev-http   {8000 "shells/chrome"}
+
  :builds
  {:app
   {:target     :browser
    :output-dir "shells/chrome/js/youtube"
    :asset-path "/js/youtube"
-   :modules    {:main {:entries [com.wsscode.media-looper.chrome.content-script.main]}}}}}
+   :modules    {:main {:entries [com.wsscode.media-looper.chrome.content-script.main]}}}
+
+  :options
+  {:target     :browser
+   :output-dir "shells/chrome/js/options"
+   :asset-path "/js/options"
+   :modules    {:main {:entries [com.wsscode.media-looper.chrome.options.main]}}}}}

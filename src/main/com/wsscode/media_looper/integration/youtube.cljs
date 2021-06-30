@@ -1,17 +1,17 @@
 (ns com.wsscode.media-looper.integration.youtube
   (:require
     ["react-dom" :as rdom]
-    [clojure.string :as str]
     [com.fulcrologic.fulcro.mutations :as fm]
     [com.fulcrologic.fulcro.raw.application :as rapp]
     [com.wsscode.amplitude :as amplitude]
+    [com.wsscode.chrome.storage :as cs]
     [com.wsscode.dom :as wdom]
     [com.wsscode.fulcro3.raw-support :as frs]
     [com.wsscode.media-looper.data :as data]
+    [com.wsscode.media-looper.event.tree :as event-tree]
     [com.wsscode.media-looper.local-storage :as ls]
     [com.wsscode.media-looper.model :as mlm]
     [com.wsscode.media-looper.time :as time]
-    [com.wsscode.media-looper.event.tree :as event-tree]
     [goog.dom :as gdom]
     [goog.events :as gevents]
     [goog.object :as gobj]
@@ -19,8 +19,7 @@
     [helix.core :as h]
     [helix.dom :as dom]
     [helix.hooks :as hooks]
-    [promesa.core :as p]
-    [com.wsscode.chrome.storage :as cs]))
+    [promesa.core :as p]))
 
 (def app
   (doto (rapp/fulcro-app
