@@ -4,6 +4,12 @@ Browser extension to allow the creation of loops.
 
 Currently, only supporting Chrome browser and YouTube videos.
 
+## Keyboard shortcuts
+
+`z` - Start loop recording
+`z` - End loop recording (after started)
+`z` - Seek to begin of loop (when loop is active)
+
 ## Development
 
 Here are instructions on how to get the project up and running on your local machine for development and testing purposes.
