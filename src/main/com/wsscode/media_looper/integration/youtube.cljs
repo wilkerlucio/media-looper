@@ -604,7 +604,7 @@
                           :on-cut       cut-loop!})))
 
       (dom/div {:style {:display "flex" :margin "3px 0"}}
-        (dom/div {:on-click #(js/window.open "" "_blank")} "Keyboard shortcuts")
+        (dom/div {:on-click #(js/window.open "https://github.com/wilkerlucio/media-looper?tab=readme-ov-file#keyboard-shortcuts" "_blank")} "Keyboard shortcuts")
         (dom/div {:style {:flex "1"}})
         (dom/div
           {:on-click #(import-loops media)}

@@ -6,9 +6,9 @@ Currently, only supporting Chrome browser and YouTube videos.
 
 ## Keyboard shortcuts
 
-`z` - Start loop recording
-`z` - End loop recording (after started)
-`z` - Seek to begin of loop (when loop is active)
+* `z` - Start loop recording
+* `z` - End loop recording (after started)
+* `z` - Seek to begin of loop (when loop is active)
 
 ## Development
 
