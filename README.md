@@ -9,6 +9,7 @@ Currently, only supporting Chrome browser and YouTube videos.
 * `z` - Start loop recording
 * `z` - End loop recording (after started)
 * `z` - Seek to begin of loop (when loop is active)
+* `shift+z` - Seek to begin of loop minus 3 seconds (when loop is active)
 
 ## Development
 
