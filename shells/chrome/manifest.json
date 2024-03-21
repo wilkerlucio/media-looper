@@ -1,8 +1,8 @@
 {
   "name": "Youtube Looper",
-  "version": "2021.06.29",
+  "version": "2024.03.21",
   "description": "Custom loops extension for Youtube videos",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "permissions": [
     "storage"
   ],
@@ -24,6 +24,9 @@
     "128": "icon128.png"
   },
   "web_accessible_resources": [
-    "js/*"
+    {
+      "resources": ["js/*"],
+      "matches": ["*://*.youtube.com/*"]
+    }
   ]
 }
