@@ -211,11 +211,36 @@
 
 (h/defnc CreateLoop
   [{:keys [video
+           current
            on-loop-record-start
            on-loop-record-finish]
     :or   {on-loop-record-start  identity
            on-loop-record-finish identity}}]
-  (let [start-time! (use-fstate nil)]
+  (let [start-time! (use-fstate nil)
+        start-loop! (hooks/use-callback
+                      [video] (fn [e]
+                           (let [start (video-current-time video)]
+                             (start-time! start)
+                             (on-loop-record-start {::mlm/loop-start start} e))))
+        stop-loop!  (hooks/use-callback
+                      [video @start-time!] (fn []
+                           (let [finish (video-current-time video)]
+                             (let [start @start-time!
+                                   loop  (ensure-loop-direction
+                                           {::mlm/loop-start  start
+                                            ::mlm/loop-finish finish})]
+                               (on-loop-record-finish loop))
+                             (start-time! nil))))
+        key-handler (hooks/use-callback
+                      [current video @start-time!] (fn [^js e]
+                           (when (= (.toLowerCase (.-key e)) "z")
+                             (.preventDefault e)
+                             (cond
+                               current (video-seek-to! video (cond-> (::mlm/loop-start current) (.-shiftKey e) (- 3)))
+                               @start-time! (stop-loop!)
+                               :else (start-loop! e))
+                             false)))]
+    (use-event-listener js/document "keydown" key-handler)
     (dom/div {:style (cond-> {:display    "flex"
                               :alignItems "center"
                               :padding    "4px 0"}
@@ -223,22 +248,10 @@
                        (assoc :background "#ff000085"))}
       (if @start-time!
         (h/<>
-          (icon "stop-circle"
-            {:onClick (fn []
-                        (let [finish (video-current-time video)]
-                          (let [start @start-time!
-                                loop  (ensure-loop-direction
-                                        {::mlm/loop-start  start
-                                         ::mlm/loop-finish finish})]
-                            (on-loop-record-finish loop))
-                          (start-time! nil)))})
+          (icon "stop-circle" {:onClick stop-loop!})
           "Stop recording [" (time/seconds->time @start-time! 3) "]")
         (h/<>
-          (icon "plus-circle"
-            {:onClick (fn [e]
-                        (let [start (video-current-time video)]
-                          (start-time! start)
-                          (on-loop-record-start {::mlm/loop-start start} e)))})
+          (icon "plus-circle" {:onClick start-loop!})
           "Start new loop")))))
 
 (h/defnc EditableText [{:keys [text label onChange style]}]
@@ -567,6 +580,7 @@
         (h/$ ActiveLoop {:video video
                          :loop  @!current}))
       (h/$ CreateLoop {:video                 video
+                       :current               @!current
                        :on-loop-record-start  #(set-current! nil)
                        :on-loop-record-finish create-loop!})
 
@@ -590,6 +604,7 @@
                           :on-cut       cut-loop!})))
 
       (dom/div {:style {:display "flex" :margin "3px 0"}}
+        (dom/div {:on-click #(js/window.open "" "_blank")} "Keyboard shortcuts")
         (dom/div {:style {:flex "1"}})
         (dom/div
           {:on-click #(import-loops media)}
