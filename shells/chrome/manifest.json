@@ -1,6 +1,6 @@
 {
   "name": "Youtube Looper",
-  "version": "2024.03.21",
+  "version": "2024.03.25",
   "description": "Custom loops extension for Youtube videos",
   "manifest_version": 3,
   "permissions": [

@@ -231,15 +231,15 @@
                                             ::mlm/loop-finish finish})]
                                (on-loop-record-finish loop))
                              (start-time! nil))))
-        key-handler (hooks/use-callback
-                      [current video @start-time!] (fn [^js e]
-                           (when (= (.toLowerCase (.-key e)) "z")
-                             (.preventDefault e)
-                             (cond
-                               current (video-seek-to! video (cond-> (::mlm/loop-start current) (.-shiftKey e) (- 3)))
-                               @start-time! (stop-loop!)
-                               :else (start-loop! e))
-                             false)))]
+        key-handler (hooks/use-callback [current video @start-time!]
+                      (fn [^js e]
+                        (when (and (.-altKey e) (= (.-keyCode e) 90))
+                          (.preventDefault e)
+                          (cond
+                            current (video-seek-to! video (cond-> (::mlm/loop-start current) (.-shiftKey e) (- 3)))
+                            @start-time! (stop-loop!)
+                            :else (start-loop! e))
+                          false)))]
     (use-event-listener js/document "keydown" key-handler)
     (dom/div {:style (cond-> {:display    "flex"
                               :alignItems "center"
