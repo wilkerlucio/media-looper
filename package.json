@@ -2,10 +2,11 @@
   "name": "media-looper",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
+    "watch": "NODE_OPTIONS= npx parcel watch src/admin/index.html --dist-dir shells/chrome/admin --public-url ./",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "author": "",
   "license": "ISC",
   "dependencies": {

@@ -5,4 +5,5 @@
 .clj-kondo/.cache
 node_modules
 shells/chrome/js
+shells/chrome/admin
 releases
