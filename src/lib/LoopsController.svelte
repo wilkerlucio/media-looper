@@ -27,14 +27,12 @@
 
     loop.source = sourceId
 
-    const id = store.addRow('loops', loop)
-
-    console.log("created loop", id, loop);
-    // activeLoop = id
+    activeLoop = store.addRow('loops', loop)
   }
 
   function selectLoop(e) {
-    activeLoop = e.detail.id
+    const id = e.detail.id
+    activeLoop = activeLoop === id ? null : id
   }
 
   $: loops = useRelationshipLocalRowIds('mediaLoops', sourceId)
@@ -42,11 +40,8 @@
 
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
-  {#if activeLoop}
-    <div on:click={() => activeLoop = null}>{JSON.stringify(activeLoop)}</div>
-  {/if}
   {#each $loops as id}
-    <LoopEntry {id} {video} on:select={selectLoop}/>
+    <LoopEntry {id} {video} on:select={selectLoop} active={id === activeLoop}/>
   {/each}
   <div class="spacer"></div>
   <div class="support-speed">
