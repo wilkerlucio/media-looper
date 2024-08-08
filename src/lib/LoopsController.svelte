@@ -1,13 +1,16 @@
 <script lang="ts">
   import SpeedControl from "@/lib/SpeedControl.svelte";
+  import Recorder from "@/lib/Recorder.svelte";
 
   export let sourceId: string
 
-  let video = document.querySelector("video")
+  let currentLoop = null;
+
+
 </script>
 
 <div class="container">
-  <div>Popup contents</div>
+  <Recorder on:newLoop={(e) => console.log(e.detail)} />
   <div class="spacer"></div>
   <div class="support-speed">
     <div><a href="https://www.patreon.com/wsscode" target="_blank">Support my work</a></div>
