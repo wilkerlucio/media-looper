@@ -103,8 +103,10 @@ export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) 
   const relationships = getRelationships()
 
   return readable(relationships.getLocalRowIds(relationshipId, remoteRowId), (set) => {
-    autoDestroy(relationships, relationships.addLocalRowIdsListener(relationshipId, remoteRowId, (relationships, relationshipId, remoteRowId) => {
+    const listener = relationships.addLocalRowIdsListener(relationshipId, remoteRowId, (relationships, relationshipId, remoteRowId) => {
       set(relationships.getLocalRowIds(relationshipId, remoteRowId));
-    }));
+    })
+
+    return () => relationships.delListener(listener)
   });
 }

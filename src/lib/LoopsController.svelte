@@ -2,29 +2,62 @@
   import SpeedControl from "@/lib/SpeedControl.svelte";
   import Recorder from "@/lib/Recorder.svelte";
   import ActiveLoop from "@/lib/ActiveLoop.svelte";
+  import {getContext} from "svelte";
+  import type {Relationships, Store} from "tinybase";
+  import {useRelationshipLocalRowIds} from "@/lib/stores/tinybase-stores";
+  import LoopEntry from "@/lib/LoopEntry.svelte";
 
   export let sourceId: string
 
-  let video = document.querySelector("video")
-  let activeLoop = null;
+  const {store, relationships}: { store: Store, relationships: Relationships } = getContext('tinybase') || {};
 
+  let video = document.querySelector("video")
+  $: activeLoop = sourceId ? null : null;
+
+  function sourceInfo() {
+    return {
+      title: document.querySelector("#title h1").innerText,
+      channel: document.querySelector("#container.ytd-channel-name").innerText
+    }
+  }
+
+  function createLoop(loop) {
+    if (Object.keys(store.getRow('medias', sourceId)).length === 0)
+      store.setRow('medias', sourceId, sourceInfo())
+
+    loop.source = sourceId
+
+    const id = store.addRow('loops', loop)
+
+    console.log("created loop", id, loop);
+    // activeLoop = id
+  }
+
+  function selectLoop(e) {
+    activeLoop = e.detail.id
+  }
+
+  $: loops = useRelationshipLocalRowIds('mediaLoops', sourceId)
 </script>
 
 <div class="container">
-  <Recorder on:newLoop={(e) => activeLoop = e.detail} />
+  <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
   {#if activeLoop}
     <div on:click={() => activeLoop = null}>{JSON.stringify(activeLoop)}</div>
   {/if}
+  {#each $loops as id}
+    <LoopEntry {id} {video} on:select={selectLoop}/>
+  {/each}
   <div class="spacer"></div>
   <div class="support-speed">
     <div><a href="https://www.patreon.com/wsscode" target="_blank">Support my work</a></div>
     <div class="spacer"></div>
-    <SpeedControl/>
+    <SpeedControl {video}/>
   </div>
 </div>
 
 {#if activeLoop}
-  <ActiveLoop {...activeLoop} bind:duration={video.duration} />
+  <ActiveLoop {video} id={activeLoop}/>
 {/if}
 
 <style>

@@ -1,15 +1,20 @@
 <script lang="ts">
   import {portal} from './Portal.svelte'
   import {onDestroy, onMount} from "svelte";
+  import {useRow} from "@/lib/stores/tinybase-stores";
 
-  export let startTime: number;
-  export let endTime: number;
-  export let duration: number;
+  export let video = document.querySelector("video")
+  export let id;
+
+  $: loop = useRow('loops', id)
+
+  $: startTime = $loop.startTime
+  $: endTime = $loop.endTime
+
+  $: duration = video?.duration;
 
   $: left = startTime / duration * 100
   $: width = (endTime - startTime) / duration * 100
-
-  let video = document.querySelector("video")
 
   function ticker(e) {
     if (!video) return
@@ -19,12 +24,18 @@
     }
   }
 
+  $: video.currentTime = startTime
+
   onMount(() => {
-    video?.addEventListener("timeupdate", ticker)
+    if (!video) return;
+
+    video.addEventListener("timeupdate", ticker)
   })
 
   onDestroy(() => {
-    video?.removeEventListener("timeupdate", ticker)
+    if (!video) return
+
+    video.removeEventListener("timeupdate", ticker)
   })
 </script>
 

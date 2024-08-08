@@ -2,6 +2,24 @@
   import {locationStore} from "@/lib/stores/location";
   import {portal} from './Portal.svelte'
   import LoopsController from "@/lib/LoopsController.svelte";
+  import {setContext} from "svelte";
+  import {createRelationships, createStore, type Relationships, type Store} from "tinybase";
+  import {createLocalPersister} from "tinybase/persisters/persister-browser";
+
+  const store: Store = createStore();
+  let loaded = false
+
+  const relationships: Relationships = createRelationships(store);
+  relationships.setRelationshipDefinition('mediaLoops', 'loops', 'medias', 'source')
+
+  setContext('tinybase', {
+    store, relationships
+  });
+
+  const persister = createLocalPersister(store, 'media-looper');
+
+  persister.startAutoLoad().then(() => loaded = true);
+  persister.startAutoSave();
 
   function extractVideoId(url) {
     const matches = url.match(/watch.+v=([^&]+)/)

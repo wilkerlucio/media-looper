@@ -13,7 +13,7 @@
 
   function finishRecording() {
     const endTime = video?.currentTime
-    const loop = {startTime, endTime, title: "New loop"}
+    const loop = {startTime, endTime, label: "New loop"}
 
     dispatch('newLoop', loop)
 
