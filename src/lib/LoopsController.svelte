@@ -10,6 +10,7 @@
   <div>Popup contents</div>
   <div class="spacer"></div>
   <div class="support-speed">
+    <div><a href="https://www.patreon.com/wsscode" target="_blank">Support my work</a></div>
     <div class="spacer"></div>
     <SpeedControl/>
   </div>
