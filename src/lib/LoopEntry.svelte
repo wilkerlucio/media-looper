@@ -24,8 +24,8 @@
 
 <div class="container" class:active>
   <Icon icon="{active ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
-  <div>{loop.label}</div>
-  <div class="spacer"></div>
+  <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
+  <div class="flex"></div>
   <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(0, loop.startTime - p(e))} />
   <div>{formatTime(loop.startTime, formatPrecision)}</div>
   <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.endTime, loop.startTime + p(e))} />
@@ -36,6 +36,18 @@
 </div>
 
 <style>
+
+    input {
+        border: none;
+        background: none;
+        color: #fff;
+        font-size: 12px;
+        font-family: "YouTube Noto",Roboto,Arial,Helvetica,sans-serif;
+    }
+
+    .full-width {
+        width: 100%;
+    }
 
     .container {
         display: flex;
@@ -59,7 +71,7 @@
         background: rgba(255, 0, 0, 0.52);
     }
 
-    .spacer {
+    .flex {
         flex: 1;
     }
 
