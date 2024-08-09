@@ -34,7 +34,7 @@
   <div>{formatTime(loop.endTime, formatPrecision)}</div>
   <Icon icon="plus-circle" on:click={(e) => $_loop.endTime += p(e)} />
   <div class="looper-dropdown">
-    <Icon icon="ellipsis-h" />
+    <Icon icon="ellipsis-h" style="margin-top: 2px;" />
     <div class="looper-dropdown-content">
       <a href="#duplicate" on:click|preventDefault={() => dispatch('duplicate', {id})}>Duplicate</a>
       <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
@@ -48,8 +48,9 @@
         border: none;
         background: none;
         color: #fff;
-        font-size: 12px;
+        font-size: 11px;
         font-family: "YouTube Noto",Roboto,Arial,Helvetica,sans-serif;
+        padding: 0;
     }
 
     .full-width {

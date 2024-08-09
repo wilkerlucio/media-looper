@@ -34,6 +34,10 @@
 
 <style>
 
+    div {
+        margin-left: 3px;
+    }
+
     .container {
         cursor: pointer;
         display: flex;
