@@ -33,6 +33,13 @@
   <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max($_loop.startTime, loop.endTime - p(e))} />
   <div>{formatTime(loop.endTime, formatPrecision)}</div>
   <Icon icon="plus-circle" on:click={(e) => $_loop.endTime += p(e)} />
+  <div class="looper-dropdown">
+    <Icon icon="ellipsis-h" />
+    <div class="looper-dropdown-content">
+      <a href="#duplicate" on:click|preventDefault={() => dispatch('duplicate', {id})}>Duplicate</a>
+      <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -73,6 +80,35 @@
 
     .flex {
         flex: 1;
+    }
+
+    .looper-dropdown {
+        position: relative;
+        display: inline-block;
+        float: right;
+    }
+
+    .looper-dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #000;
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .looper-dropdown-content a {
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .looper-dropdown-content a:hover {
+        background: #222;
+    }
+
+    .looper-dropdown:hover .looper-dropdown-content {
+        display: block;
     }
 
 </style>

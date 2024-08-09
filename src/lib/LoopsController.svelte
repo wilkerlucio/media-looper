@@ -35,13 +35,35 @@
     activeLoop = activeLoop === id ? null : id
   }
 
+  function duplicateLoop(e) {
+    const loop = store.getRow('loops', e.detail.id)
+
+    if (loop) {
+      store.addRow('loops', loop)
+    }
+  }
+
+  function deleteLoop(e) {
+    if (activeLoop === e.detail.id) {
+      activeLoop = null
+    }
+
+    store.delRow('loops', e.detail.id)
+  }
+
   $: loops = useRelationshipLocalRowIds('mediaLoops', sourceId)
 </script>
 
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
   {#each $loops as id}
-    <LoopEntry {id} on:select={selectLoop} active={id === activeLoop}/>
+    <LoopEntry
+      {id}
+      active={id === activeLoop}
+      on:select={selectLoop}
+      on:duplicate={duplicateLoop}
+      on:delete={deleteLoop}
+    />
   {/each}
   <div class="spacer"></div>
   <div class="support-speed">
