@@ -2,7 +2,7 @@
   export let icon;
 </script>
 
-<i class="fa fa-{icon}" {...$$restProps} />
+<i class="fa fa-{icon}" {...$$restProps} on:click />
 
 <style>
 
