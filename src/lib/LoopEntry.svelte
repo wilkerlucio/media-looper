@@ -3,6 +3,7 @@
   import type {Loop} from "@/lib/model";
   import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";
+  import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
 
   const dispatch = createEventDispatcher()
 
@@ -11,14 +12,16 @@
 
   const _loop = useRow('loops', id) as Loop
   $: loop = $_loop
+
+  $: formatPrecision = $shiftKeyMod ? 3 : null
 </script>
 
 <div class="container" class:active>
   <button on:click={() => dispatch('select', {id})}>{loop.label}</button>
   <div class="spacer"></div>
-  <div>{formatTime(loop.startTime)}</div>
+  <div>{formatTime(loop.startTime, formatPrecision)}</div>
   <div>/</div>
-  <div>{formatTime(loop.endTime)}</div>
+  <div>{formatTime(loop.endTime, formatPrecision)}</div>
 </div>
 
 <style>
