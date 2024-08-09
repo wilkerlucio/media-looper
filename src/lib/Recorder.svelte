@@ -22,7 +22,7 @@
   }
 </script>
 
-<div class="container" class:recording={!!startTime} on:click={record}>
+<a href="#record" class="container" class:recording={!!startTime} on:click|preventDefault={record}>
   {#if startTime}
     <Icon icon="stop-circle" />
     <div>Stop recording [{formatTime(startTime, 3)}]</div>
@@ -30,7 +30,7 @@
     <Icon icon="plus-circle" />
     <div>Start new loop</div>
   {/if}
-</div>
+</a>
 
 <style>
 

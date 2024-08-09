@@ -2,7 +2,8 @@
   export let icon;
 </script>
 
-<i class="fa fa-{icon}" {...$$restProps} on:click />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<i class="fa fa-{icon}" {...$$restProps} aria-hidden="true" on:click />
 
 <style>
 
