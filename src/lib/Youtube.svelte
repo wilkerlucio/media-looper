@@ -33,6 +33,10 @@
   $: sourceId = videoId ? "youtube:" + videoId : null
 </script>
 
+<svelte:head>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+</svelte:head>
+
 {#if videoId}
   <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={() => popupVisible = !popupVisible}>
     Meu botao
