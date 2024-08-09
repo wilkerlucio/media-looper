@@ -3,7 +3,7 @@
   import {portal} from './Portal.svelte'
   import LoopsController from "@/lib/LoopsController.svelte";
   import {setContext} from "svelte";
-  import {createRelationships, createStore, type Relationships, type Store} from "tinybase";
+  import {createQueries, createRelationships, createStore, type Relationships, type Store} from "tinybase";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
   import {logoData} from "@/lib/misc/app-icon";
 
@@ -12,8 +12,10 @@
   const relationships: Relationships = createRelationships(store);
   relationships.setRelationshipDefinition('mediaLoops', 'loops', 'medias', 'source')
 
+  const queries = createQueries(store);
+
   setContext('tinybase', {
-    store, relationships
+    store, relationships, queries
   });
 
   const persister = createLocalPersister(store, 'media-looper');

@@ -3,13 +3,14 @@
   import Recorder from "@/lib/Recorder.svelte";
   import ActiveLoop from "@/lib/ActiveLoop.svelte";
   import {getContext} from "svelte";
-  import type {Relationships, Store} from "tinybase";
-  import {useRelationshipLocalRowIds} from "@/lib/stores/tinybase-stores";
+  import type {Queries, Relationships, Store} from "tinybase";
+  import {useQueriesResultTable, useRelationshipLocalRowIds} from "@/lib/stores/tinybase-stores";
   import LoopEntry from "@/lib/LoopEntry.svelte";
 
   export let sourceId: string
 
-  const {store, relationships}: { store: Store, relationships: Relationships } = getContext('tinybase') || {};
+  const {store, relationships, queries}:
+    { store: Store, relationships: Relationships, queries: Queries } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
   $: activeLoop = sourceId ? null : null;
@@ -51,12 +52,20 @@
     store.delRow('loops', e.detail.id)
   }
 
-  $: loops = useRelationshipLocalRowIds('mediaLoops', sourceId)
+  $: queryId = "loopsQ:" + sourceId
+
+  $: loops = useQueriesResultTable(queryId, 'loops', ({select, where}) => {
+    select('startTime')
+    select('endTime')
+    where('source', sourceId)
+  })
+
+  $: sortedLoops = Object.entries($loops).sort((a, b) => a[1].startTime - b[1].startTime)
 </script>
 
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
-  {#each $loops as id}
+  {#each sortedLoops as [id] (id)}
     <LoopEntry
       {id}
       active={id === activeLoop}

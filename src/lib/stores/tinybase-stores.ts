@@ -1,6 +1,6 @@
 import { readable, writable } from 'svelte/store';
 import { getContext, onDestroy } from 'svelte';
-import type { Id, Relationships, Row, Store, Value } from 'tinybase';
+import type {Id, Queries, Relationships, Row, Store, Value} from 'tinybase';
 
 export function getStore(): Store | undefined {
   const { store }: { store: Store } = getContext('tinybase') || {};
@@ -20,6 +20,20 @@ export function getRelationships() {
   const { relationships }: { relationships: Relationships } = getContext('tinybase') || {};
 
   return relationships;
+}
+
+export function getQueries(): Queries | undefined {
+  const { queries }: { queries: Queries } = getContext('tinybase') || {};
+
+  return queries;
+}
+
+export function getQueriesForce(): Queries {
+  const queries = getQueries();
+
+  if (!queries) throw new Error('Queries not found in context');
+
+  return queries;
 }
 
 export function useValue(id: Id, defaultValue?: Value) {
@@ -112,5 +126,27 @@ export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) 
     })
 
     return () => relationships.delListener(listener)
+  });
+}
+
+export function useQueriesResultTable(queryId: Id, table?: Id, query?: any) {
+  const queries = getQueriesForce();
+
+  if (table && query) {
+    queries.setQueryDefinition(queryId, table, query)
+  }
+
+  return readable(queries.getResultTable(queryId), (set) => {
+    const listener = queries.addResultTableListener(queryId, (queries) => {
+      set(queries.getResultTable(queryId));
+    })
+
+    return () => {
+      queries.delListener(listener)
+
+      if (table && query) {
+        queries.delQueryDefinition(queryId)
+      }
+    }
   });
 }
