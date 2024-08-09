@@ -6,8 +6,9 @@
   import {createRelationships, createStore, type Relationships, type Store} from "tinybase";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
 
-  const store: Store = createStore();
   let loaded = false
+
+  const store: Store = createStore();
 
   const relationships: Relationships = createRelationships(store);
   relationships.setRelationshipDefinition('mediaLoops', 'loops', 'medias', 'source')
