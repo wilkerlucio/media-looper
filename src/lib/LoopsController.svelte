@@ -41,7 +41,7 @@
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
   {#each $loops as id}
-    <LoopEntry {id} {video} on:select={selectLoop} active={id === activeLoop}/>
+    <LoopEntry {id} on:select={selectLoop} active={id === activeLoop}/>
   {/each}
   <div class="spacer"></div>
   <div class="support-speed">

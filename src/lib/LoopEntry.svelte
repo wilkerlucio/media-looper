@@ -6,7 +6,6 @@
 
   const dispatch = createEventDispatcher()
 
-  export let video = document.querySelector("video")
   export let id;
   export let active = false;
 
