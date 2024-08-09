@@ -22,18 +22,16 @@ export function getRelationships() {
   return relationships;
 }
 
-function autoDestroy(container: {delListener: (listenerId: Id) => typeof container}, listener: string) {
-  onDestroy(() => container.delListener(listener));
-}
-
 export function useValue(id: Id, defaultValue?: Value) {
   const store = getStoreForce();
 
-  const { subscribe, set } = writable(store.getValue(id) || defaultValue);
+  const { subscribe } = writable(store.getValue(id) || defaultValue, (set) => {
+    const listener = store.addValueListener(id, (store, valueId, newValue) => {
+      set(newValue)
+    })
 
-  autoDestroy(store, store.addValueListener(id, (store, valueId, newValue) => {
-    set(newValue)
-  }))
+    return () => store.delListener(listener)
+  });
 
   return {
     subscribe,
@@ -47,9 +45,11 @@ export function useTable(tableId: Id) {
   const store = getStoreForce();
 
   return readable(store.getTable(tableId), (set) => {
-    autoDestroy(store, store.addTableListener(tableId, (store, tableId) => {
+    const listener = store.addTableListener(tableId, (store, tableId) => {
       set(store.getTable(tableId));
-    }));
+    })
+
+    return () => store.delListener(listener)
   });
 }
 
@@ -57,20 +57,24 @@ export function useRowIds(tableId: Id) {
   const store = getStoreForce();
 
   return readable(store.getRowIds(tableId), (set) => {
-    autoDestroy(store, store.addRowIdsListener(tableId, (store, tableId) => {
+    const listener = store.addRowIdsListener(tableId, (store, tableId) => {
       set(store.getRowIds(tableId));
-    }));
+    })
+
+    return () => store.delListener(listener)
   });
 }
 
 export function useRow(tableId: Id, rowId: Id) {
   const store = getStoreForce();
 
-  const { subscribe, set } = writable(store.getRow(tableId, rowId));
+  const { subscribe } = writable(store.getRow(tableId, rowId), (set) => {
+    const listener = store.addRowListener(tableId, rowId, () => {
+      set(store.getRow(tableId, rowId));
+    })
 
-  autoDestroy(store, store.addRowListener(tableId, rowId, () => {
-    set(store.getRow(tableId, rowId));
-  }));
+    return () => store.delListener(listener)
+  });
 
   return {
     subscribe,
@@ -83,7 +87,7 @@ export function useRow(tableId: Id, rowId: Id) {
 export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value) {
   const store = getStoreForce();
 
-  const { subscribe, set } = writable(store.getCell(tableId, rowId, cellId) || defaultValue, () => {
+  const { subscribe } = writable(store.getCell(tableId, rowId, cellId) || defaultValue, (set) => {
     const listener = store.addCellListener(tableId, rowId, cellId, (store, tableId, rowId, cellId, newCell) => {
       set(newCell)
     })
