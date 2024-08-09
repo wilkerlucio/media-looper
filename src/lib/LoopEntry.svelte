@@ -4,6 +4,7 @@
   import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
+  import Icon from "@/lib/Icon.svelte";
 
   const dispatch = createEventDispatcher()
 
@@ -14,14 +15,24 @@
   $: loop = $_loop
 
   $: formatPrecision = $shiftKeyMod ? 3 : null
+
+  // precision
+  function p(e) {
+    return e.shiftKey ? 0.1 : 1
+  }
 </script>
 
 <div class="container" class:active>
-  <button on:click={() => dispatch('select', {id})}>{loop.label}</button>
+  <Icon icon="{active ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
+  <div>{loop.label}</div>
   <div class="spacer"></div>
+  <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(0, loop.startTime - p(e))} />
   <div>{formatTime(loop.startTime, formatPrecision)}</div>
+  <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.endTime, loop.startTime + p(e))} />
   <div>/</div>
+  <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max($_loop.startTime, loop.endTime - p(e))} />
   <div>{formatTime(loop.endTime, formatPrecision)}</div>
+  <Icon icon="plus-circle" on:click={(e) => $_loop.endTime += p(e)} />
 </div>
 
 <style>
@@ -29,6 +40,19 @@
     .container {
         display: flex;
         align-items: center;
+        padding: 2px 0;
+    }
+
+    .container > * {
+        margin: 0 3px;
+    }
+
+    .container > :first-child {
+        margin-left: 0;
+    }
+
+    .container > :last-child {
+        margin-right: 0;
     }
 
     .active {
