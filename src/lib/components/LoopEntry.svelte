@@ -28,7 +28,7 @@
   }
 </script>
 
-<div class="container" class:active={imActive} style:margin-left={nesting * 10 + 'px'}>
+<div class="container" class:active={imActive} style:padding-left={nesting * 10 + 'px'}>
   <Icon icon="{imActive ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
   {#if loop.readonly}
     <div>{loop.label}</div>
