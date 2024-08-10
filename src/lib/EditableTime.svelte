@@ -8,6 +8,8 @@
 </script>
 
 {#if editing}
+
+  <!-- svelte-ignore a11y-autofocus -->
   <input
     autofocus
     type="text"
@@ -28,7 +30,7 @@
     on:keyup|stopPropagation
   />
 {:else}
-  <div on:click={() => editing = true}>
+  <div on:click={() => editing = true} aria-hidden="true">
     <slot/>
   </div>
 {/if}
