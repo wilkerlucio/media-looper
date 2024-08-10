@@ -3,10 +3,13 @@
   import Recorder from "@/lib/Recorder.svelte";
   import ActiveLoop from "@/lib/ActiveLoop.svelte";
   import {getContext} from "svelte";
-  import type {Queries, Relationships, Store} from "tinybase";
-  import {useQueriesResultTable, useRelationshipLocalRowIds} from "@/lib/stores/tinybase-stores";
+  import type {Queries, Relationships, Row, Store} from "tinybase";
+  import {useQueriesResultTable} from "@/lib/stores/tinybase-stores";
   import LoopEntry from "@/lib/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
+  import {uniqBy} from 'lodash'
+  import {partition} from "@/lib/helpers/array";
+  import {formatTime, secondsFromTime} from "@/lib/helpers/time";
 
   export let sourceId: string
 
@@ -21,6 +24,41 @@
       title: document.querySelector("#title h1").innerText,
       channel: document.querySelector("#container.ytd-channel-name").innerText
     }
+  }
+
+  function videoChapters() {
+    if (!video) return []
+
+    const chapters = uniqBy(Array.from(document.querySelectorAll(".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")).map((node) => {
+      return {title: node.querySelector("h4").innerText, time: node.querySelector("#time").innerText}
+    }), (x) => x.time)
+
+    chapters.push({title: "END", time: formatTime(video.duration - 0.1, 3)})
+
+    return chapters
+  }
+
+  $: {
+    sourceId
+
+    setTimeout(() => {
+      const chapters = videoChapters()
+      const groups = partition(chapters, 2, 1)
+      const loops = groups.map(([a, b]) => {
+        return {
+          id: sourceId + '-' + a.time,
+          label: a.title,
+          startTime: secondsFromTime(a.time),
+          endTime: secondsFromTime(b.time),
+          source: sourceId,
+          readonly: true
+        }
+      })
+
+      for (const {id, ...loop} of loops) {
+        store.setRow('loops', id, loop as Row)
+      }
+    }, 1000)
   }
 
   // region: event handlers
@@ -43,6 +81,7 @@
     const loop = store.getRow('loops', e.detail.id)
 
     if (loop) {
+      loop.readonly = false
       store.addRow('loops', loop)
     }
   }

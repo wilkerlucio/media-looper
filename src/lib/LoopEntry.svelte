@@ -29,28 +29,42 @@
 
 <div class="container" class:active={imActive} style:margin-left={nesting * 10 + 'px'}>
   <Icon icon="{imActive ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
-  <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
+  {#if loop.readonly}
+    <div>{loop.label}</div>
+  {:else}
+    <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
+  {/if}
   <div class="flex"></div>
 
-  <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(loop.startTime - p(e), 0)} />
-  <EditableText bind:value={$_loop.startTime}>
-    {formatTime(loop.startTime, formatPrecision)}
-  </EditableText>
-  <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+  {#if loop.readonly}
+    <div>{formatTime(loop.startTime, formatPrecision)}</div>
+  {:else}
+    <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(loop.startTime - p(e), 0)} />
+    <EditableText bind:value={$_loop.startTime}>
+      {formatTime(loop.startTime, formatPrecision)}
+    </EditableText>
+    <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+  {/if}
 
   <div>/</div>
 
-  <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
-  <EditableText bind:value={$_loop.endTime}>
-    {formatTime(loop.endTime, formatPrecision)}
-  </EditableText>
-  <Icon icon="plus-circle" on:click={(e) => $_loop.endTime = Math.min(loop.endTime + p(e), video.duration)} />
+  {#if loop.readonly}
+    <div>{formatTime(loop.endTime, formatPrecision)}</div>
+  {:else}
+    <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
+    <EditableText bind:value={$_loop.endTime}>
+      {formatTime(loop.endTime, formatPrecision)}
+    </EditableText>
+    <Icon icon="plus-circle" on:click={(e) => $_loop.endTime = Math.min(loop.endTime + p(e), video.duration)} />
+  {/if}
 
   <div class="looper-dropdown">
     <Icon icon="ellipsis-h" style="margin-top: 2px;" />
     <div class="looper-dropdown-content">
       <a href="#duplicate" on:click|preventDefault={() => dispatch('duplicate', {id})}>Duplicate</a>
-      <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
+      {#if !loop.readonly}
+        <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
+      {/if}
     </div>
   </div>
 </div>

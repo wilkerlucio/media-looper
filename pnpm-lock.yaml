@@ -18,6 +18,9 @@ importers:
       '@tsconfig/svelte':
         specifier: ^5.0.4
         version: 5.0.4
+      '@types/lodash':
+        specifier: ^4.17.7
+        version: 4.17.7
       '@wxt-dev/module-svelte':
         specifier: ^1.0.0
         version: 1.0.0(svelte@4.2.18)(vite@5.4.0(@types/node@22.1.0))(wxt@0.19.4(@types/node@22.1.0)(rollup@4.20.0))
@@ -413,6 +416,9 @@ packages:
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
+
+  '@types/lodash@4.17.7':
+    resolution: {integrity: sha512-8wTvZawATi/lsmNu10/j2hk1KEP0IvjubqPE3cu1Xz7xfXXt5oCq3SNUz4fMIP4XGF9Ky+Ue2tBA3hcS7LSBlA==}
 
   '@types/minimatch@3.0.5':
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
@@ -2615,6 +2621,8 @@ snapshots:
   '@types/estree@1.0.5': {}
 
   '@types/http-cache-semantics@4.0.4': {}
+
+  '@types/lodash@4.17.7': {}
 
   '@types/minimatch@3.0.5': {}
 
