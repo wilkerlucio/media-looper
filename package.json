@@ -23,6 +23,7 @@
     "wxt": "^0.19.1"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
     "tinybase": "^5.1.2"
   }
 }
