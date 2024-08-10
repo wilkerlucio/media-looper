@@ -62,7 +62,8 @@
 
   .ml-popup {
       display: none;
-      height: calc(100% - 64px);
+      height: calc(100% - 72px);
+      top: 8px;
       overflow: hidden;
   }
 
