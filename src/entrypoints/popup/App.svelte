@@ -1,6 +1,14 @@
 <script lang="ts">
   import svelteLogo from '../../assets/svelte.svg'
+  import {setupStore} from "@/lib/stores/core";
+  import Popup from "@/lib/components/Popup.svelte";
+
+  const store = setupStore()
 </script>
+
+{#await store then s}
+  <Popup />
+{/await}
 
 <main>
   <div>

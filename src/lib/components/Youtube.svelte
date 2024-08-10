@@ -5,7 +5,7 @@
   import {logoData} from "@/lib/misc/app-icon";
   import {setupStore} from "@/lib/stores/core";
 
-  const wait = setupStore();
+  const store = setupStore();
 
   function extractVideoId(url) {
     const matches = url.match(/watch.+v=([^&]+)/)
@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
 </svelte:head>
 
-{#await wait then x}
+{#await store then x}
   {#if videoId}
     <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={() => popupVisible = !popupVisible}>
       <img src={logoData} alt="Youtube Looper" />
