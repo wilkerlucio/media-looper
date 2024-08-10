@@ -12,7 +12,7 @@
 
   export let video = document.querySelector("video");
   export let id: Id;
-  export let children: Loops;
+  export let children: Loops | undefined;
   export let active: Id | null;
   export let nesting = 0;
 

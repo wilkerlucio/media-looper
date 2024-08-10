@@ -4,10 +4,11 @@
   import LoopsController from "@/lib/components/LoopsController.svelte";
   import {logoData} from "@/lib/misc/app-icon";
   import {setupStore} from "@/lib/stores/core";
+  import * as amplitude from '@amplitude/analytics-browser';
 
   const store = setupStore();
 
-  function extractVideoId(url) {
+  function extractVideoId(url: string) {
     const matches = url.match(/watch.+v=([^&]+)/)
 
     return matches ? matches[1] : null
@@ -16,7 +17,17 @@
   let popupVisible = false
 
   $: videoId = extractVideoId($locationStore)
-  $: sourceId = videoId ? "youtube:" + videoId : null
+  $: sourceId = (videoId ? "youtube:" + videoId : null) as string | null
+
+  function toggleVisible() {
+    if (popupVisible) {
+      amplitude.track('Open Dialog', {sourceId})
+      popupVisible = false
+    } else {
+      amplitude.track('Close Dialog', {sourceId})
+      popupVisible = true
+    }
+  }
 </script>
 
 <svelte:head>
@@ -24,8 +35,8 @@
 </svelte:head>
 
 {#await store then x}
-  {#if videoId}
-    <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={() => popupVisible = !popupVisible}>
+  {#if sourceId}
+    <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={toggleVisible}>
       <img src={logoData} alt="Youtube Looper" />
     </button>
 

@@ -11,6 +11,7 @@
   import {partition} from "@/lib/helpers/array";
   import {formatTime, secondsFromTime} from "@/lib/helpers/time";
   import type {Loop, Loops} from "@/lib/model";
+  import * as amplitude from '@amplitude/analytics-browser';
 
   export let sourceId: string
 
@@ -62,6 +63,14 @@
     }, 1000)
   }
 
+  function log(event: string, details?: {[key: string]: any}) {
+    amplitude.track(event, {sourceId, ...details})
+  }
+
+  function loopLogDetail(loopId: Id) {
+    return {label: store.getCell('loops', loopId, 'label')}
+  }
+
   // region: event handlers
 
   function createLoop(loop: Loop) {
@@ -70,12 +79,25 @@
 
     loop.source = sourceId
 
+    log('Create Loop', loop)
+
     activeLoop = store.addRow('loops', loop) || null
   }
 
   function selectLoop(e) {
     const id = e.detail.id
-    activeLoop = activeLoop === id ? null : id
+
+    if (activeLoop === id) {
+      log('Stop Loop', loopLogDetail(id))
+
+      activeLoop = null
+    } else {
+      if (activeLoop) log('Stop Loop', loopLogDetail(activeLoop))
+
+      log('Start Loop', loopLogDetail(id))
+
+      activeLoop = id
+    }
   }
 
   function duplicateLoop(e) {
@@ -83,6 +105,9 @@
 
     if (loop) {
       loop.readonly = false
+
+      log('Duplicate Loop', loop)
+
       store.addRow('loops', loop)
     }
   }
@@ -91,6 +116,8 @@
     if (activeLoop === e.detail.id) {
       activeLoop = null
     }
+
+    log('Remove Loop', loopLogDetail(e.detail.id))
 
     store.delRow('loops', e.detail.id)
   }
@@ -123,7 +150,7 @@
   {/each}
   <div class="spacer"></div>
   <div class="support-speed">
-    <div><a href="https://www.patreon.com/wsscode" target="_blank">Support my work</a></div>
+    <div><a href="https://www.patreon.com/wsscode" on:click={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
     <SpeedControl {video}/>
   </div>
