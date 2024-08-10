@@ -24,6 +24,7 @@
     "wxt": "^0.19.1"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.10.0",
     "lodash": "^4.17.21",
     "tinybase": "^5.1.2"
   }
