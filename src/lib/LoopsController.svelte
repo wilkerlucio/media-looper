@@ -6,6 +6,7 @@
   import type {Queries, Relationships, Store} from "tinybase";
   import {useQueriesResultTable, useRelationshipLocalRowIds} from "@/lib/stores/tinybase-stores";
   import LoopEntry from "@/lib/LoopEntry.svelte";
+  import {loopTree} from "@/lib/misc/loop-tree";
 
   export let sourceId: string
 
@@ -60,15 +61,16 @@
     where('source', sourceId)
   })
 
-  $: sortedLoops = Object.entries($loops).sort((a, b) => a[1].startTime - b[1].startTime)
+  $: sortedLoops = loopTree($loops)
 </script>
 
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
-  {#each sortedLoops as [id] (id)}
+  {#each sortedLoops as [id, {children}] (id)}
     <LoopEntry
       {id}
-      active={id === activeLoop}
+      {children}
+      active={activeLoop}
       on:select={selectLoop}
       on:duplicate={duplicateLoop}
       on:delete={deleteLoop}

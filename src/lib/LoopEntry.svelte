@@ -9,7 +9,9 @@
   const dispatch = createEventDispatcher()
 
   export let id;
-  export let active = false;
+  export let children;
+  export let active;
+  export let nesting = 0;
 
   const _loop = useRow('loops', id) as Loop
   $: loop = $_loop
@@ -22,7 +24,7 @@
   }
 </script>
 
-<div class="container" class:active>
+<div class="container" class:active={active === id} style:margin-left={nesting * 10 + 'px'}>
   <Icon icon="{active ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
   <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
   <div class="flex"></div>
@@ -41,6 +43,20 @@
     </div>
   </div>
 </div>
+
+{#if children}
+  {#each children as [id, {children}] (id)}
+    <svelte:self
+      {id}
+      {children}
+      {active}
+      nesting={nesting + 1}
+      on:select
+      on:duplicate
+      on:delete
+    />
+  {/each}
+{/if}
 
 <style>
 
