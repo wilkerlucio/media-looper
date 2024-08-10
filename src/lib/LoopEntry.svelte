@@ -18,6 +18,7 @@
   $: loop = $_loop
 
   $: formatPrecision = $shiftKeyMod ? 3 : null
+  $: imActive = active === id
 
   // precision
   function p(e) {
@@ -25,8 +26,8 @@
   }
 </script>
 
-<div class="container" class:active={active === id} style:margin-left={nesting * 10 + 'px'}>
-  <Icon icon="{active ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
+<div class="container" class:active={imActive} style:margin-left={nesting * 10 + 'px'}>
+  <Icon icon="{imActive ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
   <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
   <div class="flex"></div>
   <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(0, loop.startTime - p(e))} />
