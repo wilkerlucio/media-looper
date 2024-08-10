@@ -9,6 +9,7 @@
 
   const dispatch = createEventDispatcher()
 
+  export let video;
   export let id;
   export let children;
   export let active;
@@ -30,17 +31,21 @@
   <Icon icon="{imActive ? 'stop' : 'play'}-circle" on:click={() => dispatch('select', {id})} />
   <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
   <div class="flex"></div>
-  <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(0, loop.startTime - p(e))} />
+
+  <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(loop.startTime - p(e), 0)} />
   <EditableText bind:value={$_loop.startTime}>
     {formatTime(loop.startTime, formatPrecision)}
   </EditableText>
-  <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.endTime, loop.startTime + p(e))} />
+  <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+
   <div>/</div>
-  <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max($_loop.startTime, loop.endTime - p(e))} />
+
+  <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
   <EditableText bind:value={$_loop.endTime}>
     {formatTime(loop.endTime, formatPrecision)}
   </EditableText>
-  <Icon icon="plus-circle" on:click={(e) => $_loop.endTime += p(e)} />
+  <Icon icon="plus-circle" on:click={(e) => $_loop.endTime = Math.min(loop.endTime + p(e), video.duration)} />
+
   <div class="looper-dropdown">
     <Icon icon="ellipsis-h" style="margin-top: 2px;" />
     <div class="looper-dropdown-content">
@@ -56,6 +61,7 @@
       {id}
       {children}
       {active}
+      {video}
       nesting={nesting + 1}
       on:select
       on:duplicate

@@ -74,6 +74,7 @@
     <LoopEntry
       {id}
       {children}
+      {video}
       active={activeLoop}
       on:select={selectLoop}
       on:duplicate={duplicateLoop}
