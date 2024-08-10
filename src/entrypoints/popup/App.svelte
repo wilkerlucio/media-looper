@@ -1,12 +1,15 @@
 <script lang="ts">
   import svelteLogo from '../../assets/svelte.svg'
-  import {setupStore} from "@/lib/stores/core";
+  import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
   import Popup from "@/lib/components/Popup.svelte";
 
-  const store = setupStore()
+  const ctx = setupStore({})
+
+  setTinyBaseContext(ctx)
+
 </script>
 
-{#await store then s}
+{#await ctx.ready then s}
   <Popup />
 {/await}
 

@@ -12,8 +12,22 @@ export default defineContentScript({
       autocapture: false
     });
 
-    new Youtube({
-      target: document.body
+    function ping() {
+      return new Promise((resolve) => {
+        browser.runtime.sendMessage('ping').then((r) => {
+          if(browser.runtime.lastError) {
+            setTimeout(ping, 200);
+          } else {
+            resolve(true)
+          }
+        });
+      })
+    }
+
+    ping().then(() => {
+      new Youtube({
+        target: document.body
+      })
     })
   },
 });

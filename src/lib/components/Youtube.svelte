@@ -3,10 +3,12 @@
   import {portal} from './Portal.svelte'
   import LoopsController from "@/lib/components/LoopsController.svelte";
   import {logoData} from "@/lib/misc/app-icon";
-  import {setupStore} from "@/lib/stores/core";
+  import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
 
-  const store = setupStore();
+  const ctx = setupStore({});
+
+  setTinyBaseContext(ctx)
 
   function extractVideoId(url: string) {
     const matches = url.match(/watch.+v=([^&]+)/)
@@ -34,7 +36,7 @@
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
 </svelte:head>
 
-{#await store then x}
+{#await ctx.ready then x}
   {#if sourceId}
     <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={toggleVisible}>
       <img src={logoData} alt="Youtube Looper" />
