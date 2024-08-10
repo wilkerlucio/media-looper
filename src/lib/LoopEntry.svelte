@@ -5,7 +5,7 @@
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
   import Icon from "@/lib/Icon.svelte";
-  import EditableText from "@/lib/EditableText.svelte";
+  import EditableText from "@/lib/EditableTime.svelte";
 
   const dispatch = createEventDispatcher()
 

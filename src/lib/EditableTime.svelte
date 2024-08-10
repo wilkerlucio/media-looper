@@ -1,25 +1,27 @@
 <script lang="ts">
+  import {formatTime, secondsFromTime} from "@/lib/helpers/time";
+
   export let value;
   let editing = false;
 
-  $: baseValue = typeof value === "number" ? value.toFixed(3) : value
+  $: baseValue = typeof value === "number" ? formatTime(value, 3) : value
 </script>
 
 {#if editing}
   <input
     autofocus
-    type="number"
+    type="text"
     bind:value={baseValue}
 
     on:blur={() => {
       editing = false
-      if (baseValue) value = baseValue
+      if (baseValue) value = secondsFromTime(baseValue) || value
     }}
 
     on:keydown|stopPropagation={(e) => {
       if (e.code === "Enter" || e.code === "NumpadEnter") e.target.blur()
       if (e.code === "Escape") {
-        baseValue = value
+        baseValue = formatTime(value, 3)
         e.target.blur()
     }}}
 
@@ -32,18 +34,6 @@
 {/if}
 
 <style>
-
-    /* Chrome, Safari, Edge, Opera */
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    /* Firefox */
-    input[type=number] {
-        -moz-appearance: textfield;
-    }
 
     input {
         border: none;

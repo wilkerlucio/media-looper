@@ -30,3 +30,12 @@ export function formatTime(time: number, precision?: number) {
 
   return out
 }
+
+export function secondsFromTime(time: string) {
+  const match = time.match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/)
+  if (!match) return null
+
+  const [_, hours, minutes, seconds] = match
+  const hourSeconds = hours ? parseInt(hours) * 3600 : 0
+  return hourSeconds + parseInt(minutes) * 60 + parseFloat(seconds)
+}
