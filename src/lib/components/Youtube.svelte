@@ -1,7 +1,7 @@
 <script lang="ts">
   import {locationStore} from "@/lib/stores/location";
   import {portal} from './Portal.svelte'
-  import LoopsController from "@/lib/LoopsController.svelte";
+  import LoopsController from "@/lib/components/LoopsController.svelte";
   import {setContext} from "svelte";
   import {createQueries, createRelationships, createStore, type Relationships, type Store} from "tinybase";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";

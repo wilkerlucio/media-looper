@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from "@/lib/Icon.svelte";
+  import Icon from "@/lib/components/Icon.svelte";
 
   export let video = document.querySelector("video")
 

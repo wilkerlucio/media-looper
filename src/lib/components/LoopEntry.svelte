@@ -4,8 +4,8 @@
   import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
-  import Icon from "@/lib/Icon.svelte";
-  import EditableText from "@/lib/EditableTime.svelte";
+  import Icon from "@/lib/components/Icon.svelte";
+  import EditableText from "@/lib/components/EditableTime.svelte";
 
   const dispatch = createEventDispatcher()
 

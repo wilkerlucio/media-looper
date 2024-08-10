@@ -1,7 +1,7 @@
 <script lang="ts">
   import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";
-  import Icon from "@/lib/Icon.svelte";
+  import Icon from "@/lib/components/Icon.svelte";
 
   export let video = document.querySelector("video")
   let startTime = null;

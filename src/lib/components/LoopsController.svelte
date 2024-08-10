@@ -1,11 +1,11 @@
 <script lang="ts">
-  import SpeedControl from "@/lib/SpeedControl.svelte";
-  import Recorder from "@/lib/Recorder.svelte";
-  import ActiveLoop from "@/lib/ActiveLoop.svelte";
+  import SpeedControl from "@/lib/components/SpeedControl.svelte";
+  import Recorder from "@/lib/components/Recorder.svelte";
+  import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext} from "svelte";
   import type {Queries, Relationships, Row, Store} from "tinybase";
   import {useQueriesResultTable} from "@/lib/stores/tinybase-stores";
-  import LoopEntry from "@/lib/LoopEntry.svelte";
+  import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
   import {uniqBy} from 'lodash'
   import {partition} from "@/lib/helpers/array";

@@ -1,4 +1,4 @@
-import Youtube from "@/lib/Youtube.svelte";
+import Youtube from "@/lib/components/Youtube.svelte";
 
 export default defineContentScript({
   allFrames: true,
