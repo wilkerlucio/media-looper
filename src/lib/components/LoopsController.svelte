@@ -28,6 +28,11 @@
     }
   }
 
+  function ensureMediaInfo() {
+    if (Object.keys(store.getRow('medias', sourceId)).length === 0)
+      store.setRow('medias', sourceId, sourceInfo())
+  }
+
   function videoChapters() {
     if (!video) return []
 
@@ -57,6 +62,10 @@
         }
       })
 
+      if (loops.length > 0) {
+        ensureMediaInfo()
+      }
+
       for (const {id, ...loop} of loops) {
         store.setRow('loops', id, loop as Row)
       }
@@ -74,8 +83,7 @@
   // region: event handlers
 
   function createLoop(loop: Loop) {
-    if (Object.keys(store.getRow('medias', sourceId)).length === 0)
-      store.setRow('medias', sourceId, sourceInfo())
+    ensureMediaInfo()
 
     loop.source = sourceId
 
