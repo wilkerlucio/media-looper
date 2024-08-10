@@ -1,7 +1,7 @@
 <script lang="ts">
   import {formatTime, secondsFromTime} from "@/lib/helpers/time";
 
-  export let value;
+  export let value: any;
   let editing = false;
 
   $: baseValue = typeof value === "number" ? formatTime(value, 3) : value

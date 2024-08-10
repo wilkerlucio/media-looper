@@ -1,28 +1,29 @@
 <script lang="ts">
   import {useRow} from "@/lib/stores/tinybase-stores";
-  import type {Loop} from "@/lib/model";
+  import type {Loop, Loops} from "@/lib/model";
   import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
   import Icon from "@/lib/components/Icon.svelte";
   import EditableText from "@/lib/components/EditableTime.svelte";
+  import type {Id} from "tinybase";
 
   const dispatch = createEventDispatcher()
 
-  export let video;
-  export let id;
-  export let children;
-  export let active;
+  export let video = document.querySelector("video");
+  export let id: Id;
+  export let children: Loops;
+  export let active: Id | null;
   export let nesting = 0;
 
-  const _loop = useRow('loops', id) as Loop
-  $: loop = $_loop
+  const _loop = useRow('loops', id)
+  $: loop = ($_loop) as unknown as Loop
 
-  $: formatPrecision = $shiftKeyMod ? 3 : null
+  $: formatPrecision = $shiftKeyMod ? 3 : undefined
   $: imActive = active === id
 
   // precision
-  function p(e) {
+  function p(e: MouseEvent) {
     return e.shiftKey ? 0.1 : 1
   }
 </script>
@@ -55,7 +56,7 @@
     <EditableText bind:value={$_loop.endTime}>
       {formatTime(loop.endTime, formatPrecision)}
     </EditableText>
-    <Icon icon="plus-circle" on:click={(e) => $_loop.endTime = Math.min(loop.endTime + p(e), video.duration)} />
+    <Icon icon="plus-circle" on:click={(e) => $_loop.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
   <div class="looper-dropdown">
@@ -70,10 +71,10 @@
 </div>
 
 {#if children}
-  {#each children as [id, {children}] (id)}
+  {#each children as [id, loop] (id)}
     <svelte:self
       {id}
-      {children}
+      children={loop.children}
       {active}
       {video}
       nesting={nesting + 1}
@@ -103,6 +104,7 @@
         display: flex;
         align-items: center;
         padding: 2px 0;
+        transition: background-color 250ms;
     }
 
     .container > * {

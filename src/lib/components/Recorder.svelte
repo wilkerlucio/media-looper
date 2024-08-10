@@ -4,7 +4,7 @@
   import Icon from "@/lib/components/Icon.svelte";
 
   export let video = document.querySelector("video")
-  let startTime = null;
+  let startTime: number | undefined;
 
   const dispatch = createEventDispatcher()
 
@@ -15,7 +15,7 @@
 
       dispatch('newLoop', loop)
 
-      startTime = null
+      startTime = undefined
     } else {
       startTime = video?.currentTime
     }
@@ -43,6 +43,7 @@
         display: flex;
         align-items: center;
         padding: 4px 0;
+        transition: background-color 250ms;
     }
 
     .recording {

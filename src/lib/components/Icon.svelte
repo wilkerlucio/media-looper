@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let icon;
+  export let icon: string;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

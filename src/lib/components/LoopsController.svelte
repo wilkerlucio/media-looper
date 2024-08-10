@@ -3,13 +3,14 @@
   import Recorder from "@/lib/components/Recorder.svelte";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext} from "svelte";
-  import type {Queries, Relationships, Row, Store} from "tinybase";
+  import type {Id, Queries, Relationships, Row, Store} from "tinybase";
   import {useQueriesResultTable} from "@/lib/stores/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
   import {uniqBy} from 'lodash'
   import {partition} from "@/lib/helpers/array";
   import {formatTime, secondsFromTime} from "@/lib/helpers/time";
+  import type {Loop, Loops} from "@/lib/model";
 
   export let sourceId: string
 
@@ -17,12 +18,12 @@
     { store: Store, relationships: Relationships, queries: Queries } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
-  $: activeLoop = sourceId ? null : null;
+  $: activeLoop = (sourceId ? null : null) as Id | null;
 
   function sourceInfo() {
     return {
-      title: document.querySelector("#title h1").innerText,
-      channel: document.querySelector("#container.ytd-channel-name").innerText
+      title: document.querySelector("#title h1")?.innerText,
+      channel: document.querySelector("#container.ytd-channel-name")?.innerText
     }
   }
 
@@ -30,7 +31,7 @@
     if (!video) return []
 
     const chapters = uniqBy(Array.from(document.querySelectorAll(".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")).map((node) => {
-      return {title: node.querySelector("h4").innerText, time: node.querySelector("#time").innerText}
+      return {title: node.querySelector("h4")?.innerText, time: node.querySelector("#time")?.innerText}
     }), (x) => x.time)
 
     chapters.push({title: "END", time: formatTime(video.duration - 0.1, 3)})
@@ -63,13 +64,13 @@
 
   // region: event handlers
 
-  function createLoop(loop) {
+  function createLoop(loop: Loop) {
     if (Object.keys(store.getRow('medias', sourceId)).length === 0)
       store.setRow('medias', sourceId, sourceInfo())
 
     loop.source = sourceId
 
-    activeLoop = store.addRow('loops', loop)
+    activeLoop = store.addRow('loops', loop) || null
   }
 
   function selectLoop(e) {

@@ -2,21 +2,22 @@
   import {portal} from './Portal.svelte'
   import {onDestroy, onMount} from "svelte";
   import {useRow} from "@/lib/stores/tinybase-stores";
+  import type {Id} from "tinybase";
 
   export let video = document.querySelector("video")
-  export let id;
+  export let id: Id;
 
   $: loop = useRow('loops', id)
 
-  $: startTime = $loop.startTime
-  $: endTime = $loop.endTime
+  $: startTime = $loop.startTime as number
+  $: endTime = $loop.endTime as number
 
-  $: duration = video?.duration;
+  $: duration = video?.duration as number;
 
   $: left = startTime / duration * 100
   $: width = (endTime - startTime) / duration * 100
 
-  function ticker(e) {
+  function ticker() {
     if (!video) return
 
     if (video.currentTime > endTime) {
@@ -24,7 +25,7 @@
     }
   }
 
-  $: video.currentTime = startTime
+  $: if (video) video.currentTime = startTime
 
   onMount(() => {
     if (!video) return;

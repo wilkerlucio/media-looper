@@ -1,8 +1,5 @@
 import {Id} from "tinybase";
-import {Loop} from "@/lib/model";
-
-type LoopEntry = Pick<Loop, 'startTime' | 'endTime'> & {children?: Loops}
-type Loops = [Id, LoopEntry][]
+import {LoopEntry, Loops} from "@/lib/model";
 
 function sortLoops(loops: Loops) {
   return loops.sort((a, b) => {
