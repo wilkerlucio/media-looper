@@ -5,6 +5,7 @@
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
   import Icon from "@/lib/Icon.svelte";
+  import EditableText from "@/lib/EditableText.svelte";
 
   const dispatch = createEventDispatcher()
 
@@ -29,11 +30,15 @@
   <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
   <div class="flex"></div>
   <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(0, loop.startTime - p(e))} />
-  <div>{formatTime(loop.startTime, formatPrecision)}</div>
+  <EditableText bind:value={$_loop.startTime}>
+    {formatTime(loop.startTime, formatPrecision)}
+  </EditableText>
   <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.endTime, loop.startTime + p(e))} />
   <div>/</div>
   <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max($_loop.startTime, loop.endTime - p(e))} />
-  <div>{formatTime(loop.endTime, formatPrecision)}</div>
+  <EditableText bind:value={$_loop.endTime}>
+    {formatTime(loop.endTime, formatPrecision)}
+  </EditableText>
   <Icon icon="plus-circle" on:click={(e) => $_loop.endTime += p(e)} />
   <div class="looper-dropdown">
     <Icon icon="ellipsis-h" style="margin-top: 2px;" />

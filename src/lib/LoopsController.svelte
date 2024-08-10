@@ -23,6 +23,8 @@
     }
   }
 
+  // region: event handlers
+
   function createLoop(loop) {
     if (Object.keys(store.getRow('medias', sourceId)).length === 0)
       store.setRow('medias', sourceId, sourceInfo())
@@ -52,6 +54,8 @@
 
     store.delRow('loops', e.detail.id)
   }
+
+  // endregion
 
   $: queryId = "loopsQ:" + sourceId
 
