@@ -1,16 +1,37 @@
-import {
-  createMergeableStore,
-  createQueries,
-  createRelationships,
-  type MergeableStore,
-  type Relationships,
-} from "tinybase";
-import {createLocalPersister} from "tinybase/persisters/persister-browser";
+import {createQueries, createRelationships, createStore, type Relationships, Store,} from "tinybase";
 import {setContext} from "svelte";
-import {createBrowserRuntimeSynchronizer} from "@/lib/misc/runtime-synchronizer";
+import {AnyDocumentId, Repo} from "@automerge/automerge-repo";
+import {IndexedDBStorageAdapter} from "@automerge/automerge-repo-storage-indexeddb";
+import {createAutomergePersister} from "tinybase/persisters/persister-automerge";
 
-export function setupStore({persist = true}) {
-  const store: MergeableStore = createMergeableStore();
+const MAIN_DOC_KEY = "youtube-looper-automerge-doc-url"
+
+function getAutomergeDoc(repo: Repo) {
+  let docId = localStorage.getItem(MAIN_DOC_KEY)
+
+  if (docId) return repo.find(docId as AnyDocumentId)
+
+  const doc = repo.create()
+
+  localStorage.setItem(MAIN_DOC_KEY, doc.documentId)
+
+  return doc
+}
+
+export function setupStore({}) {
+  // region: automerge setup
+
+  const indexedDB = new IndexedDBStorageAdapter();
+
+  const repo = new Repo({
+    storage: indexedDB
+  });
+
+  const doc = getAutomergeDoc(repo)
+
+  // endregion
+
+  const store: Store = createStore();
   let persister;
 
   const relationships: Relationships = createRelationships(store);
@@ -18,30 +39,12 @@ export function setupStore({persist = true}) {
 
   const queries = createQueries(store);
 
-  const synchronizer = createBrowserRuntimeSynchronizer(
-    store,
-    // 'syncChannel',
-    function onSend(...args) {
-      console.log('send', args);
-    },
-    function onReceive(...args) {
-      console.log('receive', args);
-    },
-    function onIgnoredError(...args) {
-      console.log('ignored error', args);
-    }
-  );
+  persister = createAutomergePersister(store, doc);
 
-  const waits: Promise<any>[] = [synchronizer.startSync()]
-
-  if (persist) {
-    persister = createLocalPersister(store, 'media-looper');
-
-    waits.push(persister.startAutoLoad())
-    waits.push(persister.startAutoSave())
-  }
-
-  const ready = Promise.all(waits)
+  const ready = Promise.all([
+    persister.startAutoLoad(),
+    persister.startAutoSave()
+  ])
 
   return {
     store, relationships, queries, persister, ready

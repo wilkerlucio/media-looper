@@ -1,4 +1,4 @@
-import {setupStore} from "@/lib/stores/core";
+// import {setupStore} from "@/lib/stores/core";
 
 export default defineBackground({
   persistent: true,
@@ -17,10 +17,10 @@ export default defineBackground({
     // );
 
     (async function () {
-      const ctx = setupStore({persist: false})
-      await ctx.ready
-
-      globalThis.store = ctx.store
+      // const ctx = setupStore({persist: false})
+      // await ctx.ready
+      //
+      // globalThis.store = ctx.store
     })()
   }
 });

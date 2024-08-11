@@ -21,10 +21,15 @@
     "svelte-check": "^3.8.4",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
+    "vite-plugin-top-level-await": "^1.4.4",
+    "vite-plugin-wasm": "^3.3.0",
     "wxt": "^0.19.1"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.10.0",
+    "@automerge/automerge": "^2.2.8",
+    "@automerge/automerge-repo": "^1.2.1",
+    "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
     "lodash": "^4.17.21",
     "tinybase": "^5.1.2"
   }

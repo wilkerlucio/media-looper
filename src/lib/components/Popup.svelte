@@ -1,10 +1,13 @@
 <script lang="ts">
-  import {getStoreForce} from "@/lib/stores/tinybase-stores";
+  import {getStoreForce, useTable} from "@/lib/stores/tinybase-stores";
 
   const store = getStoreForce()
 
-  console.log('tables', store.getTableIds())
-  console.log(store.getTable('medias'))
+  const medias = useTable('medias')
 </script>
 
-<div>Popup contents!</div>
+<div>
+  {#each Object.entries($medias) as [id, media] (id)}
+    <div>{media.channel} - {media.title}</div>
+  {/each}
+</div>
