@@ -7,6 +7,7 @@ export function backgroundListen() {
     switch(msg.__connType) {
       case "connect":
       {
+        console.log('new client connection', msg.senderId);
         clients[msg.senderId] ||= []
       }
         break
@@ -19,6 +20,7 @@ export function backgroundListen() {
         break
       case "disconnect":
       {
+        console.log('disconnect', msg.senderId);
         delete clients[msg.senderId]
       }
         break
@@ -55,6 +57,12 @@ export function contentScriptListen({pullInterval = 1000}) {
     setTimeout(tick, pullInterval)
   }, pullInterval)
 
+  function disconnect() {
+    chrome.runtime.sendMessage({__connType: 'disconnect', senderId: peerId})
+  }
+
+  window.addEventListener('beforeunload', disconnect)
+
   return {
     addListener(listener: Listener) {
       listeners.push(listener)
@@ -64,8 +72,6 @@ export function contentScriptListen({pullInterval = 1000}) {
       listeners = listeners.filter(x => x !== listener)
     },
 
-    disconnect() {
-      chrome.runtime.sendMessage({__connType: 'disconnect', senderId: peerId})
-    }
+    disconnect
   }
 }
