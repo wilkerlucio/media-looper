@@ -1,17 +1,23 @@
 import {createQueries, createRelationships, createStore, type Relationships, Store,} from "tinybase";
 import {setContext} from "svelte";
-import {AnyDocumentId, Repo} from "@automerge/automerge-repo";
 import {IndexedDBStorageAdapter} from "@automerge/automerge-repo-storage-indexeddb";
 import {createAutomergePersister} from "tinybase/persisters/persister-automerge";
+
+// Note the ?url suffix
+import wasmUrl from "@automerge/automerge/automerge.wasm?url";
+import {next as Automerge} from "@automerge/automerge/slim";
+import {AnyDocumentId, DocHandle, Repo} from '@automerge/automerge-repo/slim';
+
+const amReady = Automerge.initializeWasm(wasmUrl)
 
 const MAIN_DOC_KEY = "youtube-looper-automerge-doc-url"
 
 function getAutomergeDoc(repo: Repo) {
   let docId = localStorage.getItem(MAIN_DOC_KEY)
+  let doc: DocHandle<any> | null = null
 
-  if (docId) return repo.find(docId as AnyDocumentId)
-
-  const doc = repo.create()
+  if (docId) doc = repo.find(docId as AnyDocumentId)
+  if (!doc) doc = repo.create()
 
   localStorage.setItem(MAIN_DOC_KEY, doc.documentId)
 
@@ -19,18 +25,6 @@ function getAutomergeDoc(repo: Repo) {
 }
 
 export function setupStore({}) {
-  // region: automerge setup
-
-  const indexedDB = new IndexedDBStorageAdapter();
-
-  const repo = new Repo({
-    storage: indexedDB
-  });
-
-  const doc = getAutomergeDoc(repo)
-
-  // endregion
-
   const store: Store = createStore();
   let persister;
 
@@ -39,12 +33,21 @@ export function setupStore({}) {
 
   const queries = createQueries(store);
 
-  persister = createAutomergePersister(store, doc);
+  const ready = amReady.then(async () => {
+    const indexedDB = new IndexedDBStorageAdapter();
 
-  const ready = Promise.all([
-    persister.startAutoLoad(),
-    persister.startAutoSave()
-  ])
+    const repo = new Repo({
+      storage: indexedDB
+    });
+
+    const doc = getAutomergeDoc(repo)
+    await doc.whenReady()
+
+    persister = createAutomergePersister(store, doc);
+
+    await persister.startAutoLoad()
+    await persister.startAutoSave()
+  })
 
   return {
     store, relationships, queries, persister, ready
