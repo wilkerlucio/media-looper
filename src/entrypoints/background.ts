@@ -1,26 +1,13 @@
-// import {setupStore} from "@/lib/stores/core";
+import {setupRepo, setupStore} from "@/lib/stores/core";
+import {backgroundListen} from "@/lib/misc/chrome-network";
 
 export default defineBackground({
   persistent: true,
 
   main() {
-    // browser.runtime.onMessage.addListener(
-    //   function(request, sender, sendResponse) {
-    //     console.log(sender.tab ?
-    //       "from a content script:" + sender.tab.url :
-    //       "from the extension");
-    //
-    //     console.log('req', request);
-    //     if (request.greeting === "hello")
-    //       sendResponse({farewell: "goodbye"});
-    //   }
-    // );
+    const backConn = backgroundListen()
+    const ctx = setupStore({persist: true, backConn})
 
-    (async function () {
-      // const ctx = setupStore({persist: false})
-      // await ctx.ready
-      //
-      // globalThis.store = ctx.store
-    })()
+    globalThis.store = ctx.store
   }
 });

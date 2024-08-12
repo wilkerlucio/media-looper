@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@tsconfig/svelte": "^5.0.4",
+    "@types/chrome": "^0.0.269",
     "@types/lodash": "^4.17.7",
     "@wxt-dev/module-svelte": "^1.0.0",
     "svelte": "^4.2.18",
@@ -29,8 +30,11 @@
     "@amplitude/analytics-browser": "^2.10.0",
     "@automerge/automerge": "^2.2.8",
     "@automerge/automerge-repo": "^1.2.1",
+    "@automerge/automerge-repo-network-broadcastchannel": "^1.2.1",
+    "@automerge/automerge-repo-network-websocket": "^1.2.1",
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
     "lodash": "^4.17.21",
+    "nanoid": "^5.0.7",
     "tinybase": "^5.1.2"
   }
 }

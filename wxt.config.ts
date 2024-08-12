@@ -6,6 +6,13 @@ import topLevelAwait from "vite-plugin-top-level-await";
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-svelte'],
+  manifest: {
+    permissions: ["scripting", "activeTab"],
+    externally_connectable: {
+      ids: ["*"],
+      matches: ["*://*.youtube.com/*"],
+    }
+  },
   vite: () => ({
     plugins: [
       wasm(),

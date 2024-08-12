@@ -5,8 +5,10 @@
   import {logoData} from "@/lib/misc/app-icon";
   import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
+  import {contentScriptListen} from "@/lib/misc/chrome-network";
 
-  const ctx = setupStore({});
+  console.log('ext id', chrome.runtime.id);
+  const ctx = setupStore({csConn: contentScriptListen({})});
 
   setTinyBaseContext(ctx)
 
@@ -22,6 +24,8 @@
   $: sourceId = (videoId ? "youtube:" + videoId : null) as string | null
 
   function toggleVisible() {
+    console.log('tables', ctx.store.getTables());
+
     if (popupVisible) {
       amplitude.track('Open Dialog', {sourceId})
       popupVisible = false

@@ -17,12 +17,21 @@ importers:
       '@automerge/automerge-repo':
         specifier: ^1.2.1
         version: 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
+      '@automerge/automerge-repo-network-broadcastchannel':
+        specifier: ^1.2.1
+        version: 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
+      '@automerge/automerge-repo-network-websocket':
+        specifier: ^1.2.1
+        version: 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
       '@automerge/automerge-repo-storage-indexeddb':
         specifier: ^1.2.1
         version: 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      nanoid:
+        specifier: ^5.0.7
+        version: 5.0.7
       tinybase:
         specifier: ^5.1.2
         version: 5.1.2(@automerge/automerge-repo@1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4))(ws@8.18.0)
@@ -30,12 +39,15 @@ importers:
       '@tsconfig/svelte':
         specifier: ^5.0.4
         version: 5.0.4
+      '@types/chrome':
+        specifier: ^0.0.269
+        version: 0.0.269
       '@types/lodash':
         specifier: ^4.17.7
         version: 4.17.7
       '@wxt-dev/module-svelte':
         specifier: ^1.0.0
-        version: 1.0.0(svelte@4.2.18)(vite@5.4.0(@types/node@22.1.0))(wxt@0.19.4(@types/node@22.1.0)(rollup@4.20.0))
+        version: 1.0.0(svelte@4.2.18)(vite@5.4.0(@types/node@22.1.0))(wxt@0.19.4(@types/chrome@0.0.269)(@types/node@22.1.0)(rollup@4.20.0))
       svelte:
         specifier: ^4.2.18
         version: 4.2.18
@@ -56,7 +68,7 @@ importers:
         version: 3.3.0(vite@5.4.0(@types/node@22.1.0))
       wxt:
         specifier: ^0.19.1
-        version: 0.19.4(@types/node@22.1.0)(rollup@4.20.0)
+        version: 0.19.4(@types/chrome@0.0.269)(@types/node@22.1.0)(rollup@4.20.0)
 
 packages:
 
@@ -97,6 +109,12 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@automerge/automerge-repo-network-broadcastchannel@1.2.1':
+    resolution: {integrity: sha512-Jm3NiuFe/+3aHpHhRYEYOchkMkavMw7+ysNKqYgC7zyGM8jtBowJhxmD4awvz+I5dWNA64KNJIt4k7h295HPAQ==}
+
+  '@automerge/automerge-repo-network-websocket@1.2.1':
+    resolution: {integrity: sha512-n4sI6l51iBf0edWtX+vhk+sc8wJL72IVZl682SvzRHakA5CzyNZiC8sVzc142zRT3RDN12jCWGpwA2Voq6EXsQ==}
 
   '@automerge/automerge-repo-storage-indexeddb@1.2.1':
     resolution: {integrity: sha512-u+9eZZJK7DAr541buF4ut1ipkuiKRoaAtoFYo/ilq7zOLO7JX+GQOFx/8eKKRDlGt/AHTcDaFktkcaX0vKahQQ==}
@@ -725,8 +743,20 @@ packages:
   '@tsconfig/svelte@5.0.4':
     resolution: {integrity: sha512-BV9NplVgLmSi4mwKzD8BD/NQ8erOY/nUE/GpgWe2ckx+wIQF5RyRirn/QsSSCPeulVpc3RA/iJt6DpfTIZps0Q==}
 
+  '@types/chrome@0.0.269':
+    resolution: {integrity: sha512-vF7x8YywnhXX2F06njQ/OE7a3Qeful43C5GUOsUksXWk89WoSFUU3iLeZW8lDpVO9atm8iZIEiLQTRC3H7NOXQ==}
+
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
+
+  '@types/filesystem@0.0.36':
+    resolution: {integrity: sha512-vPDXOZuannb9FZdxgHnqSwAG/jvdGM8Wq+6N4D/d80z+D4HWH+bItqsZaVRQykAn6WEVeEkLm2oQigyHtgb0RA==}
+
+  '@types/filewriter@0.0.33':
+    resolution: {integrity: sha512-xFU8ZXTw4gd358lb2jw25nxY9QAgqn2+bKKjKOYfNCzN4DKCFetK7sPtrlpg66Ywe3vWY9FNxprZawAh9wfJ3g==}
+
+  '@types/har-format@1.2.15':
+    resolution: {integrity: sha512-RpQH4rXLuvTXKR0zqHq3go0RVXYv/YVqv4TnPH95VbwUxZdQlK1EtcMvQvMpDngHbt13Csh9Z4qT9AbkiQH5BA==}
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
@@ -1618,6 +1648,11 @@ packages:
     resolution: {integrity: sha1-TkMekrEalzFjaqH5yNHMvP2reN8=}
     engines: {node: '>=0.10.0'}
 
+  isomorphic-ws@5.0.0:
+    resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
+    peerDependencies:
+      ws: '*'
+
   jiti@1.21.6:
     resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
@@ -1835,6 +1870,11 @@ packages:
   nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  nanoid@5.0.7:
+    resolution: {integrity: sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==}
+    engines: {node: ^18 || >=20}
     hasBin: true
 
   natural-compare@1.4.0:
@@ -2757,6 +2797,33 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
+  '@automerge/automerge-repo-network-broadcastchannel@1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)':
+    dependencies:
+      '@automerge/automerge-repo': 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - supports-color
+      - typescript
+
+  '@automerge/automerge-repo-network-websocket@1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)':
+    dependencies:
+      '@automerge/automerge-repo': 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
+      cbor-x: 1.6.0
+      debug: 4.3.6
+      eventemitter3: 5.0.1
+      isomorphic-ws: 5.0.0(ws@8.18.0)
+      ws: 8.18.0
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - bufferutil
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   '@automerge/automerge-repo-storage-indexeddb@1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)':
     dependencies:
       '@automerge/automerge-repo': 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
@@ -3198,7 +3265,20 @@ snapshots:
 
   '@tsconfig/svelte@5.0.4': {}
 
+  '@types/chrome@0.0.269':
+    dependencies:
+      '@types/filesystem': 0.0.36
+      '@types/har-format': 1.2.15
+
   '@types/estree@1.0.5': {}
+
+  '@types/filesystem@0.0.36':
+    dependencies:
+      '@types/filewriter': 0.0.33
+
+  '@types/filewriter@0.0.33': {}
+
+  '@types/har-format@1.2.15': {}
 
   '@types/http-cache-semantics@4.0.4': {}
 
@@ -3229,10 +3309,10 @@ snapshots:
 
   '@webext-core/match-patterns@1.0.3': {}
 
-  '@wxt-dev/module-svelte@1.0.0(svelte@4.2.18)(vite@5.4.0(@types/node@22.1.0))(wxt@0.19.4(@types/node@22.1.0)(rollup@4.20.0))':
+  '@wxt-dev/module-svelte@1.0.0(svelte@4.2.18)(vite@5.4.0(@types/node@22.1.0))(wxt@0.19.4(@types/chrome@0.0.269)(@types/node@22.1.0)(rollup@4.20.0))':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.1.0))
-      wxt: 0.19.4(@types/node@22.1.0)(rollup@4.20.0)
+      wxt: 0.19.4(@types/chrome@0.0.269)(@types/node@22.1.0)(rollup@4.20.0)
     transitivePeerDependencies:
       - supports-color
       - svelte
@@ -4114,6 +4194,10 @@ snapshots:
 
   isobject@3.0.1: {}
 
+  isomorphic-ws@5.0.0(ws@8.18.0):
+    dependencies:
+      ws: 8.18.0
+
   jiti@1.21.6: {}
 
   js-tokens@4.0.0: {}
@@ -4324,6 +4408,8 @@ snapshots:
     optional: true
 
   nanoid@3.3.7: {}
+
+  nanoid@5.0.7: {}
 
   natural-compare@1.4.0: {}
 
@@ -5147,7 +5233,7 @@ snapshots:
 
   ws@8.18.0: {}
 
-  wxt@0.19.4(@types/node@22.1.0)(rollup@4.20.0):
+  wxt@0.19.4(@types/chrome@0.0.269)(@types/node@22.1.0)(rollup@4.20.0):
     dependencies:
       '@aklinker1/rollup-plugin-visualizer': 5.12.0(rollup@4.20.0)
       '@types/webextension-polyfill': 0.10.7
@@ -5190,6 +5276,8 @@ snapshots:
       vite-node: 2.0.5(@types/node@22.1.0)
       web-ext-run: 0.2.1
       webextension-polyfill: 0.12.0
+    optionalDependencies:
+      '@types/chrome': 0.0.269
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
