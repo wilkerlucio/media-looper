@@ -21,8 +21,6 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
     super()
     this.#options = { extensionId: null, ...(options ?? {}) }
 
-    console.log('starting with', this.#options);
-
     this.#messageEvent = this.#options.csConn || chrome.runtime.onMessage
   }
 
@@ -32,8 +30,6 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
 
     this.#connectCallback = (message: BroadcastChannelMessage) => {
       if (message.__connType) return
-
-      console.log("RECEIVED", message);
 
       if (message.data) message.data = new Uint8Array(message.data)
 
@@ -92,7 +88,6 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   }
 
   postMessage(message: Message) {
-    console.log("SENDING", message);
     this.#options.backConn?.postMessage(message)
 
     try {

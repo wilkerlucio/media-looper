@@ -26,21 +26,23 @@ export const createBrowserRuntimeSynchronizer = ((
   }
 
   const registerReceive = (receive: Receive): void => {
-    browser.runtime.onMessage.addListener(
-      (msg, sender, sendResponse: (x: any) => void) => {
-        if (msg === 'ping') {
-          sendResponse(null)
-          return
-        }
-
-        const [fromClientId, toClientId, requestId, message, body] = msg
-
-        if (!toClientId || toClientId === clientId && message) {
-          sendResponse(receive(fromClientId, requestId, message, body))
-        } else {
-          sendResponse(0)
-        }
+    const callback = (msg, sender, sendResponse: (x: any) => void) => {
+      if (msg === 'ping') {
+        sendResponse(null)
+        return
       }
+
+      const [fromClientId, toClientId, requestId, message, body] = msg
+
+      if (!toClientId || toClientId === clientId && message) {
+        sendResponse(receive(fromClientId, requestId, message, body))
+      } else {
+        sendResponse(0)
+      }
+    };
+
+    browser.runtime.onMessage.addListener(
+      callback
     )
   };
 

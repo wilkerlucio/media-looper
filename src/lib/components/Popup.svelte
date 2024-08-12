@@ -1,7 +1,5 @@
 <script lang="ts">
-  import {getStoreForce, useTable} from "@/lib/stores/tinybase-stores";
-
-  const store = getStoreForce()
+  import {useTable} from "@/lib/stores/tinybase-stores";
 
   const medias = useTable('medias')
 </script>
