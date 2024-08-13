@@ -5,6 +5,9 @@
 
   const ctx = setupStore({csConn: contentScriptListen({})});
   setTinyBaseContext(ctx)
+
+  // @ts-ignore
+  window.store = ctx
 </script>
 
 {#await ctx.ready then s}

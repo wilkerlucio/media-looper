@@ -7,7 +7,6 @@ import {
 import {backgroundListen, contentScriptListen} from "@/lib/misc/chrome-network";
 
 export type RuntimeChannelNetworkAdapterOptions = {
-  extensionId?: string | null,
   backConn?: ReturnType<typeof backgroundListen>
   csConn?: ReturnType<typeof contentScriptListen>
 }
@@ -19,7 +18,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
 
   constructor(options?: RuntimeChannelNetworkAdapterOptions) {
     super()
-    this.#options = { extensionId: null, ...(options ?? {}) }
+    this.#options = options ?? {}
 
     this.#messageEvent = this.#options.csConn || chrome.runtime.onMessage
   }
@@ -29,8 +28,10 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
     this.peerMetadata = peerMetadata
 
     this.#connectCallback = (message: BroadcastChannelMessage) => {
+      // @ts-ignore
       if (message.__connType) return
 
+      // @ts-ignore
       if (message.data) message.data = new Uint8Array(message.data)
 
       if ("targetId" in message && message.targetId !== this.peerId) {
@@ -47,6 +48,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
             senderId: peerId,
             targetId: senderId,
             type: "welcome",
+            // @ts-ignore
             peerMetadata: this.peerMetadata,
           })
           this.#announceConnection(senderId, peerMetadata)
@@ -77,6 +79,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
     this.postMessage({
       senderId: this.peerId,
       type: "arrive",
+      // @ts-ignore
       peerMetadata,
     })
 
@@ -88,18 +91,19 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   }
 
   postMessage(message: Message) {
-    this.#options.backConn?.postMessage(message)
-
-    try {
+    if (this.#options.backConn)
+      this.#options.backConn.postMessage(message)
+    else
       chrome.runtime.sendMessage(message)
-    } catch(e) {}
   }
 
   send(message: Message) {
     if ('data' in message) {
       this.postMessage({
         ...message,
+        // @ts-ignore
         data: message.data
+          // @ts-ignore
           ? Array.apply(null, new Uint8Array(message.data.buffer.slice(
               message.data.byteOffset,
               message.data.byteOffset + message.data.byteLength

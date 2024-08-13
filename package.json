@@ -35,6 +35,6 @@
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
     "lodash": "^4.17.21",
     "nanoid": "^5.0.7",
-    "tinybase": "^5.1.2"
+    "tinybase": "^5.1.4"
   }
 }

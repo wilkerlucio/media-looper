@@ -1,7 +1,15 @@
 import {nanoid} from "nanoid";
 
-export function backgroundListen() {
+export function backgroundListen(fallback?: any) {
   const clients: {[k: string]: any[]} = {}
+
+  const out = {
+    postMessage(msg: any) {
+      for (const k in clients) {
+        clients[k].push(msg)
+      }
+    }
+  }
 
   chrome.runtime.onMessage.addListener((msg: any, sender, sendResponse) => {
     switch(msg.__connType) {
@@ -24,16 +32,12 @@ export function backgroundListen() {
         delete clients[msg.senderId]
       }
         break
+      default:
+        if (fallback) fallback(msg, sender, sendResponse, out)
     }
   })
 
-  return {
-    postMessage(msg: any) {
-      for (const k in clients) {
-        clients[k].push(msg)
-      }
-    }
-  }
+  return out
 }
 
 type Listener = (msg: any) => void
