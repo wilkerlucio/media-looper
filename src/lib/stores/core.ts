@@ -12,29 +12,11 @@ import {backgroundListen, contentScriptListen} from "@/lib/misc/chrome-network";
 
 const amReady = Automerge.initializeWasm(wasmUrl)
 
-const MAIN_DOC_KEY = "youtube-looper-automerge-doc-url"
-
 async function getAutomergeDocSingleton(repo: Repo) {
   const docId = await chrome.runtime.sendMessage({__connType: 'getAutomergeDocURL'})
   console.log('doc id', docId);
 
   return repo.find(docId)
-}
-
-function getAutomergeDoc(repo: Repo) {
-  if (globalThis.localStorage) {
-    let docId = localStorage.getItem(MAIN_DOC_KEY)
-    let doc: DocHandle<any> | null = null
-
-    if (docId) doc = repo.find(docId as AnyDocumentId)
-    if (!doc) doc = repo.create()
-
-    localStorage.setItem(MAIN_DOC_KEY, doc.documentId)
-
-    return doc
-  } else {
-    return repo.create()
-  }
 }
 
 type Options = {

@@ -26,7 +26,7 @@ export const createBrowserRuntimeSynchronizer = ((
   }
 
   const registerReceive = (receive: Receive): void => {
-    const callback = (msg, sender, sendResponse: (x: any) => void) => {
+    const callback = (msg: any, sender: any, sendResponse: (x: any) => void) => {
       if (msg === 'ping') {
         sendResponse(null)
         return
