@@ -1,6 +1,6 @@
-import Admin from "@/entrypoints/admin/Admin.svelte";
+import AdminWrapper from "@/entrypoints/admin/AdminWrapper.svelte";
 
-const app = new Admin({
+const app = new AdminWrapper({
   target: document.getElementById('app')!,
 });
 

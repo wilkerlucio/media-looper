@@ -34,7 +34,6 @@ export default defineBackground({
 
       const repo = await setupRepo({backConn: backgroundListen((msg: any, sender: any, sendResponse: any) => {
         if (msg.__connType === 'getAutomergeDocURL') {
-          console.log('sending back doc id', store.getValue("media-looper-automerge-doc-url"));
           sendResponse(store.getValue("media-looper-automerge-doc-url"))
         }
       })})

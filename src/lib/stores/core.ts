@@ -6,7 +6,7 @@ import {createAutomergePersister} from "tinybase/persisters/persister-automerge"
 // Note the ?url suffix
 import wasmUrl from "@automerge/automerge/automerge.wasm?url";
 import {next as Automerge} from "@automerge/automerge/slim";
-import {AnyDocumentId, DocHandle, Repo, RepoConfig} from '@automerge/automerge-repo/slim';
+import {Repo, RepoConfig} from '@automerge/automerge-repo/slim';
 import {RuntimeChannelNetworkAdapter} from "@/lib/automerge/network/runtime-channel";
 import {backgroundListen, contentScriptListen} from "@/lib/misc/chrome-network";
 
@@ -14,7 +14,6 @@ const amReady = Automerge.initializeWasm(wasmUrl)
 
 async function getAutomergeDocSingleton(repo: Repo) {
   const docId = await chrome.runtime.sendMessage({__connType: 'getAutomergeDocURL'})
-  console.log('doc id', docId);
 
   return repo.find(docId)
 }
@@ -34,7 +33,6 @@ export async function setupRepo(opts?: Options) {
     new RuntimeChannelNetworkAdapter({backConn, csConn})
   ]}
 
-  console.log('persist', persist);
   if (persist) options.storage = new IndexedDBStorageAdapter('media-looper')
 
   return new Repo(options);
@@ -53,7 +51,6 @@ export function setupStore(options?: Options) {
   const ready = setupRepo(opts).then(async (repo) => {
     const doc = await getAutomergeDocSingleton(repo)
     await doc.whenReady()
-    console.log('got doc', doc);
 
     persister = createAutomergePersister(store, doc);
 
