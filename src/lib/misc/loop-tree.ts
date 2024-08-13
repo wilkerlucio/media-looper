@@ -1,7 +1,7 @@
 import {Id} from "tinybase";
 import {LoopEntry, Loops} from "@/lib/model";
 
-function sortLoops(loops: Loops) {
+export function sortLoops(loops: Loops) {
   return loops.sort((a, b) => {
     const startCheck = a[1].startTime - b[1].startTime
     return startCheck === 0 ? a[1].endTime - b[1].endTime : startCheck

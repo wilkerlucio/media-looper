@@ -1,8 +1,10 @@
 <script lang="ts">
-  import {useRow} from "@/lib/stores/tinybase-stores";
-  import type {Media} from "@/lib/model";
+  import {useQueriesResultTable, useRow} from "@/lib/stores/tinybase-stores";
+  import {sortLoops} from "@/lib/misc/loop-tree";
+  import LoopEntry from "@/lib/components/LoopEntry.svelte";
+  import LoopEntryAdmin from "@/entrypoints/admin/LoopEntryAdmin.svelte";
 
-  export let id;
+  export let id: string;
 
   let videoId = id.substring(8)
 
@@ -21,11 +23,28 @@
     return `https://img.youtube.com/vi/${videoId}/${variant}.jpg`
   }
 
-  const media = useRow('medias', id) as Media
+  const media = useRow('medias', id)
+
+  $: loops = useQueriesResultTable("loopsQ:" + id, 'loops', ({select, where}) => {
+    select('startTime')
+    select('endTime')
+    select('label')
+    where('source', id)
+  })
 </script>
 
-<div>
-  <img src={getThumbUrl(videoId, 'mqdefault')} alt="{$media.title}"/>
+<div class="flex flex-row gap-2 mb-3 items-start">
+  <a href="https://www.youtube.com/watch?v={videoId}" target="_blank">
+    <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}"/>
+  </a>
 
-  {$media.channel} - {$media.title}
+  <div>
+    <div>{$media.channel} - {$media.title}</div>
+
+    <div>
+      {#each sortLoops(Object.entries($loops)) as [id, loop] (id)}
+        <LoopEntryAdmin {id} />
+      {/each}
+    </div>
+  </div>
 </div>

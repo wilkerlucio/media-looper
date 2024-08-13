@@ -1,6 +1,7 @@
 import { readable, writable } from 'svelte/store';
 import { getContext, onDestroy } from 'svelte';
 import type {Id, Queries, Relationships, Row, Store, Value} from 'tinybase';
+import type {Group, Having, Join, Select, Where} from "tinybase/queries";
 
 export function getStore(): Store | undefined {
   const { store }: { store: Store } = getContext('tinybase') || {};
@@ -129,7 +130,13 @@ export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) 
   });
 }
 
-export function useQueriesResultTable(queryId: Id, table?: Id, query?: any) {
+export function useQueriesResultTable(queryId: Id, table?: Id, query?: (keywords: {
+  select: Select;
+  join: Join;
+  where: Where;
+  group: Group;
+  having: Having;
+}) => void) {
   const queries = getQueriesForce();
 
   if (table && query) {
