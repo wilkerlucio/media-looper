@@ -5,7 +5,7 @@
   const mediaIds = useRowIds('medias')
 </script>
 
-<h1>Youtube Looper Admin</h1>
+<h1 class="text-3xl font-bold">Youtube Looper Admin</h1>
 
 <div>
   {#each $mediaIds as id}

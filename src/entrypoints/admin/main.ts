@@ -1,3 +1,4 @@
+import './admin.css'
 import AdminWrapper from "@/entrypoints/admin/AdminWrapper.svelte";
 
 const app = new AdminWrapper({
