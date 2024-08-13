@@ -15,7 +15,6 @@ export function backgroundListen(fallback?: any) {
     switch(msg.__connType) {
       case "connect":
       {
-        console.log('new client connection', msg.senderId);
         clients[msg.senderId] ||= []
       }
         break
@@ -28,7 +27,6 @@ export function backgroundListen(fallback?: any) {
         break
       case "disconnect":
       {
-        console.log('disconnect', msg.senderId);
         delete clients[msg.senderId]
       }
         break
