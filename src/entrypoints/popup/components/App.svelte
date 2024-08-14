@@ -4,7 +4,7 @@
   import {contentScriptListen} from "@/lib/misc/chrome-network";
 
   const ctx = setupStore({
-    listener: contentScriptListen(),
+    listener: browser.runtime.onMessage,
     sender: browser.runtime
   });
 

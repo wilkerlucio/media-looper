@@ -4,7 +4,7 @@
   import Admin from "@/entrypoints/admin/components/Admin.svelte";
 
   const ctx = setupStore({
-    listener: contentScriptListen(),
+    listener: browser.runtime.onMessage,
     sender: browser.runtime
   });
   setTinyBaseContext(ctx)
