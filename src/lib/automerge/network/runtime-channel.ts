@@ -1,26 +1,20 @@
-import {
-  NetworkAdapter,
-  type Message,
-  type PeerId,
-  type PeerMetadata,
-} from "@automerge/automerge-repo/slim"
-import {backgroundListen, contentScriptListen} from "@/lib/misc/chrome-network";
+import {type Message, NetworkAdapter, type PeerId, type PeerMetadata,} from "@automerge/automerge-repo/slim"
 
 export type RuntimeChannelNetworkAdapterOptions = {
-  backConn?: ReturnType<typeof backgroundListen>
-  csConn?: ReturnType<typeof contentScriptListen>
+  listener: {
+    addListener: typeof browser.runtime.onMessage.addListener
+    removeListener: typeof browser.runtime.onMessage.removeListener
+  }
+  sender: { sendMessage: typeof browser.runtime.sendMessage }
 }
 
 export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
-  #messageEvent: any
   #options: RuntimeChannelNetworkAdapterOptions
   #connectCallback: ((message: BroadcastChannelMessage) => void) | undefined
 
-  constructor(options?: RuntimeChannelNetworkAdapterOptions) {
+  constructor(options: RuntimeChannelNetworkAdapterOptions) {
     super()
-    this.#options = options ?? {}
-
-    this.#messageEvent = this.#options.csConn || chrome.runtime.onMessage
+    this.#options = options
   }
 
   connect(peerId: PeerId, peerMetadata?: PeerMetadata) {
@@ -74,7 +68,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
       }
     };
 
-    this.#messageEvent.addListener(this.#connectCallback)
+    this.#options.listener.addListener(this.#connectCallback)
 
     this.postMessage({
       senderId: this.peerId,
@@ -91,10 +85,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   }
 
   postMessage(message: Message) {
-    if (this.#options.backConn)
-      this.#options.backConn.postMessage(message)
-    else
-      chrome.runtime.sendMessage(message)
+    this.#options.sender.sendMessage(message)
   }
 
   send(message: Message) {
@@ -118,7 +109,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   disconnect() {
     // TODO:
     if (this.#connectCallback)
-      this.#messageEvent.removeListener(this.#connectCallback)
+      this.#options.listener.removeListener(this.#connectCallback)
 
     this.#connectCallback = undefined
   }
