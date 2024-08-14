@@ -1,12 +1,16 @@
 import {nanoid} from "nanoid";
 
+function sameSender(sa: any, sb: any) {
+  return sa.url === sb.url && sa.documentId === sb.documentId
+}
+
 export function backgroundListen(fallback?: any) {
-  const clients: {[k: string]: any[]} = {}
+  const clients: {[k: string]: {sender: chrome.runtime.MessageSender, msgs: any[]}} = {}
 
   const out: {sendMessage: typeof browser.runtime.sendMessage} = {
     async sendMessage(msg: any, options?: any) {
       for (const k in clients) {
-        clients[k].push(msg)
+        clients[k].msgs.push(msg)
       }
     }
   }
@@ -15,14 +19,14 @@ export function backgroundListen(fallback?: any) {
     switch(msg.__connType) {
       case "connect":
       {
-        clients[msg.senderId] ||= []
+        clients[msg.senderId] ||= {sender: sender, msgs: []}
       }
         break
       case "pull":
       {
-        sendResponse(clients[msg.senderId])
+        sendResponse(clients[msg.senderId].msgs)
 
-        clients[msg.senderId] = []
+        clients[msg.senderId].msgs = []
       }
         break
       case "disconnect":
@@ -31,6 +35,10 @@ export function backgroundListen(fallback?: any) {
       }
         break
       default:
+        for (const c of Object.values(clients)) {
+          if (!sameSender(sender, c.sender)) c.msgs.push(msg)
+        }
+
         if (fallback) fallback(msg, sender, sendResponse, out)
     }
   })
@@ -41,7 +49,7 @@ export function backgroundListen(fallback?: any) {
 type Listener = (msg: any) => void
 
 export function contentScriptListen(options?: {pullInterval?: number }) {
-  const {pullInterval} = {pullInterval: 1000, ...(options ?? {})}
+  const {pullInterval} = {pullInterval: 500, ...(options ?? {})}
 
   const peerId = nanoid()
 
