@@ -1,44 +1,39 @@
-import { readable, writable } from 'svelte/store';
-import { getContext, onDestroy } from 'svelte';
-import type {Id, Queries, Relationships, Row, Store, Value} from 'tinybase';
+import {readable, writable} from 'svelte/store';
+import {getContext} from 'svelte';
+import type {Checkpoints, Id, Indexes, Metrics, Queries, Relationships, Row, Store, Value} from 'tinybase';
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
 
-export function getStore(): Store | undefined {
-  const { store }: { store: Store } = getContext('tinybase') || {};
-
-  return store;
+export type Context = {
+  store: Store
+  metrics?: Metrics
+  indexes?: Indexes
+  relationships?: Relationships
+  checkpoints?: Checkpoints
+  queries?: Queries
 }
 
-export function getStoreForce(): Store {
-  const store = getStore();
+export type ContextItem = keyof Context
 
-  if (!store) throw new Error('Store not found in context');
+export function getTinyContext<T extends ContextItem | undefined>(item?: T): T extends ContextItem ? Context[T] : Context {
+  const ctx: Context = getContext('tinybase') || {};
 
-  return store;
+  if (item) {
+    return ctx[item] as T extends ContextItem ? Context[T] : never;
+  }
+
+  return ctx as T extends ContextItem ? Context[T] : Context;
 }
 
-export function getRelationships() {
-  const { relationships }: { relationships: Relationships } = getContext('tinybase') || {};
+export function getTinyContextForce<T extends ContextItem>(item: T): Required<Context>[T] {
+  const ctx = getTinyContext() as Required<Context>
 
-  return relationships;
-}
+  if (!ctx[item]) throw new Error(item + ' not found in context.')
 
-export function getQueries(): Queries | undefined {
-  const { queries }: { queries: Queries } = getContext('tinybase') || {};
-
-  return queries;
-}
-
-export function getQueriesForce(): Queries {
-  const queries = getQueries();
-
-  if (!queries) throw new Error('Queries not found in context');
-
-  return queries;
+  return ctx[item]
 }
 
 export function useValue(id: Id, defaultValue?: Value) {
-  const store = getStoreForce();
+  const store = getTinyContextForce('store');
 
   const { subscribe } = writable(store.getValue(id) || defaultValue, (set) => {
     const listener = store.addValueListener(id, (store, valueId, newValue) => {
@@ -57,7 +52,7 @@ export function useValue(id: Id, defaultValue?: Value) {
 }
 
 export function useTable(tableId: Id) {
-  const store = getStoreForce();
+  const store = getTinyContextForce('store');
 
   return readable(store.getTable(tableId), (set) => {
     const listener = store.addTableListener(tableId, (store, tableId) => {
@@ -69,7 +64,7 @@ export function useTable(tableId: Id) {
 }
 
 export function useRowIds(tableId: Id) {
-  const store = getStoreForce();
+  const store = getTinyContextForce('store');
 
   return readable(store.getRowIds(tableId), (set) => {
     const listener = store.addRowIdsListener(tableId, (store, tableId) => {
@@ -81,7 +76,7 @@ export function useRowIds(tableId: Id) {
 }
 
 export function useRow(tableId: Id, rowId: Id) {
-  const store = getStoreForce();
+  const store = getTinyContextForce('store');
 
   const { subscribe } = writable(store.getRow(tableId, rowId), (set) => {
     const listener = store.addRowListener(tableId, rowId, () => {
@@ -100,7 +95,7 @@ export function useRow(tableId: Id, rowId: Id) {
 }
 
 export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value) {
-  const store = getStoreForce();
+  const store = getTinyContextForce('store');
 
   const { subscribe } = writable(store.getCell(tableId, rowId, cellId) || defaultValue, (set) => {
     const listener = store.addCellListener(tableId, rowId, cellId, (store, tableId, rowId, cellId, newCell) => {
@@ -119,7 +114,7 @@ export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value
 }
 
 export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) {
-  const relationships = getRelationships()
+  const relationships = getTinyContextForce('relationships');
 
   return readable(relationships.getLocalRowIds(relationshipId, remoteRowId), (set) => {
     const listener = relationships.addLocalRowIdsListener(relationshipId, remoteRowId, (relationships, relationshipId, remoteRowId) => {
@@ -137,7 +132,7 @@ export function useQueriesResultTable(queryId: Id, table?: Id, query?: (keywords
   group: Group;
   having: Having;
 }) => void) {
-  const queries = getQueriesForce();
+  const queries = getTinyContextForce('queries');
 
   if (table && query) {
     queries.setQueryDefinition(queryId, table, query)

@@ -38,7 +38,7 @@ export function setupStore(options?: Options) {
   })()
 
   return {
-    store, relationships, queries, persister, ready
+    store, relationships, queries, persister, synchronizer, ready
   }
 }
 
