@@ -3,16 +3,17 @@
   import {portal} from './Portal.svelte'
   import LoopsController from "@/lib/components/LoopsController.svelte";
   import {logoData} from "@/lib/misc/app-icon";
-  import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
+  import {setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
   import {contentScriptListen} from "@/lib/misc/chrome-network";
+  import {setTinyContext} from "@/lib/stores/tinybase-stores";
 
   const ctx = setupStore({
     listener: contentScriptListen(),
     sender: browser.runtime
   });
 
-  setTinyBaseContext(ctx)
+  setTinyContext(ctx)
 
   function extractVideoId(url: string) {
     const matches = url.match(/watch.+v=([^&]+)/)
@@ -26,8 +27,6 @@
   $: sourceId = (videoId ? "youtube:" + videoId : null) as string | null
 
   function toggleVisible() {
-    console.log('tables', ctx.store.getTables());
-
     if (popupVisible) {
       amplitude.track('Open Dialog', {sourceId})
       popupVisible = false
@@ -61,14 +60,15 @@
         margin-bottom: 15px;
     }
 
-  .ml-popup {
-      display: none;
-      height: calc(100% - 72px);
-      top: 8px;
-      overflow: hidden;
-  }
+    .ml-popup {
+        display: none;
+        height: calc(100% - 72px);
+        top: 8px;
+        overflow: hidden;
+    }
 
-  .ml-popup.popupVisible {
-      display: block;
-  }
+    .ml-popup.popupVisible {
+        display: block;
+    }
+
 </style>

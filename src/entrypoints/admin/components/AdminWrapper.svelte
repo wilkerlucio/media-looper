@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
-  import {contentScriptListen} from "@/lib/misc/chrome-network";
+  import {setupStore} from "@/lib/stores/core";
   import Admin from "@/entrypoints/admin/components/Admin.svelte";
+  import {setTinyContext} from "@/lib/stores/tinybase-stores";
 
   const ctx = setupStore({
     listener: browser.runtime.onMessage,
     sender: browser.runtime
   });
-  setTinyBaseContext(ctx)
+  setTinyContext(ctx)
 
   // @ts-ignore
   window.store = ctx

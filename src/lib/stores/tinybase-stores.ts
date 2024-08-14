@@ -1,5 +1,5 @@
 import {readable, writable} from 'svelte/store';
-import {getContext} from 'svelte';
+import {getContext, setContext} from 'svelte';
 import type {Checkpoints, Id, Indexes, Metrics, Queries, Relationships, Row, Store, Value} from 'tinybase';
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
 
@@ -13,6 +13,10 @@ export type Context = {
 }
 
 export type ContextItem = keyof Context
+
+export function setTinyContext(ctx: Context) {
+  setContext('tinybase', ctx);
+}
 
 export function getTinyContext<T extends ContextItem | undefined>(item?: T): T extends ContextItem ? Context[T] : Context {
   const ctx: Context = getContext('tinybase') || {};

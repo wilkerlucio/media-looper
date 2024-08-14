@@ -6,7 +6,6 @@ import {
   type Relationships,
   type Store,
 } from "tinybase";
-import {setContext} from "svelte";
 import {createBrowserRuntimeSynchronizer, RuntimeSyncOptions} from "@/lib/misc/runtime-synchronizer";
 import {createLocalPersister} from "tinybase/persisters/persister-browser";
 
@@ -40,8 +39,4 @@ export function setupStore(options?: Options) {
   return {
     store, relationships, queries, persister, synchronizer, ready
   }
-}
-
-export function setTinyBaseContext(ctx: { [key: string]: any }) {
-  setContext('tinybase', ctx);
 }
