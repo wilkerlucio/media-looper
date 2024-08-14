@@ -1,8 +1,8 @@
-import {setupRepo, setupStore} from "@/lib/stores/core";
-import {backgroundListen} from "@/lib/misc/chrome-network";
 import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db';
 import {createStore, Store} from 'tinybase';
 import {Repo} from "@automerge/automerge-repo/slim";
+import {setupStore} from "@/lib/stores/core";
+import {backgroundListen} from "@/lib/misc/chrome-network";
 
 async function setupLocalStore() {
   const store = createStore()
@@ -26,20 +26,12 @@ export default defineBackground({
   persistent: true,
 
   main() {
-    (async () => {
-      const store = await setupLocalStore()
+    const ctx = setupStore({
+      listener: browser.runtime.onMessage,
+      sender: backgroundListen()
+    })
 
-      const repo = await setupRepo({backConn: backgroundListen((msg: any, sender: any, sendResponse: any) => {
-        if (msg.__connType === 'getAutomergeDocURL') {
-          sendResponse(store.getValue("media-looper-automerge-doc-url"))
-        }
-      })})
-
-      ensureAutomergeDocURL(store, repo)
-
-      // @ts-ignore
-      globalThis.repo = repo
-    })()
-
+    // @ts-ignore
+    globalThis.store = ctx.store
   }
 });

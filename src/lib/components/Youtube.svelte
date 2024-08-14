@@ -7,7 +7,10 @@
   import * as amplitude from '@amplitude/analytics-browser';
   import {contentScriptListen} from "@/lib/misc/chrome-network";
 
-  const ctx = setupStore({csConn: contentScriptListen({})});
+  const ctx = setupStore({
+    listener: contentScriptListen(),
+    sender: browser.runtime
+  });
 
   setTinyBaseContext(ctx)
 

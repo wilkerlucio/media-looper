@@ -3,11 +3,15 @@
   import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
   import {contentScriptListen} from "@/lib/misc/chrome-network";
 
-  const ctx = setupStore({csConn: contentScriptListen({})});
+  const ctx = setupStore({
+    listener: contentScriptListen(),
+    sender: browser.runtime
+  });
+
   setTinyBaseContext(ctx)
 
   // @ts-ignore
-  window.store = ctx
+  window.store = ctx.store
 </script>
 
 {#await ctx.ready then s}

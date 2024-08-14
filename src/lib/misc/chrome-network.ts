@@ -3,8 +3,8 @@ import {nanoid} from "nanoid";
 export function backgroundListen(fallback?: any) {
   const clients: {[k: string]: any[]} = {}
 
-  const out = {
-    postMessage(msg: any) {
+  const out: {sendMessage: typeof browser.runtime.sendMessage} = {
+    async sendMessage(msg: any, options?: any) {
       for (const k in clients) {
         clients[k].push(msg)
       }
@@ -40,7 +40,9 @@ export function backgroundListen(fallback?: any) {
 
 type Listener = (msg: any) => void
 
-export function contentScriptListen({pullInterval = 1000}) {
+export function contentScriptListen(options?: {pullInterval?: number }) {
+  const {pullInterval} = {pullInterval: 1000, ...(options ?? {})}
+
   const peerId = nanoid()
 
   chrome.runtime.sendMessage({__connType: 'connect', senderId: peerId})
@@ -75,5 +77,8 @@ export function contentScriptListen({pullInterval = 1000}) {
     },
 
     disconnect
+  } as {
+    addListener: typeof browser.runtime.onMessage.addListener
+    removeListener: typeof browser.runtime.onMessage.removeListener
   }
 }

@@ -8,8 +8,17 @@ import {
 } from "tinybase";
 import {Send} from "tinybase/synchronizers";
 
+export type RuntimeSyncOptions = {
+  listener: {
+    addListener: typeof browser.runtime.onMessage.addListener
+    removeListener: typeof browser.runtime.onMessage.removeListener
+  }
+  sender: { sendMessage: typeof browser.runtime.sendMessage }
+}
+
 export const createBrowserRuntimeSynchronizer = ((
   store: MergeableStore,
+  options: RuntimeSyncOptions,
   onSend?: Send,
   onReceive?: Receive,
   onIgnoredError?: (error: any) => void,
@@ -22,32 +31,36 @@ export const createBrowserRuntimeSynchronizer = ((
     message: Message,
     body: any,
   ): void => {
-    browser.runtime.sendMessage([clientId, toClientId, requestId, message, body]);
+    let msg = [clientId, toClientId, requestId, message, body];
+
+    console.log('send', msg);
+    options.sender.sendMessage(msg);
   }
 
+  let callback
+
   const registerReceive = (receive: Receive): void => {
-    const callback = (msg: any, sender: any, sendResponse: (x: any) => void) => {
-      if (msg === 'ping') {
-        sendResponse(null)
-        return
-      }
+    callback = (msg: any, sender: any, sendResponse: (x: any) => void) => {
+      // @ts-ignore
+      if (msg.__connType) return
 
       const [fromClientId, toClientId, requestId, message, body] = msg
 
-      if (!toClientId || toClientId === clientId && message) {
-        sendResponse(receive(fromClientId, requestId, message, body))
-      } else {
-        sendResponse(0)
-      }
+      if (!toClientId || toClientId === clientId)
+        receive(fromClientId, requestId, message, body)
+      else
+        console.log('ignored', clientId, msg);
     };
 
-    browser.runtime.onMessage.addListener(
+    options.listener.addListener(
       callback
     )
   };
 
   const destroy = (): void => {
-    // channel.close();
+    callback ||= null
+
+    options.listener.removeListener(callback)
   };
 
   return createCustomSynchronizer(
@@ -55,7 +68,7 @@ export const createBrowserRuntimeSynchronizer = ((
     send,
     registerReceive,
     destroy,
-    0.01,
+    1,
     onSend,
     onReceive,
     onIgnoredError
