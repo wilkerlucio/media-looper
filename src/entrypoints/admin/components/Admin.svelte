@@ -1,6 +1,6 @@
 <script lang="ts">
   import {useRowIds} from "@/lib/stores/tinybase-stores";
-  import Media from "@/entrypoints/admin/Media.svelte";
+  import Media from "@/entrypoints/admin/components/Media.svelte";
   import {Heading} from "flowbite-svelte";
 
   const mediaIds = useRowIds('medias')

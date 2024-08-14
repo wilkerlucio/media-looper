@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Popup from "@/entrypoints/popup/Popup.svelte";
+  import Popup from "@/entrypoints/popup/components/Popup.svelte";
   import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
   import {contentScriptListen} from "@/lib/misc/chrome-network";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import {setTinyBaseContext, setupStore} from "@/lib/stores/core";
   import {contentScriptListen} from "@/lib/misc/chrome-network";
-  import Admin from "@/entrypoints/admin/Admin.svelte";
+  import Admin from "@/entrypoints/admin/components/Admin.svelte";
 
   const ctx = setupStore({
     listener: contentScriptListen(),

@@ -2,7 +2,7 @@
   import {useQueriesResultTable, useRow} from "@/lib/stores/tinybase-stores";
   import {sortLoops} from "@/lib/misc/loop-tree";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
-  import LoopEntryAdmin from "@/entrypoints/admin/LoopEntryAdmin.svelte";
+  import LoopEntryAdmin from "@/entrypoints/admin/components/LoopEntryAdmin.svelte";
 
   export let id: string;
 
