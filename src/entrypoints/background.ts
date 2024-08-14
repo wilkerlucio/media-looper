@@ -28,7 +28,8 @@ export default defineBackground({
   main() {
     const ctx = setupStore({
       listener: browser.runtime.onMessage,
-      sender: backgroundListen()
+      sender: backgroundListen(),
+      persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb')
     })
 
     // @ts-ignore

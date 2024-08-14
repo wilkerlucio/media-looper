@@ -1,14 +1,26 @@
-import {createMergeableStore, createQueries, createRelationships, type Relationships,} from "tinybase";
+import {
+  createMergeableStore,
+  createQueries,
+  createRelationships,
+  type Persister,
+  type Relationships,
+  type Store,
+} from "tinybase";
 import {setContext} from "svelte";
 import {createBrowserRuntimeSynchronizer, RuntimeSyncOptions} from "@/lib/misc/runtime-synchronizer";
-import {createIndexedDbPersister} from "tinybase/persisters/persister-indexed-db";
+import {createLocalPersister} from "tinybase/persisters/persister-browser";
 
 type Options = {
-  persist?: boolean
+  persister?: (store: Store) => Persister
 } & RuntimeSyncOptions
 
+function startPersister(store: Store, persisterBuilder: ((store: Store) => Persister) | undefined) {
+  return persisterBuilder ?
+    persisterBuilder(store) :
+    createLocalPersister(store, 'youtube-looper-tb')
+}
+
 export function setupStore(options?: Options) {
-  const opts = {persist: true, ...options}
   const store = createMergeableStore();
 
   const relationships: Relationships = createRelationships(store);
@@ -16,9 +28,8 @@ export function setupStore(options?: Options) {
 
   const queries = createQueries(store);
 
-  const persister = createIndexedDbPersister(store, 'youtube-looper-tb')
-
-  const synchronizer = createBrowserRuntimeSynchronizer(store, opts as RuntimeSyncOptions)
+  const persister = startPersister(store, options?.persister)
+  const synchronizer = createBrowserRuntimeSynchronizer(store, options as RuntimeSyncOptions)
 
   const ready = (async () => {
     await persister.startAutoLoad()

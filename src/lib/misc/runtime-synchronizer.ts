@@ -32,24 +32,24 @@ export const createBrowserRuntimeSynchronizer = ((
     body: any,
   ): void => {
     let msg = [clientId, toClientId, requestId, message, body];
-
     console.log('send', msg);
+
     options.sender.sendMessage(msg);
   }
 
   let callback
 
   const registerReceive = (receive: Receive): void => {
-    callback = (msg: any, sender: any, sendResponse: (x: any) => void) => {
+    callback = (msg: any) => {
       // @ts-ignore
       if (msg.__connType) return
+
+      console.log('received', msg);
 
       const [fromClientId, toClientId, requestId, message, body] = msg
 
       if (!toClientId || toClientId === clientId)
         receive(fromClientId, requestId, message, body)
-      else
-        console.log('ignored', clientId, msg);
     };
 
     options.listener.addListener(
@@ -68,7 +68,7 @@ export const createBrowserRuntimeSynchronizer = ((
     send,
     registerReceive,
     destroy,
-    1,
+    2,
     onSend,
     onReceive,
     onIgnoredError

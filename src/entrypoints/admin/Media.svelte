@@ -30,6 +30,7 @@
     select('endTime')
     select('label')
     where('source', id)
+    where('readonly', false)
   })
 </script>
 

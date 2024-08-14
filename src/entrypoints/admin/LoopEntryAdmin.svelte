@@ -1,5 +1,6 @@
 <script lang="ts">
   import {useRow} from "@/lib/stores/tinybase-stores";
+  import {Button} from "flowbite-svelte";
 
   export let id: string;
 
@@ -7,8 +8,9 @@
 </script>
 
 <div>
-  {$loop.label}
+  <Button on:click={() => $loop.startTime += 1}>Increase start</Button>
 
-  <button on:click={() => $loop.startTime += 1}>Increase start</button> {$loop.startTime}
-  {$loop.endTime}
+  {$loop.label} |
+
+  {$loop.startTime} - {$loop.endTime}
 </div>
