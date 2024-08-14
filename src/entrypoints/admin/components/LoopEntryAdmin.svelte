@@ -1,6 +1,7 @@
 <script lang="ts">
   import {useRow} from "@/lib/stores/tinybase-stores";
   import {Button} from "flowbite-svelte";
+  import {formatTime} from "@/lib/helpers/time";
 
   export let id: string;
 
@@ -12,5 +13,5 @@
 
   {$loop.label} |
 
-  {$loop.startTime} - {$loop.endTime}
+  {formatTime($loop.startTime)} - {formatTime($loop.endTime)}
 </div>
