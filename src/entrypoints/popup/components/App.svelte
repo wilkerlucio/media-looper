@@ -14,8 +14,6 @@
   window.store = ctx.store
 </script>
 
-{#await ctx.ready}
-  <div>Initializing...</div>
-{:then x}
+{#await ctx.ready then s}
   <Popup/>
 {/await}

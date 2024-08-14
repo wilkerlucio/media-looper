@@ -49,7 +49,7 @@ export function backgroundListen(fallback?: any) {
 type Listener = (msg: any) => void
 
 export function contentScriptListen(options?: {pullInterval?: number }) {
-  const {pullInterval} = {pullInterval: 500, ...(options ?? {})}
+  const {pullInterval} = {pullInterval: 1000, ...(options ?? {})}
 
   const peerId = nanoid()
 
@@ -88,5 +88,15 @@ export function contentScriptListen(options?: {pullInterval?: number }) {
   } as {
     addListener: typeof browser.runtime.onMessage.addListener
     removeListener: typeof browser.runtime.onMessage.removeListener
+  }
+}
+
+export function combineSenders(...senders: any[]) {
+  return {
+    async sendMessage(msg: any) {
+      for (const sender of senders) {
+        sender.sendMessage(msg)
+      }
+    }
   }
 }
