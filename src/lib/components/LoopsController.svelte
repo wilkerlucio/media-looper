@@ -145,18 +145,19 @@
 
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
-  {#each sortedLoops as [id, {children}] (id)}
-    <LoopEntry
-      {id}
-      {children}
-      {video}
-      active={activeLoop}
-      on:select={selectLoop}
-      on:duplicate={duplicateLoop}
-      on:delete={deleteLoop}
-    />
-  {/each}
-  <div class="spacer"></div>
+  <div class="loops">
+    {#each sortedLoops as [id, {children}] (id)}
+      <LoopEntry
+          {id}
+          {children}
+          {video}
+          active={activeLoop}
+          on:select={selectLoop}
+          on:duplicate={duplicateLoop}
+          on:delete={deleteLoop}
+      />
+    {/each}
+  </div>
   <div class="support-speed">
     <div><a href="https://www.patreon.com/wsscode" on:click={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
@@ -177,6 +178,10 @@
         height: 100%;
         width: 500px;
         padding: 11px 13px;
+    }
+
+    .loops {
+        overflow-y: auto
     }
 
     .support-speed {
