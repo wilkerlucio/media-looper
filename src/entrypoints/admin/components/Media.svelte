@@ -43,7 +43,7 @@
     <div>{$media.channel} - {$media.title}</div>
 
     <div>
-      {#each sortLoops(Object.entries($loops)) as [id, loop] (id)}
+      {#each sortLoops(Object.entries($loops)) as [id] (id)}
         <LoopEntryAdmin {id} />
       {/each}
     </div>
@@ -51,5 +51,5 @@
 </div>
 
 <div>
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/{videoId}?si=WhssYRrHFAsuGW3I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<!--  <iframe width="560" height="315" src="https://www.youtube.com/embed/{videoId}?si=WhssYRrHFAsuGW3I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>-->
 </div>
