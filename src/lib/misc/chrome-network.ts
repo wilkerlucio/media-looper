@@ -1,7 +1,7 @@
 import {nanoid} from "nanoid";
 
-function sameSender(sa: any, sb: any) {
-  return sa.url === sb.url && sa.documentId === sb.documentId
+function shouldSend(sa: any, sb: any) {
+  return sa.origin === sb.origin
 }
 
 export function backgroundListen(fallback?: any) {
@@ -36,7 +36,7 @@ export function backgroundListen(fallback?: any) {
         break
       default:
         for (const c of Object.values(clients)) {
-          if (!sameSender(sender, c.sender)) c.msgs.push(msg)
+          if (!shouldSend(sender, c.sender)) c.msgs.push(msg)
         }
 
         if (fallback) fallback(msg, sender, sendResponse, out)
