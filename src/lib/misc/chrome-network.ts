@@ -96,6 +96,7 @@ export function combineSenders(...senders: any[]) {
     async sendMessage(msg: any) {
       for (const sender of senders) {
         sender.sendMessage(msg)
+          .catch(() => {}) // ignore errors
       }
     }
   }
