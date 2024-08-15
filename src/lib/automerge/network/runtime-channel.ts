@@ -23,7 +23,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
 
     this.#connectCallback = (message: BroadcastChannelMessage) => {
       // @ts-ignore
-      if (message.__connType) return
+      if (message.__extensionBroadcastSync) return
 
       // @ts-ignore
       if (message.data) message.data = new Uint8Array(message.data)

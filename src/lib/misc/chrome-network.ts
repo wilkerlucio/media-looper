@@ -4,7 +4,7 @@ function shouldSend(sa: any, sb: any) {
   return sa.origin === sb.origin
 }
 
-export function backgroundListen(fallback?: any) {
+export function hubServer(fallback?: any) {
   const clients: {[k: string]: {sender: chrome.runtime.MessageSender, msgs: any[]}} = {}
 
   const out: {sendMessage: typeof browser.runtime.sendMessage} = {
@@ -16,7 +16,7 @@ export function backgroundListen(fallback?: any) {
   }
 
   chrome.runtime.onMessage.addListener((msg: any, sender, sendResponse) => {
-    switch(msg.__connType) {
+    switch(msg.__extensionBroadcastSync) {
       case "connect":
       {
         clients[msg.senderId] ||= {sender: sender, msgs: []}
@@ -48,17 +48,17 @@ export function backgroundListen(fallback?: any) {
 
 type Listener = (msg: any) => void
 
-export function contentScriptListen(options?: {pullInterval?: number }) {
+export function pullListener(options?: {pullInterval?: number }) {
   const {pullInterval} = {pullInterval: 1000, ...(options ?? {})}
 
   const peerId = nanoid()
 
-  chrome.runtime.sendMessage({__connType: 'connect', senderId: peerId})
+  chrome.runtime.sendMessage({__extensionBroadcastSync: 'connect', senderId: peerId})
 
   let listeners: Listener[] = [];
 
   setTimeout(async function tick() {
-    const msgs = await chrome.runtime.sendMessage({__connType: 'pull', senderId: peerId})
+    const msgs = await chrome.runtime.sendMessage({__extensionBroadcastSync: 'pull', senderId: peerId})
 
     for (const msg of msgs || []) {
       for (const l of listeners) {
@@ -70,7 +70,7 @@ export function contentScriptListen(options?: {pullInterval?: number }) {
   }, pullInterval)
 
   function disconnect() {
-    chrome.runtime.sendMessage({__connType: 'disconnect', senderId: peerId})
+    chrome.runtime.sendMessage({__extensionBroadcastSync: 'disconnect', senderId: peerId})
   }
 
   window.addEventListener('beforeunload', disconnect)

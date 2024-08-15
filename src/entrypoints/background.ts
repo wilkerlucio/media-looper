@@ -1,6 +1,6 @@
 import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db';
 import {setupStore} from "@/lib/stores/core";
-import {backgroundListen, combineSenders} from "@/lib/misc/chrome-network";
+import {hubServer, combineSenders} from "@/lib/misc/chrome-network";
 
 export default defineBackground({
   persistent: true,
@@ -8,7 +8,7 @@ export default defineBackground({
   main() {
     const ctx = setupStore({
       listener: browser.runtime.onMessage,
-      sender: combineSenders(backgroundListen(), browser.runtime),
+      sender: combineSenders(hubServer(), browser.runtime),
       persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb')
     })
 

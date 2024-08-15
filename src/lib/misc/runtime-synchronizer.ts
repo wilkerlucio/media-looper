@@ -42,7 +42,7 @@ export const createBrowserRuntimeSynchronizer = ((
   const registerReceive = (receive: Receive): void => {
     callback = (msg: any) => {
       // @ts-ignore
-      if (msg.__connType) return
+      if (msg.__extensionBroadcastSync) return
 
       console.log('received', msg);
 

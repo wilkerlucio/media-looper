@@ -5,11 +5,11 @@
   import {logoData} from "@/lib/misc/app-icon";
   import {setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
-  import {contentScriptListen} from "@/lib/misc/chrome-network";
+  import {pullListener} from "@/lib/misc/chrome-network";
   import {setTinyContext} from "@/lib/stores/tinybase-stores";
 
   const ctx = setupStore({
-    listener: contentScriptListen(),
+    listener: pullListener(),
     sender: browser.runtime
   });
 
