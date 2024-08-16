@@ -1,7 +1,7 @@
 <script lang="ts">
   import {getTinyContextForce, useRowIds} from "@/lib/stores/tinybase-stores";
   import Media from "@/entrypoints/admin/components/Media.svelte";
-  import {Button, Heading} from "flowbite-svelte";
+  import {Button, Heading, Table, TableBody, TableHead, TableHeadCell} from "flowbite-svelte";
   import {createMergeableStore, type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
 
@@ -32,9 +32,17 @@
     <Button on:click={importLoops}>Import database</Button>
   </div>
 
-  <div>
-    {#each $mediaIds as id}
-      <Media {id}/>
-    {/each}
-  </div>
+  <Table>
+    <TableHead>
+      <TableHeadCell></TableHeadCell>
+      <TableHeadCell>Channel</TableHeadCell>
+      <TableHeadCell>Title</TableHeadCell>
+      <TableHeadCell>Loop Count</TableHeadCell>
+    </TableHead>
+    <TableBody tableBodyClass="divide-y">
+      {#each $mediaIds as id}
+        <Media {id}/>
+      {/each}
+    </TableBody>
+  </Table>
 </div>

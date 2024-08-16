@@ -2,7 +2,7 @@
   import {useQueriesResultTable, useRow} from "@/lib/stores/tinybase-stores";
   import {sortLoops} from "@/lib/misc/loop-tree";
   import LoopEntryAdmin from "@/entrypoints/admin/components/LoopEntryAdmin.svelte";
-  import {A} from "flowbite-svelte";
+  import {A, TableBodyCell, TableBodyRow} from "flowbite-svelte";
 
   export let id: string;
 
@@ -34,18 +34,27 @@
   })
 </script>
 
-<div class="flex flex-row gap-2 mb-3 items-start">
-  <a href="https://www.youtube.com/watch?v={videoId}" target="_blank">
-    <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}"/>
-  </a>
+<TableBodyRow>
+  <TableBodyCell>
+    <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
+      <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}"/>
+    </A>
+  </TableBodyCell>
+  <TableBodyCell>{$media.channel}</TableBodyCell>
+  <TableBodyCell>{$media.title}</TableBodyCell>
+  <TableBodyCell>{Object.entries($loops).length}</TableBodyCell>
+</TableBodyRow>
 
-  <div>
-    <div><A href="https://www.youtube.com/watch?v={videoId}" target="_blank">{$media.channel} - {$media.title}</A></div>
+<!--<div class="flex flex-row gap-2 mb-3 items-start">-->
+<!--  -->
 
-    <div>
-      {#each sortLoops(Object.entries($loops)) as [id] (id)}
-        <LoopEntryAdmin {id} />
-      {/each}
-    </div>
-  </div>
-</div>
+<!--  <div>-->
+<!--    <div><A href="https://www.youtube.com/watch?v={videoId}" target="_blank"> - {$media.title}</A></div>-->
+
+<!--    <div>-->
+<!--      {#each sortLoops(Object.entries($loops)) as [id] (id)}-->
+<!--        <LoopEntryAdmin {id} />-->
+<!--      {/each}-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
