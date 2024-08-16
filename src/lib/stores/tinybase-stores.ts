@@ -36,6 +36,33 @@ export function getTinyContextForce<T extends ContextItem>(item: T): Required<Co
   return ctx[item]
 }
 
+function useReader(container: any, name: string, ...args: any[]) {
+  const getName = `get${name}`
+  const listenerName = `add${name}Listener`
+
+  return readable(container[getName](...args), (set) => {
+    const listener = container[listenerName](...args, () => {
+      set(container[getName](...args));
+    })
+
+    return () => container.delListener(listener)
+  });
+}
+
+// region: values
+
+export function useValues() {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'Values')
+}
+
+export function useValueIds() {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'ValueIds')
+}
+
 export function useValue(id: Id, defaultValue?: Value) {
   const store = getTinyContextForce('store');
 
@@ -55,6 +82,22 @@ export function useValue(id: Id, defaultValue?: Value) {
   }
 }
 
+// endregion
+
+// region: tabular
+
+export function useTables() {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'Tables')
+}
+
+export function useTableIds() {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'TableIds')
+}
+
 export function useTable(tableId: Id) {
   const store = getTinyContextForce('store');
 
@@ -67,16 +110,35 @@ export function useTable(tableId: Id) {
   });
 }
 
+export function useTableCellIds(tableId: Id) {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'TableCellIds', tableId)
+}
+
 export function useRowIds(tableId: Id) {
   const store = getTinyContextForce('store');
 
-  return readable(store.getRowIds(tableId), (set) => {
-    const listener = store.addRowIdsListener(tableId, (store, tableId) => {
-      set(store.getRowIds(tableId));
-    })
+  return useReader(store, 'RowIds', tableId)
+  // return readable(store.getRowIds(tableId), (set) => {
+  //   const listener = store.addRowIdsListener(tableId, (store, tableId) => {
+  //     set(store.getRowIds(tableId));
+  //   })
+  //
+  //   return () => store.delListener(listener)
+  // });
+}
 
-    return () => store.delListener(listener)
-  });
+export function useSortedRowIds(
+  tableId: Id,
+  cellId?: Id,
+  descending?: boolean,
+  offset?: number,
+  limit?: number,
+) {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'SortedRowIds', tableId, cellId, descending, offset, limit)
 }
 
 export function useRow(tableId: Id, rowId: Id) {
@@ -98,6 +160,12 @@ export function useRow(tableId: Id, rowId: Id) {
   }
 }
 
+export function useCellIds(tableId: Id) {
+  const store = getTinyContextForce('store');
+
+  return useReader(store, 'RowIds', tableId)
+}
+
 export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value) {
   const store = getTinyContextForce('store');
 
@@ -116,6 +184,10 @@ export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value
     }
   }
 }
+
+// endregion
+
+
 
 export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) {
   const relationships = getTinyContextForce('relationships');
