@@ -1,6 +1,6 @@
 import {nanoid} from "nanoid";
 
-function sameSender(sa: any, sb: any) {
+function shouldSkipSend(sa: any, sb: any) {
   return sa.url === sb.url && sa.documentId === sb.documentId
 }
 
@@ -36,7 +36,7 @@ export function hubServer(fallback?: any) {
         break
       default:
         for (const c of Object.values(clients)) {
-          if (!sameSender(sender, c.sender)) c.msgs.push(msg)
+          if (!shouldSkipSend(sender, c.sender)) c.msgs.push(msg)
         }
 
         if (fallback) fallback(msg, sender, sendResponse, out)
