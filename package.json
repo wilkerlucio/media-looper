@@ -41,6 +41,7 @@
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
     "lodash": "^4.17.21",
     "nanoid": "^5.0.7",
+    "svelte-routing": "^2.13.0",
     "tinybase": "^5.1.4"
   }
 }
