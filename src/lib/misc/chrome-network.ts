@@ -96,10 +96,7 @@ export function pullListener(options?: {pullInterval?: number }) {
     },
 
     disconnect
-  } as {
-    addListener: typeof browser.runtime.onMessage.addListener
-    removeListener: typeof browser.runtime.onMessage.removeListener
-  }
+  } as Listener
 }
 
 export function combineSenders(...senders: any[]) {
