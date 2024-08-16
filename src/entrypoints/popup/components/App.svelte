@@ -2,9 +2,10 @@
   import Popup from "@/entrypoints/popup/components/Popup.svelte";
   import {setupStore} from "@/lib/stores/core";
   import {setTinyContext} from "@/lib/stores/tinybase-stores";
+  import {listenerIgnoringExtensionMessages} from "@/lib/misc/chrome-network";
 
   const ctx = setupStore({
-    listener: browser.runtime.onMessage,
+    listener: listenerIgnoringExtensionMessages(browser.runtime.onMessage),
     sender: browser.runtime
   });
 

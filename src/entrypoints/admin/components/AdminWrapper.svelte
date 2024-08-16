@@ -2,9 +2,10 @@
   import {setupStore} from "@/lib/stores/core";
   import Admin from "@/entrypoints/admin/components/Admin.svelte";
   import {setTinyContext} from "@/lib/stores/tinybase-stores";
+  import {listenerIgnoringExtensionMessages} from "@/lib/misc/chrome-network";
 
   const ctx = setupStore({
-    listener: browser.runtime.onMessage,
+    listener: listenerIgnoringExtensionMessages(browser.runtime.onMessage),
     sender: browser.runtime
   });
   setTinyContext(ctx)

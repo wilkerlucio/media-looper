@@ -7,13 +7,11 @@ import {
   type Receive
 } from "tinybase";
 import {Send} from "tinybase/synchronizers";
+import type {Listener, Sender} from "@/lib/misc/chrome-network";
 
 export type RuntimeSyncOptions = {
-  listener: {
-    addListener: typeof browser.runtime.onMessage.addListener
-    removeListener: typeof browser.runtime.onMessage.removeListener
-  }
-  sender: { sendMessage: typeof browser.runtime.sendMessage }
+  listener: Listener
+  sender: Sender
 }
 
 export const createBrowserRuntimeSynchronizer = ((
@@ -41,9 +39,6 @@ export const createBrowserRuntimeSynchronizer = ((
 
   const registerReceive = (receive: Receive): void => {
     callback = (msg: any) => {
-      // @ts-ignore
-      if (msg.__extensionBroadcastSync) return
-
       console.log('received', msg);
 
       const [fromClientId, toClientId, requestId, message, body] = msg

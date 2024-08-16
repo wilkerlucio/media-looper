@@ -1,11 +1,22 @@
 import {nanoid} from "nanoid";
+// @ts-ignore
+import type {Runtime} from "webextension-polyfill";
 
 function shouldSkipSend(sa: any, sb: any) {
   return sa.url === sb.url && sa.documentId === sb.documentId
 }
 
+export type Listener = {
+  addListener: typeof browser.runtime.onMessage.addListener
+  removeListener: typeof browser.runtime.onMessage.removeListener
+}
+
+export type Sender = {
+  sendMessage: typeof browser.runtime.sendMessage
+}
+
 export function hubServer(fallback?: any) {
-  const clients: {[k: string]: {sender: chrome.runtime.MessageSender, msgs: any[]}} = {}
+  const clients: {[k: string]: {sender: Runtime.MessageSender, msgs: any[]}} = {}
 
   const out: {sendMessage: typeof browser.runtime.sendMessage} = {
     async sendMessage(msg: any, options?: any) {
@@ -15,11 +26,11 @@ export function hubServer(fallback?: any) {
     }
   }
 
-  chrome.runtime.onMessage.addListener((msg: any, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((msg: any, sender, sendResponse: (x: any) => void) => {
     switch(msg.__extensionBroadcastSync) {
       case "connect":
       {
-        clients[msg.senderId] ||= {sender: sender, msgs: []}
+        clients[msg.senderId] ||= {sender, msgs: []}
       }
         break
       case "pull":
@@ -46,7 +57,7 @@ export function hubServer(fallback?: any) {
   return out
 }
 
-type Listener = (msg: any) => void
+type ClientMessageListener = (msg: any) => void
 
 export function pullListener(options?: {pullInterval?: number }) {
   const {pullInterval} = {pullInterval: 1000, ...(options ?? {})}
@@ -55,7 +66,7 @@ export function pullListener(options?: {pullInterval?: number }) {
 
   chrome.runtime.sendMessage({__extensionBroadcastSync: 'connect', senderId: peerId})
 
-  let listeners: Listener[] = [];
+  let listeners: ClientMessageListener[] = [];
 
   setTimeout(async function tick() {
     const msgs = await chrome.runtime.sendMessage({__extensionBroadcastSync: 'pull', senderId: peerId})
@@ -76,11 +87,11 @@ export function pullListener(options?: {pullInterval?: number }) {
   window.addEventListener('beforeunload', disconnect)
 
   return {
-    addListener(listener: Listener) {
+    addListener(listener: ClientMessageListener) {
       listeners.push(listener)
     },
 
-    removeListener(listener: Listener) {
+    removeListener(listener: ClientMessageListener) {
       listeners = listeners.filter(x => x !== listener)
     },
 
@@ -99,5 +110,20 @@ export function combineSenders(...senders: any[]) {
           .catch(() => {}) // ignore errors
       }
     }
+  }
+}
+
+export function listenerIgnoringExtensionMessages(wrapper: Listener): Listener {
+  return {
+    addListener: (callback) => {
+      wrapper.addListener((message, sender, sendResponse) => {
+        // @ts-ignore
+        if (message.__extensionBroadcastSync) return
+
+        return callback(message, sender, sendResponse)
+      })
+    },
+
+    removeListener: wrapper.removeListener
   }
 }
