@@ -26,6 +26,12 @@
   function p(e: MouseEvent) {
     return e.shiftKey ? 0.1 : 1
   }
+
+  function loseFocus(e: KeyboardEvent) {
+    if (e.code === 'Escape' || e.code === "Enter") {
+      e.target?.blur()
+    }
+  }
 </script>
 
 <div class="container" class:active={imActive} style:padding-left={nesting * 10 + 'px'}>
@@ -33,7 +39,7 @@
   {#if loop.readonly}
     <div>{loop.label}</div>
   {:else}
-    <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation on:keyup|stopPropagation>
+    <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation={loseFocus} on:keyup|stopPropagation>
   {/if}
   <div class="flex"></div>
 
