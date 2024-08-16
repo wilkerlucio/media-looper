@@ -187,6 +187,7 @@
 
     .support-speed {
         display: flex;
+        padding-top: 6px;
     }
 
     .spacer {
