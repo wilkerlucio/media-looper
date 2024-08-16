@@ -24,7 +24,7 @@
   const mediaIds = useRowIds('medias')
 </script>
 
-<div class="mx-auto w-[800px] my-6">
+<div class="px-10 w-full my-6">
   <Heading tag="h1" class="mb-5">Youtube Looper Admin</Heading>
 
   <div class="my-4">
