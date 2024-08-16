@@ -9,7 +9,7 @@
 </script>
 
 <div>
-  <Button on:click={() => $loop.startTime += 1}>Increase start</Button>
+<!--  <Button on:click={() => $loop.startTime += 1}>Increase start</Button>-->
 
   {$loop.label} |
 

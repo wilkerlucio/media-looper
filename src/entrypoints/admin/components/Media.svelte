@@ -1,8 +1,8 @@
 <script lang="ts">
   import {useQueriesResultTable, useRow} from "@/lib/stores/tinybase-stores";
   import {sortLoops} from "@/lib/misc/loop-tree";
-  import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import LoopEntryAdmin from "@/entrypoints/admin/components/LoopEntryAdmin.svelte";
+  import {A} from "flowbite-svelte";
 
   export let id: string;
 
@@ -40,7 +40,7 @@
   </a>
 
   <div>
-    <div>{$media.channel} - {$media.title}</div>
+    <div><A href="https://www.youtube.com/watch?v={videoId}" target="_blank">{$media.channel} - {$media.title}</A></div>
 
     <div>
       {#each sortLoops(Object.entries($loops)) as [id] (id)}
@@ -48,8 +48,4 @@
       {/each}
     </div>
   </div>
-</div>
-
-<div>
-<!--  <iframe width="560" height="315" src="https://www.youtube.com/embed/{videoId}?si=WhssYRrHFAsuGW3I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>-->
 </div>
