@@ -32,12 +32,13 @@
     <Button on:click={importLoops}>Import database</Button>
   </div>
 
-  <Table>
+  <Table hoverable={true}>
     <TableHead>
       <TableHeadCell></TableHeadCell>
       <TableHeadCell>Channel</TableHeadCell>
       <TableHeadCell>Title</TableHeadCell>
       <TableHeadCell>Loop Count</TableHeadCell>
+      <TableHeadCell></TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
       {#each $mediaIds as id}
