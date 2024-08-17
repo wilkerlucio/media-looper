@@ -9,7 +9,7 @@
   const dispatch = createEventDispatcher()
 
   function record() {
-    if (startTime) {
+    if (startTime !== undefined) {
       const endTime = video?.currentTime
       const loop = {startTime, endTime, label: "New loop"}
 
@@ -22,8 +22,8 @@
   }
 </script>
 
-<a href="#record" class="container" class:recording={!!startTime} on:click|preventDefault={record}>
-  {#if startTime}
+<a href="#record" class="container" class:recording={startTime !== undefined} on:click|preventDefault={record}>
+  {#if startTime !== undefined}
     <Icon icon="stop-circle" />
     <div>Stop recording [{formatTime(startTime, 3)}]</div>
   {:else}
