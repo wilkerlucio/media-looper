@@ -1,7 +1,7 @@
 <script lang="ts">
   import Popup from "@/entrypoints/popup/components/Popup.svelte";
   import {setupStore} from "@/lib/stores/core";
-  import {setTinyContext} from "@/lib/stores/tinybase-stores";
+  import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {listenerIgnoringExtensionMessages} from "@/lib/misc/chrome-network";
 
   const ctx = setupStore({

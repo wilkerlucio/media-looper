@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {useRow} from "@/lib/stores/tinybase-stores";
+  import {useRow} from "@/lib/tinybase/tinybase-stores";
   import type {Loop, Loops} from "@/lib/model";
   import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";

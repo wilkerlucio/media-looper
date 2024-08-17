@@ -6,7 +6,7 @@
   import {setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
   import {pullListener} from "@/lib/misc/chrome-network";
-  import {setTinyContext} from "@/lib/stores/tinybase-stores";
+  import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
 
   const ctx = setupStore({
     listener: pullListener(),

@@ -4,7 +4,7 @@
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext} from "svelte";
   import type {Id, Queries, Relationships, Row, Store} from "tinybase";
-  import {useQueriesResultTable} from "@/lib/stores/tinybase-stores";
+  import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
   import {uniqBy} from 'lodash'

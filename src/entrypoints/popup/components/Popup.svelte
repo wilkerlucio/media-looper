@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {useTable} from "@/lib/stores/tinybase-stores";
+  import {useTable} from "@/lib/tinybase/tinybase-stores";
 
   const medias = useTable('medias')
   const adminUrl = browser.runtime.getURL('/admin.html')

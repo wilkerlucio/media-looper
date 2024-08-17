@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/stores/tinybase-stores";
+  import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores";
   import {sortLoops} from "@/lib/misc/loop-tree";
   import LoopEntryAdmin from "@/entrypoints/admin/components/LoopEntryAdmin.svelte";
   import {A, Button, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";

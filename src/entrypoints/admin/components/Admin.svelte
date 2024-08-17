@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useRowIds} from "@/lib/stores/tinybase-stores";
+  import {getTinyContextForce, useRowIds} from "@/lib/tinybase/tinybase-stores";
   import Media from "@/entrypoints/admin/components/Media.svelte";
   import {Button, Heading, Table, TableBody, TableHead, TableHeadCell} from "flowbite-svelte";
   import {createMergeableStore, type MergeableStore} from "tinybase";

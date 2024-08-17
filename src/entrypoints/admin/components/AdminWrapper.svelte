@@ -1,7 +1,7 @@
 <script lang="ts">
   import {setupStore} from "@/lib/stores/core";
   import Admin from "@/entrypoints/admin/components/Admin.svelte";
-  import {setTinyContext} from "@/lib/stores/tinybase-stores";
+  import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {listenerIgnoringExtensionMessages} from "@/lib/misc/chrome-network";
 
   const ctx = setupStore({

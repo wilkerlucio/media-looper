@@ -6,7 +6,7 @@ import {
   type Relationships,
   type Store,
 } from "tinybase";
-import {createBrowserRuntimeSynchronizer, RuntimeSyncOptions} from "@/lib/misc/runtime-synchronizer";
+import {createBrowserRuntimeSynchronizer, RuntimeSyncOptions} from "@/lib/tinybase/runtime-synchronizer";
 import {createLocalPersister} from "tinybase/persisters/persister-browser";
 
 type Options = {

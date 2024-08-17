@@ -1,7 +1,7 @@
 <script lang="ts">
   import {portal} from './Portal.svelte'
   import {onDestroy, onMount} from "svelte";
-  import {useRow} from "@/lib/stores/tinybase-stores";
+  import {useRow} from "@/lib/tinybase/tinybase-stores";
   import type {Id} from "tinybase";
 
   export let video = document.querySelector("video")

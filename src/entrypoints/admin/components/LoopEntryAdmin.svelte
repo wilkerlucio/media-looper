@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {useRow} from "@/lib/stores/tinybase-stores";
+  import {useRow} from "@/lib/tinybase/tinybase-stores";
   import {formatTime} from "@/lib/helpers/time";
 
   export let id: string;
