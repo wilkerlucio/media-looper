@@ -44,7 +44,7 @@
 
 </script>
 
-<TableBodyRow>
+<TableBodyRow on:click>
   <TableBodyCell>
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
       <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}"/>
