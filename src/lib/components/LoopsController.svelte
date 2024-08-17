@@ -10,7 +10,7 @@
   import {uniqBy} from 'lodash'
   import {partition} from "@/lib/helpers/array";
   import {formatTime, secondsFromTime} from "@/lib/helpers/time";
-  import type {Loop, Loops} from "@/lib/model";
+  import type {Loop} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
 
   const adminUrl = browser.runtime.getURL('/admin.html')
@@ -25,7 +25,9 @@
 
   function sourceInfo() {
     return {
+      // @ts-ignore
       title: document.querySelector("#title h1")?.innerText,
+      // @ts-ignore
       channel: document.querySelector("#container.ytd-channel-name")?.innerText
     }
   }
@@ -39,6 +41,7 @@
     if (!video) return []
 
     const chapters = uniqBy(Array.from(document.querySelectorAll(".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")).map((node) => {
+      // @ts-ignore
       return {title: node.querySelector("h4")?.innerText, time: node.querySelector("#time")?.innerText}
     }), (x) => x.time)
 
@@ -91,10 +94,11 @@
 
     log('Create Loop', loop)
 
+    // @ts-ignore
     activeLoop = store.addRow('loops', loop) || null
   }
 
-  function selectLoop(e) {
+  function selectLoop(e: any) {
     const id = e.detail.id
 
     if (activeLoop === id) {
@@ -110,7 +114,7 @@
     }
   }
 
-  function duplicateLoop(e) {
+  function duplicateLoop(e: any) {
     const loop = store.getRow('loops', e.detail.id)
 
     if (loop) {
@@ -122,7 +126,7 @@
     }
   }
 
-  function deleteLoop(e) {
+  function deleteLoop(e: any) {
     if (activeLoop === e.detail.id) {
       activeLoop = null
     }
@@ -142,6 +146,7 @@
     where('source', sourceId)
   })
 
+  // @ts-ignore
   $: sortedLoops = loopTree($loops)
 </script>
 
