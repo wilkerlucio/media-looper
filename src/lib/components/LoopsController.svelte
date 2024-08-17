@@ -13,6 +13,8 @@
   import type {Loop, Loops} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
 
+  const adminUrl = browser.runtime.getURL('/admin.html')
+
   export let sourceId: string
 
   const {store, relationships, queries}:
@@ -158,6 +160,7 @@
       />
     {/each}
   </div>
+  <div class="dashboard"><a href="{adminUrl}" target="_blank">Open Dashboard</a></div>
   <div class="support-speed">
     <div><a href="https://www.patreon.com/wsscode" on:click={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
@@ -185,9 +188,12 @@
         overflow-y: auto
     }
 
+    .dashboard {
+        padding: 6px 0;
+    }
+
     .support-speed {
         display: flex;
-        padding-top: 6px;
     }
 
     .spacer {

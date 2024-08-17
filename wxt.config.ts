@@ -7,7 +7,13 @@ export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-svelte'],
   manifest: {
-    permissions: ["scripting", "activeTab"]
+    permissions: ["scripting", "activeTab"],
+    web_accessible_resources: [
+      {
+        resources: ["admin.html"],
+        matches: ["*://*.youtube.com/*"]
+      }
+    ]
   },
   vite: () => ({
     plugins: [
