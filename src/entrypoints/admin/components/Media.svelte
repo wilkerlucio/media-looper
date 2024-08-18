@@ -1,7 +1,5 @@
 <script lang="ts">
   import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores";
-  import {sortLoops} from "@/lib/misc/loop-tree";
-  import LoopEntryAdmin from "@/entrypoints/admin/components/LoopEntryAdmin.svelte";
   import {A, Button, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";
   import {ExclamationCircleOutline, TrashBinOutline} from "flowbite-svelte-icons";
   import {deleteMedia} from "@/lib/controller";
@@ -45,7 +43,7 @@
 </script>
 
 <TableBodyRow on:click>
-  <TableBodyCell>
+  <TableBodyCell class="min-w-[120px]">
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
       <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}"/>
     </A>
@@ -53,6 +51,7 @@
   <TableBodyCell>{$media.channel}</TableBodyCell>
   <TableBodyCell>{$media.title}</TableBodyCell>
   <TableBodyCell>{Object.entries($loops).length}</TableBodyCell>
+  <TableBodyCell>{$media.lastLoopPlay}</TableBodyCell>
   <TableBodyCell><A on:click={() => showDeleteModal = true}><TrashBinOutline size="md" /></A></TableBodyCell>
 </TableBodyRow>
 
@@ -64,17 +63,3 @@
     <Button color="alternative">No, cancel</Button>
   </div>
 </Modal>
-
-<!--<div class="flex flex-row gap-2 mb-3 items-start">-->
-<!--  -->
-
-<!--  <div>-->
-<!--    <div><A href="https://www.youtube.com/watch?v={videoId}" target="_blank"> - {$media.title}</A></div>-->
-
-<!--    <div>-->
-<!--      {#each sortLoops(Object.entries($loops)) as [id] (id)}-->
-<!--        <LoopEntryAdmin {id} />-->
-<!--      {/each}-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->

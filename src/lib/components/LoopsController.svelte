@@ -9,7 +9,7 @@
   import {loopTree} from "@/lib/misc/loop-tree";
   import {uniqBy} from 'lodash'
   import {partition} from "@/lib/helpers/array";
-  import {formatTime, secondsFromTime} from "@/lib/helpers/time";
+  import {formatTime, nowStamp, secondsFromTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
 
@@ -85,6 +85,12 @@
     return {label: store.getCell('loops', loopId, 'label')}
   }
 
+  function playLoop(loopId: Id) {
+    store.setCell('medias', sourceId, 'lastLoopPlay', Date.now())
+
+    activeLoop = loopId
+  }
+
   // region: event handlers
 
   function createLoop(loop: Loop) {
@@ -95,7 +101,7 @@
     log('Create Loop', loop)
 
     // @ts-ignore
-    activeLoop = store.addRow('loops', loop) || null
+    playLoop(store.addRow('loops', loop) || null)
   }
 
   function selectLoop(e: any) {
@@ -110,7 +116,7 @@
 
       log('Start Loop', loopLogDetail(id))
 
-      activeLoop = id
+      playLoop(id)
     }
   }
 

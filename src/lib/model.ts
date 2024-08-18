@@ -6,6 +6,7 @@ export interface Loop {
   label: string;
   source: string;
   readonly?: boolean;
+  lastLoopPlay: string;
 }
 
 export interface Media {

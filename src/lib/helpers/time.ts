@@ -39,3 +39,7 @@ export function secondsFromTime(time: string) {
   const hourSeconds = hours ? parseInt(hours) * 3600 : 0
   return hourSeconds + parseInt(minutes) * 60 + parseFloat(seconds)
 }
+
+export function nowStamp() {
+  return JSON.parse(JSON.stringify(new Date()));
+}
