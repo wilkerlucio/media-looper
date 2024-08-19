@@ -16,7 +16,7 @@
   <A href="{adminUrl}" target="_blank">Open Admin</A>
 
   <div class="flex flex-wrap gap-3 w-[252px] mx-auto mt-3">
-    {#each $medias as id}
+    {#each $medias as id (id)}
       <Media {id}/>
     {/each}
   </div>
