@@ -54,7 +54,7 @@
       <TableHeadCell></TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
-      {#each $mediaIds as id}
+      {#each $mediaIds as id (id)}
         <Media {id} on:click={() => media = media === id ? null : id}/>
         {#if media === id}
           <TableBodyRow>
