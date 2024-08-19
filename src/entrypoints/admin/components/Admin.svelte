@@ -58,7 +58,7 @@
         <Media {id} on:click={() => media = media === id ? null : id}/>
         {#if media === id}
           <TableBodyRow>
-            <TableBodyCell colspan="5" class="p-0">
+            <TableBodyCell colspan="10" class="p-0">
               <div class="px-2 py-3 flex justify-center" transition:slide={{ duration: 300, axis: 'y' }}>
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/{id.substring(8)}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
               </div>
