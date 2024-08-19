@@ -1,23 +1,25 @@
 <script lang="ts">
-  import {getTinyContextForce, useRowIds} from "@/lib/tinybase/tinybase-stores";
-  import Media from "@/entrypoints/admin/components/Media.svelte";
+  import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores";
   import {
     Button,
     Heading,
-    Table,
     TableBody,
     TableBodyCell,
     TableBodyRow,
     TableHead,
-    TableHeadCell
+    TableHeadCell,
+    TableSearch
   } from "flowbite-svelte";
   import {createMergeableStore, type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import {slide} from "svelte/transition";
+  import MediaAdmin from "@/entrypoints/admin/components/MediaAdmin.svelte";
+  import type {Media} from "@/lib/model";
 
   const store = getTinyContextForce('store') as MergeableStore
 
   let media: string | null = null
+  let search = ""
 
   function downloadDatabase() {
     download('media-looper-backup.json', new Blob([JSON.stringify(store.getMergeableContent())], {type: "application/json"}))
@@ -33,7 +35,18 @@
     store.merge(importStore)
   }
 
-  const mediaIds = useRowIds('medias')
+  const mediaIds = useTable('medias')
+
+  $: medias = Object.entries($mediaIds).filter(([id, r]) => {
+    const media = r as unknown as Media
+
+    if (media.title.toLowerCase().indexOf(search) > -1) return true
+    if (media.channel.toLowerCase().indexOf(search) > -1) return true
+
+    return false
+  })
+
+  $: ids = medias.map(([id]) => id)
 </script>
 
 <div class="px-10 w-full my-6">
@@ -44,7 +57,7 @@
     <Button on:click={importLoops}>Import database</Button>
   </div>
 
-  <Table hoverable={true} shadow>
+  <TableSearch placeholder="Search" hoverable={true} shadow bind:inputValue={search}>
     <TableHead>
       <TableHeadCell></TableHeadCell>
       <TableHeadCell>Channel</TableHeadCell>
@@ -54,8 +67,8 @@
       <TableHeadCell></TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
-      {#each $mediaIds as id (id)}
-        <Media {id} on:click={() => media = media === id ? null : id}/>
+      {#each ids as id (id)}
+        <MediaAdmin {id} on:click={() => media = media === id ? null : id}/>
         {#if media === id}
           <TableBodyRow>
             <TableBodyCell colspan="10" class="p-0">
@@ -68,5 +81,5 @@
       {/each}
     </TableBody>
 
-  </Table>
+  </TableSearch>
 </div>
