@@ -1,8 +1,8 @@
 <script lang="ts">
   import {setupStore} from "@/lib/stores/core";
-  import Admin from "@/entrypoints/admin/components/Admin.svelte";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {listenerIgnoringExtensionMessages} from "@/lib/misc/chrome-network";
+  import Dashboard from "@/entrypoints/dashboard/components/Dashboard.svelte";
 
   const ctx = setupStore({
     listener: listenerIgnoringExtensionMessages(browser.runtime.onMessage),
@@ -15,5 +15,5 @@
 </script>
 
 {#await ctx.ready then s}
-  <Admin/>
+  <Dashboard/>
 {/await}

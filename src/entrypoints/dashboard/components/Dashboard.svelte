@@ -13,7 +13,7 @@
   import {createMergeableStore, type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import {slide} from "svelte/transition";
-  import MediaAdmin from "@/entrypoints/admin/components/MediaAdmin.svelte";
+  import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
   import type {Media} from "@/lib/model";
 
   const store = getTinyContextForce('store') as MergeableStore

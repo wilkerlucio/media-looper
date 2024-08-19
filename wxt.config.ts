@@ -10,7 +10,7 @@ export default defineConfig({
     permissions: ["scripting", "activeTab"],
     web_accessible_resources: [
       {
-        resources: ["admin.html"],
+        resources: ["dashboard.html"],
         matches: ["*://*.youtube.com/*"]
       }
     ]
