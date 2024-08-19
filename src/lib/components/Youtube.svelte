@@ -16,7 +16,7 @@
   setTinyContext(ctx)
 
   function extractVideoId(url: string) {
-    const matches = url.match(/watch.+v=([^&]+)/)
+    const matches = url.match(/watch.+v=([^&]+)/) || url.match(/\/embed\/([^?]+)/)
 
     return matches ? matches[1] : null
   }
