@@ -17,10 +17,14 @@
 
   export let sourceId: string
 
+  let activeComponent: ActiveLoop
+  let recorderComponent: Recorder
+
   const {store, relationships, queries}:
     { store: Store, relationships: Relationships, queries: Queries } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
+
   $: activeLoop = (sourceId ? null : null) as Id | null;
 
   function sourceInfo() {
@@ -154,10 +158,22 @@
 
   // @ts-ignore
   $: sortedLoops = loopTree($loops)
+
+  function shortcutsHandler(e: KeyboardEvent) {
+    if (e.altKey && e.code === 'KeyZ') {
+      if (activeComponent) {
+        activeComponent.seekStart(e.shiftKey ? 3 : 0)
+      } else {
+        recorderComponent.record()
+      }
+    }
+  }
 </script>
 
+<svelte:document on:keydown={shortcutsHandler} />
+
 <div class="container">
-  <Recorder {video} on:newLoop={(e) => createLoop(e.detail)}/>
+  <Recorder {video} on:newLoop={(e) => createLoop(e.detail)} bind:this={recorderComponent}/>
   <div class="loops">
     {#each sortedLoops as [id, {children}] (id)}
       <LoopEntry
@@ -180,7 +196,7 @@
 </div>
 
 {#if activeLoop}
-  <ActiveLoop {video} id={activeLoop}/>
+  <ActiveLoop {video} id={activeLoop} bind:this={activeComponent}/>
 {/if}
 
 <style>

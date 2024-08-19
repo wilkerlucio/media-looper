@@ -25,7 +25,7 @@
     }
   }
 
-  $: if (video) video.currentTime = startTime
+  $: video.currentTime = startTime
 
   onMount(() => {
     if (!video) return;
@@ -38,6 +38,12 @@
 
     video.removeEventListener("timeupdate", ticker)
   })
+
+  export function seekStart(preRoll = 0) {
+    if (!video) return
+
+    video.currentTime = Math.max(startTime - preRoll, 0)
+  }
 </script>
 
 <div class="bar" use:portal={{target: ".ytp-progress-bar"}} style:left={left + '%'} style:width={width + '%'}></div>

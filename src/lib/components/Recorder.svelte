@@ -8,7 +8,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function record() {
+  export function record() {
     if (startTime !== undefined) {
       const endTime = video?.currentTime
       const loop = {startTime, endTime, label: "New loop"}
