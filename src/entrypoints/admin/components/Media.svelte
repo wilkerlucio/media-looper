@@ -3,6 +3,7 @@
   import {A, Button, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";
   import {ExclamationCircleOutline, TrashBinOutline} from "flowbite-svelte-icons";
   import {deleteMedia} from "@/lib/controller";
+  import {getThumbUrl} from "@/lib/helpers/youtube";
 
   export let id: string;
 
@@ -11,21 +12,6 @@
 
   let store = getTinyContextForce('store')
   let relationships = getTinyContextForce('relationships')
-
-  type YoutubeThumbnail =
-    '0' |
-    '1' |
-    '2' |
-    '3' |
-    'default' |
-    'mqdefault' |
-    'hqdefault' |
-    'sddefault' |
-    'maxresdefault'
-
-  function getThumbUrl(videoId: string, variant: YoutubeThumbnail) {
-    return `https://img.youtube.com/vi/${videoId}/${variant}.jpg`
-  }
 
   const media = useRow('medias', id)
 
