@@ -63,7 +63,6 @@
       <TableHeadCell>Channel</TableHeadCell>
       <TableHeadCell>Title</TableHeadCell>
       <TableHeadCell>Loop Count</TableHeadCell>
-      <TableHeadCell>Last Play</TableHeadCell>
       <TableHeadCell></TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">

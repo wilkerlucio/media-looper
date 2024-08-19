@@ -37,7 +37,6 @@
   <TableBodyCell>{$media.channel}</TableBodyCell>
   <TableBodyCell>{$media.title}</TableBodyCell>
   <TableBodyCell>{Object.entries($loops).length}</TableBodyCell>
-  <TableBodyCell>{$media.lastLoopPlay}</TableBodyCell>
   <TableBodyCell><A on:click={() => showDeleteModal = true}><TrashBinOutline size="md" /></A></TableBodyCell>
 </TableBodyRow>
 
