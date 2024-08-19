@@ -6,7 +6,7 @@
 
   const adminUrl = browser.runtime.getURL('/admin.html')
 
-  const medias = useSortedRowIds('medias', 'lastLoopPlay', true, 0, 6)
+  const medias = useSortedRowIds('medias', 'lastLoopPlay', true, 0, 4)
 
 </script>
 
