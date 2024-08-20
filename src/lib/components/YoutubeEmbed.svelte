@@ -2,9 +2,12 @@
 
   export let videoId;
 
+  let clazz = '';
+  export { clazz as class };
+
 </script>
 
-<div class="w-full pb-[56.25%] relative">
+<div class="w-full pb-[56.25%] relative flex-1 ${clazz}">
   <iframe
       class="left-0 top-0 w-full h-full absolute"
       src="https://www.youtube.com/embed/{videoId}"

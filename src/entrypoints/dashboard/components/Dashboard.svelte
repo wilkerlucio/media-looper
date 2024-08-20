@@ -1,18 +1,8 @@
 <script lang="ts">
   import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores";
-  import {
-    Button,
-    Heading,
-    TableBody,
-    TableBodyCell,
-    TableBodyRow,
-    TableHead,
-    TableHeadCell,
-    TableSearch
-  } from "flowbite-svelte";
+  import {Button, Heading, Modal, TableBody, TableHead, TableHeadCell, TableSearch} from "flowbite-svelte";
   import {createMergeableStore, type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
-  import {slide} from "svelte/transition";
   import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
   import type {Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
@@ -21,6 +11,7 @@
 
   let media: string | null = null
   let search = ""
+  let playerOpen = false
 
   function downloadDatabase() {
     download('media-looper-backup.json', new Blob([JSON.stringify(store.getMergeableContent())], {type: "application/json"}))
@@ -68,18 +59,20 @@
     </TableHead>
     <TableBody tableBodyClass="divide-y">
       {#each ids as id (id)}
-        <MediaAdmin {id} on:click={() => media = media === id ? null : id}/>
-        {#if media === id}
-          <TableBodyRow>
-            <TableBodyCell colspan="10" class="p-0">
-              <div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
-                <YoutubeEmbed videoId={id.substring(8)} />
-              </div>
-            </TableBodyCell>
-          </TableBodyRow>
-        {/if}
+        <MediaAdmin {id} on:click={() => {
+          media = id
+          playerOpen = true
+        }}/>
       {/each}
     </TableBody>
 
   </TableSearch>
+
+  <Modal bind:open={playerOpen} autoclose outsideclose dismissable={false} size={'xl'} classDialog="outline-0">
+    {#if media}
+      <YoutubeEmbed videoId={media.substring(8)} />
+    {:else}
+      <div>Something is wrong, no media selected.</div>
+    {/if}
+  </Modal>
 </div>

@@ -56,8 +56,8 @@
 <style>
 
     img {
-        height: 20px;
-        margin-bottom: 15px;
+        display: block;
+        width: 32px;
     }
 
     .ml-popup {

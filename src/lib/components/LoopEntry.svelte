@@ -102,6 +102,10 @@
         padding: 0;
     }
 
+    :global(.ytp-big-mode) input {
+        font-size: 17px !important;
+    }
+
     .full-width {
         width: 100%;
     }
