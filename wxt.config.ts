@@ -7,7 +7,7 @@ export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-svelte'],
   manifest: {
-    permissions: ["scripting", "activeTab"],
+    permissions: ["storage"],
     web_accessible_resources: [
       {
         resources: ["dashboard.html"],

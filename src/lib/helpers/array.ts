@@ -5,3 +5,9 @@ export function partition(coll: any[], size: number, step = size) {
   }
   return result;
 }
+
+export function keep<U, T>(arr: U[], callback: (item: U) => T | undefined): T[] {
+  return arr
+    .map(callback)
+    .filter((x): x is T => x != null);
+}

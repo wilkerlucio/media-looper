@@ -37,7 +37,8 @@
   }
 
   function ensureMediaInfo() {
-    if (Object.keys(store.getRow('medias', sourceId)).length === 0)
+    console.log('ensure media');
+    if (!store.getCell('medias', sourceId, 'title'))
       store.setRow('medias', sourceId, sourceInfo())
   }
 
@@ -168,6 +169,8 @@
       }
     }
   }
+
+  $: if (Object.entries($loops).length > 0) ensureMediaInfo()
 </script>
 
 <svelte:document on:keydown={shortcutsHandler} />

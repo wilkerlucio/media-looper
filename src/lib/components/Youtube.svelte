@@ -35,6 +35,8 @@
       popupVisible = true
     }
   }
+
+  $: console.log('chrome', chrome.storage);
 </script>
 
 <svelte:head>

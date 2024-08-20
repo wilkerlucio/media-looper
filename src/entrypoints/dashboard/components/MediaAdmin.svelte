@@ -26,18 +26,24 @@
     deleteMedia(store, relationships, id)
   }
 
+  function sp(e: Event) {
+    e.stopPropagation()
+  }
+
 </script>
 
 <TableBodyRow on:click>
   <TableBodyCell class="min-w-[120px]">
-    <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
-      <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}"/>
+    <A href="https://www.youtube.com/watch?v={videoId}" target="_blank" on:click={sp}>
+      <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}" />
     </A>
   </TableBodyCell>
   <TableBodyCell>{$media.channel}</TableBodyCell>
   <TableBodyCell>{$media.title}</TableBodyCell>
   <TableBodyCell>{Object.entries($loops).length}</TableBodyCell>
-  <TableBodyCell><A on:click={() => showDeleteModal = true}><TrashBinOutline size="md" /></A></TableBodyCell>
+  <TableBodyCell>
+    <A on:click={(e) => {showDeleteModal = true; sp(e)}}><TrashBinOutline size="md" /></A>
+  </TableBodyCell>
 </TableBodyRow>
 
 <Modal bind:open={showDeleteModal} size="xs" autoclose>

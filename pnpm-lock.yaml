@@ -26,6 +26,9 @@ importers:
       '@automerge/automerge-repo-storage-indexeddb':
         specifier: ^1.2.1
         version: 1.2.1(@swc/core@1.7.10)(@types/node@22.1.0)(typescript@5.5.4)
+      edn-data:
+        specifier: ^1.1.2
+        version: 1.1.2
       jsedn:
         specifier: ^0.4.1
         version: 0.4.1
@@ -1346,6 +1349,10 @@ packages:
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
+
+  edn-data@1.1.2:
+    resolution: {integrity: sha512-RI1i17URvOrBtSNEccbsXkuUZdc67QUBMqXGF62KPek85EdFGS2UKw76hNhOBl5kK4h7V4d32Ut15b/XVwKEXA==}
+    engines: {node: '>=12.0.0'}
 
   electron-to-chromium@1.5.6:
     resolution: {integrity: sha512-jwXWsM5RPf6j9dPYzaorcBSUg6AiqocPEyMpkchkvntaH9HGfOOMZwxMJjDY/XEs3T5dM7uyH1VhRMkqUU9qVw==}
@@ -4199,6 +4206,8 @@ snapshots:
     optional: true
 
   eastasianwidth@0.2.0: {}
+
+  edn-data@1.1.2: {}
 
   electron-to-chromium@1.5.6: {}
 
