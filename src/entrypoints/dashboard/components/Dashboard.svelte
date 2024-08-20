@@ -86,7 +86,7 @@
 </script>
 
 <div class="px-10 w-full my-6">
-  <Heading tag="h1" class="mb-5">Youtube Looper Admin</Heading>
+  <Heading tag="h1" class="mb-5">Youtube Looper Dashboard</Heading>
 
   <div class="my-4">
     <Button on:click={downloadDatabase}>Export database</Button>
