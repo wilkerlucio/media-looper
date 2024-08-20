@@ -39,6 +39,7 @@
     "@automerge/automerge-repo-network-broadcastchannel": "^1.2.1",
     "@automerge/automerge-repo-network-websocket": "^1.2.1",
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
+    "jsedn": "^0.4.1",
     "lodash": "^4.17.21",
     "nanoid": "^5.0.7",
     "svelte-routing": "^2.13.0",
