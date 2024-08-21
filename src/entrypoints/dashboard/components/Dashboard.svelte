@@ -1,6 +1,6 @@
 <script lang="ts">
   import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores";
-  import {A, Button, Heading, Modal, TableBody, TableHead, TableHeadCell, TableSearch} from "flowbite-svelte";
+  import {Button, Heading, Modal, TableBody, TableHead, TableHeadCell, TableSearch} from "flowbite-svelte";
   import {createMergeableStore, type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
@@ -8,7 +8,8 @@
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
   import {parseEDNString} from "edn-data";
   import {keep} from "@/lib/helpers/array";
-  import {getThumbUrl} from "@/lib/helpers/youtube";
+  import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
+  import {sourceIdFromVideoId} from "@/lib/youtube/ui";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -55,7 +56,7 @@
 
       if (!match) return null
 
-      return {sourceId: 'youtube:' + match[1], videoId: match[1], loops: parseLoops(match[1], x)}
+      return {sourceId: sourceIdFromVideoId(match[1]), videoId: match[1], loops: parseLoops(match[1], x)}
     })
 
     console.log('import', toImport);
@@ -121,12 +122,7 @@
   <Modal title="Import videos" bind:open={toImport} autoclose outsideclose classDialog="outline-0">
     <div class="flex flex-row flex-wrap justify-between">
       {#each toImport as media}
-        <div class="text-center m-1">
-          <A href="https://www.youtube.com/watch?v={media.videoId}" target="_blank">
-            <img src={getThumbUrl(media.videoId, 'default')} alt="Unknown" />
-          </A>
-          <div>{media.loops.length} loop{media.loops.length === 1 ? '' : 's'}</div>
-        </div>
+        <ImportEntry media={media}/>
       {/each}
     </div>
 

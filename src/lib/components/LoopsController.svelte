@@ -2,16 +2,16 @@
   import SpeedControl from "@/lib/components/SpeedControl.svelte";
   import Recorder from "@/lib/components/Recorder.svelte";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
-  import {getContext} from "svelte";
+  import {getContext, onMount} from "svelte";
   import type {Id, Queries, Relationships, Row, Store} from "tinybase";
   import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
-  import {uniqBy} from 'lodash'
   import {partition} from "@/lib/helpers/array";
-  import {formatTime, nowStamp, secondsFromTime} from "@/lib/helpers/time";
+  import {secondsFromTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
+  import {isEmbed, sourceInfo, videoChapters} from "@/lib/youtube/ui";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -27,39 +27,16 @@
 
   $: activeLoop = (sourceId ? null : null) as Id | null;
 
-  function sourceInfo() {
-    return {
-      // @ts-ignore
-      title: document.querySelector("#title h1")?.innerText,
-      // @ts-ignore
-      channel: document.querySelector("#container.ytd-channel-name")?.innerText
-    }
-  }
-
   function ensureMediaInfo() {
-    console.log('ensure media');
     if (!store.getCell('medias', sourceId, 'title'))
       store.setRow('medias', sourceId, sourceInfo())
-  }
-
-  function videoChapters() {
-    if (!video) return []
-
-    const chapters = uniqBy(Array.from(document.querySelectorAll(".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")).map((node) => {
-      // @ts-ignore
-      return {title: node.querySelector("h4")?.innerText, time: node.querySelector("#time")?.innerText}
-    }), (x) => x.time)
-
-    chapters.push({title: "END", time: formatTime(video.duration - 0.1, 3)})
-
-    return chapters
   }
 
   $: {
     sourceId
 
     setTimeout(() => {
-      const chapters = videoChapters()
+      const chapters = videoChapters(video)
       const groups = partition(chapters, 2, 1)
       const loops = groups.map(([a, b]) => {
         return {
@@ -170,7 +147,14 @@
     }
   }
 
-  $: if (Object.entries($loops).length > 0) ensureMediaInfo()
+  onMount(() => {
+    if (isEmbed() && window !== window.top) {
+      console.log('sending message', {youtubeEmbedInfo: {sourceId, ...sourceInfo()}});
+      window.top?.postMessage({youtubeEmbedInfo: {sourceId, ...sourceInfo()}})
+    }
+  })
+
+  // $: if (Object.entries($loops).length > 0) ensureMediaInfo()
 </script>
 
 <svelte:document on:keydown={shortcutsHandler} />

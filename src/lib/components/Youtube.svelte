@@ -7,6 +7,7 @@
   import * as amplitude from '@amplitude/analytics-browser';
   import {pullListener} from "@/lib/misc/chrome-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
+  import {extractVideoId} from "@/lib/youtube/ui";
 
   const ctx = setupStore({
     listener: pullListener(),
@@ -14,12 +15,6 @@
   });
 
   setTinyContext(ctx)
-
-  function extractVideoId(url: string) {
-    const matches = url.match(/watch.+v=([^&]+)/) || url.match(/\/embed\/([^?]+)/)
-
-    return matches ? matches[1] : null
-  }
 
   let popupVisible = false
 
@@ -35,8 +30,6 @@
       popupVisible = true
     }
   }
-
-  $: console.log('chrome', chrome.storage);
 </script>
 
 <svelte:head>
