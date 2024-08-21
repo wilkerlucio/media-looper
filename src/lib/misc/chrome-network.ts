@@ -2,10 +2,6 @@ import {nanoid} from "nanoid";
 // @ts-ignore
 import type {Runtime} from "webextension-polyfill";
 
-function shouldSkipSend(sa: any, sb: any) {
-  return sa.url === sb.url && sa.documentId === sb.documentId
-}
-
 export type ListenerLambda<T extends (...args: any[]) => any> = (callback: T) => () => void
 export type SenderLambda = (msg: any) => Promise<any> | void
 
@@ -57,6 +53,10 @@ export function channelSender(sender: SenderLambda, channelName: string) {
 
 // region: pulling clients
 
+function shouldSkipSend(sa: any, sb: any) {
+  return sa.url === sb.url && sa.documentId === sb.documentId
+}
+
 export function hubServer() {
   const clients: {[k: string]: {sender: Runtime.MessageSender, msgs: any[]}} = {}
 
@@ -103,12 +103,12 @@ export function pullListener(options?: {pullInterval?: number }) {
 
   const peerId = nanoid()
 
-  chrome.runtime.sendMessage({__extensionBroadcastSync: 'connect', senderId: peerId})
+  browser.runtime.sendMessage({__extensionBroadcastSync: 'connect', senderId: peerId})
 
   let listeners: ClientMessageListener[] = [];
 
   setTimeout(async function tick() {
-    const msgs = await chrome.runtime.sendMessage({__extensionBroadcastSync: 'pull', senderId: peerId})
+    const msgs = await browser.runtime.sendMessage({__extensionBroadcastSync: 'pull', senderId: peerId})
 
     for (const msg of msgs || []) {
       for (const l of listeners) {
@@ -120,7 +120,7 @@ export function pullListener(options?: {pullInterval?: number }) {
   }, pullInterval)
 
   function disconnect() {
-    chrome.runtime.sendMessage({__extensionBroadcastSync: 'disconnect', senderId: peerId})
+    browser.runtime.sendMessage({__extensionBroadcastSync: 'disconnect', senderId: peerId})
   }
 
   window.addEventListener('beforeunload', disconnect)
