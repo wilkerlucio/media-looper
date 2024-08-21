@@ -12,7 +12,7 @@
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
   import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/chrome-network";
-  import {keyBy} from "lodash";
+  import {keyBy, sortBy, deburr} from "lodash";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -77,14 +77,16 @@
 
   const mediaIds = useTable('medias')
 
-  $: medias = Object.entries($mediaIds).filter(([id, r]) => {
+  $: medias = sortBy(Object.entries($mediaIds).filter(([id, r]) => {
+    if (search === '') return true
+
     const media = r as unknown as Media
 
     if (media.title?.toLowerCase().indexOf(search) > -1) return true
     if (media.channel?.toLowerCase().indexOf(search) > -1) return true
 
-    return true
-  })
+    return false
+  }), ([id, r]) => [deburr(r.channel?.toLowerCase() || ''), deburr(r.title?.toLowerCase() || '')])
 
   $: ids = medias.map(([id]) => id)
 
