@@ -19,7 +19,7 @@
 </script>
 <div class="text-center m-1 w-[120px]">
   <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
-    <img src={getThumbUrl(videoId, 'default')} alt="Unknown"/>
+    <img src={getThumbUrl(videoId, 'default')} alt="Unknown" width="120" height="90" />
   </A>
   {#if title}
     <div class="truncate">{title}</div>
