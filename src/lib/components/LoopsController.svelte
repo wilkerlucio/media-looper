@@ -11,7 +11,8 @@
   import {secondsFromTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
-  import {isEmbed, sourceInfo, videoChapters} from "@/lib/youtube/ui";
+  import {sourceInfo, videoChapters} from "@/lib/youtube/ui";
+  import {channelSender, runtimeOnMessageSender} from "@/lib/misc/chrome-network";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -148,10 +149,9 @@
   }
 
   onMount(() => {
-    if (isEmbed() && window !== window.top) {
-      console.log('sending message', {youtubeEmbedInfo: {sourceId, ...sourceInfo()}});
-      window.top?.postMessage({youtubeEmbedInfo: {sourceId, ...sourceInfo()}})
-    }
+    const sender = channelSender(runtimeOnMessageSender, 'embed-media-info')
+
+    sender({sourceId, ...sourceInfo()})
   })
 
   // $: if (Object.entries($loops).length > 0) ensureMediaInfo()

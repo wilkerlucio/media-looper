@@ -10,6 +10,8 @@
   import {keep} from "@/lib/helpers/array";
   import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
+  import {onDestroy, onMount} from "svelte";
+  import {channelListener, runtimeOnMessageListener} from "@/lib/misc/chrome-network";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -84,6 +86,18 @@
   })
 
   $: ids = medias.map(([id]) => id)
+
+  let embedListener;
+
+  onMount(() => {
+    embedListener = channelListener(runtimeOnMessageListener, 'embed-media-info')((msg: any) => {
+      console.log("GOT MESSAGE", msg);
+    })
+  })
+
+  onDestroy(() => {
+    if (embedListener) embedListener()
+  })
 </script>
 
 <div class="px-10 w-full my-6">
