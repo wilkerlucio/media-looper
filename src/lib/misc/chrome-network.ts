@@ -2,15 +2,6 @@ import {nanoid} from "nanoid";
 // @ts-ignore
 import type {Runtime} from "webextension-polyfill";
 
-export type Listener = {
-  addListener: typeof browser.runtime.onMessage.addListener
-  removeListener: typeof browser.runtime.onMessage.removeListener
-}
-
-export type Sender = {
-  sendMessage: typeof browser.runtime.sendMessage
-}
-
 function shouldSkipSend(sa: any, sb: any) {
   return sa.url === sb.url && sa.documentId === sb.documentId
 }
@@ -18,7 +9,7 @@ function shouldSkipSend(sa: any, sb: any) {
 export type ListenerLambda<T extends (...args: any[]) => any> = (callback: T) => () => void
 export type SenderLambda = (msg: any) => Promise<any> | void
 
-export function chromeStyleListener(wrapper: Listener): ListenerLambda<any> {
+export function chromeStyleListener(wrapper: typeof browser.runtime.onMessage): ListenerLambda<any> {
   return (callback: any) => {
     wrapper.addListener(callback)
 
@@ -27,9 +18,19 @@ export function chromeStyleListener(wrapper: Listener): ListenerLambda<any> {
 }
 
 export const runtimeOnMessageListener = chromeStyleListener(browser.runtime.onMessage)
-export const runtimeOnMessageSender: SenderLambda = (msg: any) => {
+export const runtimeOnMessageSender: SenderLambda = async (msg: any) => {
   return browser.runtime.sendMessage(msg).catch(() => null)
 }
+
+export function multiSender(...senders: SenderLambda[]) {
+  return async (msg: any) => {
+    for (const sender of senders) {
+      sender(msg)
+    }
+  }
+}
+
+// region: channels
 
 export type ChannelMessage = {
   __channel: string,
@@ -51,6 +52,10 @@ export function channelSender(sender: SenderLambda, channelName: string) {
     return sender({__channel: channelName, contents: msg})
   }
 }
+
+// endregion
+
+// region: pulling clients
 
 export function hubServer() {
   const clients: {[k: string]: {sender: Runtime.MessageSender, msgs: any[]}} = {}
@@ -131,10 +136,4 @@ export function pullListener(options?: {pullInterval?: number }) {
   return listener
 }
 
-export function multiSender(...senders: SenderLambda[]) {
-  return async (msg: any) => {
-    for (const sender of senders) {
-      sender(msg)
-    }
-  }
-}
+// endregion
