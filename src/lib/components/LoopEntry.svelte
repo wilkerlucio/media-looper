@@ -16,8 +16,8 @@
   export let active: Id | null;
   export let nesting = 0;
 
-  const _loop = useRow('loops', id)
-  $: loop = ($_loop) as unknown as Loop
+  $: loopSource = useRow('loops', id)
+  $: loop = ($loopSource) as unknown as Loop
 
   $: formatPrecision = $shiftKeyMod ? 3 : undefined
   $: imActive = active === id
@@ -39,18 +39,18 @@
   {#if loop.readonly}
     <div>{loop.label}</div>
   {:else}
-    <input bind:value={$_loop.label} class="full-width" on:keydown|stopPropagation={loseFocus} on:keyup|stopPropagation>
+    <input bind:value={$loopSource.label} class="full-width" on:keydown|stopPropagation={loseFocus} on:keyup|stopPropagation>
   {/if}
   <div class="flex"></div>
 
   {#if loop.readonly}
     <div>{formatTime(loop.startTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" on:click={(e) => $_loop.startTime = Math.max(loop.startTime - p(e), 0)} />
-    <EditableText bind:value={$_loop.startTime}>
+    <Icon icon="minus-circle" on:click={(e) => $loopSource.startTime = Math.max(loop.startTime - p(e), 0)} />
+    <EditableText bind:value={$loopSource.startTime}>
       {formatTime(loop.startTime, formatPrecision)}
     </EditableText>
-    <Icon icon="plus-circle" on:click={(e) => $_loop.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+    <Icon icon="plus-circle" on:click={(e) => $loopSource.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
   {/if}
 
   <div>/</div>
@@ -58,11 +58,11 @@
   {#if loop.readonly}
     <div>{formatTime(loop.endTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" on:click={(e) => $_loop.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
-    <EditableText bind:value={$_loop.endTime}>
+    <Icon icon="minus-circle" on:click={(e) => $loopSource.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
+    <EditableText bind:value={$loopSource.endTime}>
       {formatTime(loop.endTime, formatPrecision)}
     </EditableText>
-    <Icon icon="plus-circle" on:click={(e) => $_loop.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
+    <Icon icon="plus-circle" on:click={(e) => $loopSource.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
   <div class="looper-dropdown">

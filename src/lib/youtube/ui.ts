@@ -12,7 +12,7 @@ export function isEmbed() {
 }
 
 export function sourceInfo() {
-  return isEmbed() ?
+  const base = isEmbed() ?
     {
       title: document.title,
       // @ts-ignore
@@ -25,6 +25,8 @@ export function sourceInfo() {
       // @ts-ignore
       channel: document.querySelector("#container.ytd-channel-name")?.innerText
     }
+
+  return base.title === 'YouTube' && base.channel === '' ? null : base
 }
 
 export function videoChapters(video: HTMLVideoElement | null) {

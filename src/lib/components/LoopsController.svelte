@@ -29,8 +29,11 @@
   $: activeLoop = (sourceId ? null : null) as Id | null;
 
   function ensureMediaInfo() {
-    if (!store.getCell('medias', sourceId, 'title'))
-      store.setRow('medias', sourceId, sourceInfo())
+    if (!store.getCell('medias', sourceId, 'title')) {
+      const info = sourceInfo()
+
+      if (info) store.setPartialRow('medias', sourceId, info)
+    }
   }
 
   $: {
@@ -151,10 +154,10 @@
   onMount(() => {
     const sender = channelSender(runtimeOnMessageSender, 'embed-media-info')
 
-    sender({sourceId, ...sourceInfo()})
+    sender({sourceId, ...sourceInfo() || {}})
   })
 
-  // $: if (Object.entries($loops).length > 0) ensureMediaInfo()
+  $: if (Object.entries($loops).length > 0) ensureMediaInfo()
 </script>
 
 <svelte:document on:keydown={shortcutsHandler} />

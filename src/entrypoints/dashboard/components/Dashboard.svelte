@@ -12,6 +12,7 @@
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
   import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/chrome-network";
+  import {keyBy} from "lodash";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -19,7 +20,7 @@
 
   let media: string | false = false
   let search = ""
-  let toImport: any = false
+  let toImport: {[key: string]: any} | false = false
 
   function downloadDatabase() {
     download('media-looper-backup.json', new Blob([JSON.stringify(store.getMergeableContent())], {type: "application/json"}))
@@ -53,22 +54,22 @@
     const data = await browser.storage.sync.get(null)
 
     // TODO: replace with data
-    toImport = keep(Object.entries(storageContents), ([id, x]: [string, any]) => {
+    toImport = keyBy(keep(Object.entries(storageContents), ([id, x]: [string, any]) => {
       const match = id.match(/media-looper:youtube:([^"]+)/)
 
       if (!match) return null
 
-      return {sourceId: sourceIdFromVideoId(match[1]), videoId: match[1], loops: parseLoops(match[1], x)}
-    })
+      return {sourceId: sourceIdFromVideoId(match[1]), loops: parseLoops(match[1], x)}
+    }), x => x.sourceId)
 
     console.log('import', toImport);
   }
 
   function importLoopsPrevious() {
-    for (const media of toImport) {
-      store.setRow('medias', media.sourceId, {readonly: false})
+    for (const {sourceId, loops, ...media} of Object.values(toImport)) {
+      store.setPartialRow('medias', sourceId, {readonly: false, ...media})
 
-      for (const {id, ...loop} of media.loops) {
+      for (const {id, ...loop} of loops) {
         store.setRow('loops', id, loop)
       }
     }
@@ -91,7 +92,16 @@
 
   onMount(() => {
     embedListener = channelListener(runtimeOnMessageListener, 'embed-media-info')((msg: any) => {
-      console.log("GOT MESSAGE", msg);
+      console.log('GOT MESSAGE', msg);
+
+      if (!toImport) return
+
+      if (toImport[msg.sourceId]) {
+        if (msg.title)
+          toImport[msg.sourceId] = {...msg, ...toImport[msg.sourceId]}
+        else
+          toImport[msg.sourceId].readInfoFailed = true
+      }
     })
   })
 
@@ -135,7 +145,7 @@
 
   <Modal title="Import videos" bind:open={toImport} autoclose outsideclose classDialog="outline-0">
     <div class="flex flex-row flex-wrap justify-between">
-      {#each toImport as media}
+      {#each Object.values(toImport) as media}
         <ImportEntry media={media}/>
       {/each}
     </div>
