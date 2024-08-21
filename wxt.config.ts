@@ -21,4 +21,7 @@ export default defineConfig({
       topLevelAwait()
     ],
   }),
+  runner: {
+    chromiumArgs: ['--user-data-dir=./.chrome-data']
+  }
 });
