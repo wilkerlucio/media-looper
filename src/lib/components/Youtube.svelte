@@ -5,13 +5,13 @@
   import {logoData} from "@/lib/misc/app-icon";
   import {setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
-  import {pullListener} from "@/lib/misc/chrome-network";
+  import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/chrome-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractVideoId} from "@/lib/youtube/ui";
 
   const ctx = setupStore({
-    listener: pullListener(),
-    sender: browser.runtime
+    listener: channelListener(pullListener(), 'tiny-sync'),
+    sender: channelSender(runtimeOnMessageSender, 'tiny-sync')
   });
 
   setTinyContext(ctx)

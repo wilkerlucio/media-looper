@@ -7,11 +7,11 @@ import {
   type Receive
 } from "tinybase";
 import {Send} from "tinybase/synchronizers";
-import type {Listener, Sender} from "@/lib/misc/chrome-network";
+import type {ListenerLambda, SenderLambda} from "@/lib/misc/chrome-network";
 
 export type RuntimeSyncOptions = {
-  listener: Listener
-  sender: Sender
+  listener: ListenerLambda<any>
+  sender: SenderLambda
 }
 
 export const createBrowserRuntimeSynchronizer = ((
@@ -32,30 +32,26 @@ export const createBrowserRuntimeSynchronizer = ((
     let msg = [clientId, toClientId, requestId, message, body];
     console.log('send', msg);
 
-    options.sender.sendMessage(msg);
+    options.sender(msg);
   }
 
-  let callback
+  let stopListening: (() => void) | null
 
   const registerReceive = (receive: Receive): void => {
-    callback = (msg: any) => {
-      console.log('received', msg);
+    stopListening = options.listener(
+      (msg: any) => {
+        console.log('received', msg);
 
-      const [fromClientId, toClientId, requestId, message, body] = msg
+        const [fromClientId, toClientId, requestId, message, body] = msg
 
-      if (!toClientId || toClientId === clientId)
-        receive(fromClientId, requestId, message, body)
-    };
-
-    options.listener.addListener(
-      callback
+        if (!toClientId || toClientId === clientId)
+          receive(fromClientId, requestId, message, body)
+      }
     )
   };
 
   const destroy = (): void => {
-    callback ||= null
-
-    options.listener.removeListener(callback)
+    if (stopListening) stopListening()
   };
 
   return createCustomSynchronizer(

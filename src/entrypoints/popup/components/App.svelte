@@ -2,11 +2,16 @@
   import Popup from "@/entrypoints/popup/components/Popup.svelte";
   import {setupStore} from "@/lib/stores/core";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
-  import {listenerIgnoringExtensionMessages} from "@/lib/misc/chrome-network";
+  import {
+    channelListener,
+    channelSender,
+    runtimeOnMessageListener,
+    runtimeOnMessageSender
+  } from "@/lib/misc/chrome-network";
 
   const ctx = setupStore({
-    listener: listenerIgnoringExtensionMessages(browser.runtime.onMessage),
-    sender: browser.runtime
+    listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),
+    sender: channelSender(runtimeOnMessageSender, 'tiny-sync')
   });
 
   setTinyContext(ctx)

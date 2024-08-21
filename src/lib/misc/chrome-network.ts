@@ -2,10 +2,6 @@ import {nanoid} from "nanoid";
 // @ts-ignore
 import type {Runtime} from "webextension-polyfill";
 
-function shouldSkipSend(sa: any, sb: any) {
-  return sa.url === sb.url && sa.documentId === sb.documentId
-}
-
 export type Listener = {
   addListener: typeof browser.runtime.onMessage.addListener
   removeListener: typeof browser.runtime.onMessage.removeListener
@@ -15,14 +11,53 @@ export type Sender = {
   sendMessage: typeof browser.runtime.sendMessage
 }
 
-export function hubServer(fallback?: any) {
+function shouldSkipSend(sa: any, sb: any) {
+  return sa.url === sb.url && sa.documentId === sb.documentId
+}
+
+export type ListenerLambda<T extends (...args: any[]) => any> = (callback: T) => () => void
+export type SenderLambda = (msg: any) => Promise<any> | void
+
+export function chromeStyleListener(wrapper: Listener): ListenerLambda<any> {
+  return (callback: any) => {
+    wrapper.addListener(callback)
+
+    return () => wrapper.removeListener(callback)
+  }
+}
+
+export const runtimeOnMessageListener = chromeStyleListener(browser.runtime.onMessage)
+export const runtimeOnMessageSender: SenderLambda = (msg: any) => {
+  return browser.runtime.sendMessage(msg).catch(() => null)
+}
+
+export type ChannelMessage = {
+  __channel: string,
+  contents: any
+}
+
+export function channelListener(listener: ListenerLambda<any>, channelName: string): ListenerLambda<any> {
+  return (callback: any) => {
+    return listener((msg: ChannelMessage) => {
+      if (msg.__channel !== channelName) return
+
+      return callback(msg.contents)
+    })
+  }
+}
+
+export function channelSender(sender: SenderLambda, channelName: string) {
+  return (msg: any) => {
+    return sender({__channel: channelName, contents: msg})
+  }
+}
+
+export function hubServer() {
   const clients: {[k: string]: {sender: Runtime.MessageSender, msgs: any[]}} = {}
 
-  const out: {sendMessage: typeof browser.runtime.sendMessage} = {
-    async sendMessage(msg: any, options?: any) {
-      for (const k in clients) {
-        clients[k].msgs.push(msg)
-      }
+  const sender: SenderLambda = async (msg: any, options?: any) => {
+    for (const k in clients) {
+      clients[k].msgs.push(msg)
     }
   }
 
@@ -46,15 +81,14 @@ export function hubServer(fallback?: any) {
       }
         break
       default:
+        // forward other messages to all pull connected clients
         for (const c of Object.values(clients)) {
           if (!shouldSkipSend(sender, c.sender)) c.msgs.push(msg)
         }
-
-        if (fallback) fallback(msg, sender, sendResponse, out)
     }
   })
 
-  return out
+  return sender
 }
 
 type ClientMessageListener = (msg: any) => void
@@ -86,41 +120,21 @@ export function pullListener(options?: {pullInterval?: number }) {
 
   window.addEventListener('beforeunload', disconnect)
 
-  return {
-    addListener(listener: ClientMessageListener) {
-      listeners.push(listener)
-    },
+  const listener = (callback: ClientMessageListener) => {
+    listeners.push(callback)
 
-    removeListener(listener: ClientMessageListener) {
-      listeners = listeners.filter(x => x !== listener)
-    },
-
-    disconnect
-  } as Listener
-}
-
-export function combineSenders(...senders: any[]) {
-  return {
-    async sendMessage(msg: any) {
-      for (const sender of senders) {
-        sender.sendMessage(msg)
-          .catch(() => {}) // ignore errors
-      }
-    }
+    return () => listeners.filter(x => x !== listener)
   }
+
+  listener.disconnect = disconnect
+
+  return listener
 }
 
-export function listenerIgnoringExtensionMessages(wrapper: Listener): Listener {
-  return {
-    addListener: (callback) => {
-      wrapper.addListener((message, sender, sendResponse) => {
-        // @ts-ignore
-        if (message.__extensionBroadcastSync) return
-
-        return callback(message, sender, sendResponse)
-      })
-    },
-
-    removeListener: wrapper.removeListener
+export function combineSenders(...senders: SenderLambda[]) {
+  return async (msg: any) => {
+    for (const sender of senders) {
+      sender(msg)
+    }
   }
 }
