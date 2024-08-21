@@ -131,7 +131,7 @@ export function pullListener(options?: {pullInterval?: number }) {
   return listener
 }
 
-export function combineSenders(...senders: SenderLambda[]) {
+export function multiSender(...senders: SenderLambda[]) {
   return async (msg: any) => {
     for (const sender of senders) {
       sender(msg)

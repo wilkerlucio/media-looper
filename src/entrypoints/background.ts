@@ -2,7 +2,7 @@ import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db
 import {setupStore} from "@/lib/stores/core";
 import {
   hubServer,
-  combineSenders,
+  multiSender,
   runtimeOnMessageSender, runtimeOnMessageListener, channelListener, channelSender
 } from "@/lib/misc/chrome-network";
 
@@ -12,7 +12,7 @@ export default defineBackground({
   main() {
     const ctx = setupStore({
       listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),
-      sender: channelSender(combineSenders(hubServer(), runtimeOnMessageSender), 'tiny-sync'),
+      sender: channelSender(multiSender(hubServer(), runtimeOnMessageSender), 'tiny-sync'),
       persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb')
     })
 
