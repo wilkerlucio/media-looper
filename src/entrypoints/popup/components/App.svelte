@@ -7,7 +7,7 @@
     channelSender,
     runtimeOnMessageListener,
     runtimeOnMessageSender
-  } from "@/lib/misc/chrome-network";
+  } from "@/lib/misc/browser-network";
 
   const ctx = setupStore({
     listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),

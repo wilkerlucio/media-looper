@@ -11,7 +11,7 @@
   import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
   import {onDestroy, onMount} from "svelte";
-  import {channelListener, runtimeOnMessageListener} from "@/lib/misc/chrome-network";
+  import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
   import {keyBy, sortBy, deburr} from "lodash";
 
   const store = getTinyContextForce('store') as MergeableStore

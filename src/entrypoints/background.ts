@@ -4,7 +4,7 @@ import {
   hubServer,
   multiSender,
   runtimeOnMessageSender, runtimeOnMessageListener, channelListener, channelSender
-} from "@/lib/misc/chrome-network";
+} from "@/lib/misc/browser-network";
 
 export default defineBackground({
   persistent: true,

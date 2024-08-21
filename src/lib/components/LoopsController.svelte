@@ -12,7 +12,7 @@
   import type {Loop} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
   import {sourceInfo, videoChapters} from "@/lib/youtube/ui";
-  import {channelSender, runtimeOnMessageSender} from "@/lib/misc/chrome-network";
+  import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 

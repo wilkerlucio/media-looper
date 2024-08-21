@@ -6,7 +6,7 @@
     channelSender,
     runtimeOnMessageListener,
     runtimeOnMessageSender
-  } from "@/lib/misc/chrome-network";
+  } from "@/lib/misc/browser-network";
   import Dashboard from "@/entrypoints/dashboard/components/Dashboard.svelte";
 
   const ctx = setupStore({

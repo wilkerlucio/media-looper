@@ -7,7 +7,7 @@ import {
   type Receive
 } from "tinybase";
 import {Send} from "tinybase/synchronizers";
-import type {ListenerLambda, SenderLambda} from "@/lib/misc/chrome-network";
+import type {ListenerLambda, SenderLambda} from "@/lib/misc/browser-network";
 
 export type RuntimeSyncOptions = {
   listener: ListenerLambda<any>
