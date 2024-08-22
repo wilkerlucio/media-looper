@@ -22,6 +22,7 @@ export default defineConfig({
     ],
   }),
   runner: {
+    // startUrls: ['https://www.youtube.com/watch?v=EDRRbuWuUbQ']
     chromiumArgs: ['--user-data-dir=./.chrome-data']
   }
 });
