@@ -128,7 +128,7 @@ export function pullListener(options?: {pullInterval?: number }) {
   const listener = (callback: ClientMessageListener) => {
     listeners.push(callback)
 
-    return () => listeners.filter(x => x !== listener)
+    return () => listeners.filter(x => x !== callback)
   }
 
   listener.disconnect = disconnect
