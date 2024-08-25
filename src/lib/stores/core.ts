@@ -19,7 +19,7 @@ function startPersister(store: Store, persisterBuilder: ((store: Store) => Persi
     createLocalPersister(store, 'youtube-looper-tb')
 }
 
-export function setupStore(options?: Options) {
+export function setupStore(options?: Options & {localOptions: Options}) {
   const store = createMergeableStore();
 
   const relationships: Relationships = createRelationships(store);
@@ -30,7 +30,7 @@ export function setupStore(options?: Options) {
   const persister = startPersister(store, options?.persister)
   const synchronizer = createBrowserRuntimeSynchronizer(store, options as RuntimeSyncOptions)
 
-  const local = setupLocalSettingsStore(options)
+  const local = setupLocalSettingsStore(options?.localOptions)
 
   const ready = (async () => {
     await local.ready
@@ -40,7 +40,7 @@ export function setupStore(options?: Options) {
   })()
 
   return {
-    store, relationships, queries, persister, synchronizer, ready, local: local.store
+    store, relationships, queries, persister, synchronizer, ready, localStore: local.store
   }
 }
 

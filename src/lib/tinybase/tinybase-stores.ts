@@ -21,7 +21,7 @@ export type Context = {
   relationships?: Relationships
   checkpoints?: Checkpoints
   queries?: Queries
-  local?: Store
+  localStore?: Store
 }
 
 export type ContextItem = keyof Context
@@ -76,7 +76,7 @@ export function useValueIds() {
 }
 
 export function useValue(id: Id, defaultValue?: Value, store?: Store | MergeableStore) {
-  store = getTinyContextForce('store');
+  store = store || getTinyContextForce('store');
 
   const { subscribe } = writable(store.getValue(id) || defaultValue, (set) => {
     const listener = store.addValueListener(id, (store, valueId, newValue) => {

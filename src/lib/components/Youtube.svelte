@@ -8,10 +8,16 @@
   import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractVideoId} from "@/lib/youtube/ui";
+  import {createLocalPersister} from "tinybase/persisters/persister-browser";
 
   const ctx = setupStore({
     listener: channelListener(pullListener(), 'tiny-sync'),
-    sender: channelSender(runtimeOnMessageSender, 'tiny-sync')
+    sender: channelSender(runtimeOnMessageSender, 'tiny-sync'),
+    localOptions: {
+      listener: channelListener(pullListener(), 'tiny-sync-local-settings'),
+      sender: channelSender(runtimeOnMessageSender, 'tiny-sync-local-settings'),
+      persister: (store) => createLocalPersister(store, 'youtube-looper-tb-local')
+    }
   });
 
   setTinyContext(ctx)

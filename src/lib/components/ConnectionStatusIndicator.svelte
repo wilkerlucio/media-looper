@@ -2,7 +2,7 @@
 
   import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
 
-  const connectionStatus = useValue('websocket-server-status', undefined, getTinyContextForce('local'))
+  const connectionStatus = useValue('websocket-server-status', '', getTinyContextForce('localStore'))
 
 </script>
 

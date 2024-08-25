@@ -74,16 +74,23 @@ export default defineBackground({
   persistent: true,
 
   main() {
+    const hub = hubServer()
+
     const ctx = setupStore({
       listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),
-      sender: channelSender(multiSender(hubServer(), runtimeOnMessageSender), 'tiny-sync'),
-      persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb')
+      sender: channelSender(multiSender(hub, runtimeOnMessageSender), 'tiny-sync'),
+      persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb'),
+      localOptions: {
+        listener: channelListener(runtimeOnMessageListener, 'tiny-sync-local-settings'),
+        sender: channelSender(multiSender(hub, runtimeOnMessageSender), 'tiny-sync-local-settings'),
+        persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb-local'),
+      }
     })
 
     ctx.ready.then(async () => {
       console.log('Background store started');
 
-      await setupWebSocketSync(ctx.store, ctx.local)
+      await setupWebSocketSync(ctx.store, ctx.localStore)
     })
 
     // @ts-ignore
