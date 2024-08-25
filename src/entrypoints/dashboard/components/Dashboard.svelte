@@ -91,12 +91,10 @@
 
   $: ids = medias.map(([id]) => id)
 
-  let embedListener;
+  let embedListener: any;
 
   onMount(() => {
     embedListener = channelListener(runtimeOnMessageListener, 'embed-media-info')((msg: any) => {
-      console.log('GOT MESSAGE', msg);
-
       if (!toImport) return
 
       if (toImport[msg.sourceId]) {
