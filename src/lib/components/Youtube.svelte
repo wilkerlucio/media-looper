@@ -8,18 +8,13 @@
   import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractVideoId} from "@/lib/youtube/ui";
-  import {createGunContext} from "@/lib/gun/store";
-  import Gun from 'gun'
 
   const ctx = setupStore({
     listener: channelListener(pullListener(), 'tiny-sync'),
     sender: channelSender(runtimeOnMessageSender, 'tiny-sync')
   });
 
-  const gun = Gun({})
-
   setTinyContext(ctx)
-  createGunContext(gun)
 
   let popupVisible = false
 
@@ -36,7 +31,6 @@
     }
   }
 
-  window.gun = gun
 </script>
 
 <svelte:head>
