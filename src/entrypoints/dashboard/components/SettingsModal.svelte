@@ -8,7 +8,9 @@
 
 </script>
 
-<Button on:click={(e) => {showSettingsModal = true; sp(e)}}>Settings</Button>
+<Button on:click={(e) => {showSettingsModal = true; sp(e)}} class="gap-2">
+  Settings
+</Button>
 
 <Modal title="Settings" bind:open={showSettingsModal} size="xs" autoclose>
   <Settings/>

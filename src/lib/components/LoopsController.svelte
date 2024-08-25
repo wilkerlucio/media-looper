@@ -4,7 +4,7 @@
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext, onMount} from "svelte";
   import type {Id, Queries, Relationships, Row, Store} from "tinybase";
-  import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
+  import {useQueriesResultTable, useValue} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
   import {partition} from "@/lib/helpers/array";
@@ -13,6 +13,7 @@
   import * as amplitude from '@amplitude/analytics-browser';
   import {sourceInfo, videoChapters} from "@/lib/youtube/ui";
   import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
+  import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -158,6 +159,9 @@
   })
 
   $: if (Object.entries($loops).length > 0) ensureMediaInfo()
+
+  const connectionStatus = useValue('websocket-server-status')
+
 </script>
 
 <svelte:document on:keydown={shortcutsHandler} />
@@ -177,7 +181,11 @@
       />
     {/each}
   </div>
-  <div class="dashboard"><a href="{dashboardUrl}" target="_blank">Open Dashboard</a></div>
+  <div class="dashboard">
+    <a href="{dashboardUrl}" target="_blank">Open Dashboard</a>
+    <div class="spacer"></div>
+    <ConnectionStatusIndicator/>
+  </div>
   <div class="support-speed">
     <div><a href="https://www.patreon.com/wsscode" on:click={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
@@ -206,6 +214,8 @@
     }
 
     .dashboard {
+        display: flex;
+        align-items: center;
         padding: 6px 0;
     }
 

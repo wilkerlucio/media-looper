@@ -58,7 +58,8 @@ export default defineBackground({
 
             webSocket.addEventListener('close', (e) => {
               console.log('websocket disconnected', e);
-              store.setValue('websocket-server-status', 'error');
+              if (store.getValue('websocket-server-status') !== '')
+                store.setValue('websocket-server-status', 'error');
             })
 
             console.log('Background store WS sync ready');

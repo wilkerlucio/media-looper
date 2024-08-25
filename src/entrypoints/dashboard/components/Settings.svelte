@@ -18,7 +18,7 @@
 
 <div class="mb-6">
   <Label for="ws-server-url" color={wsColor} class="mb-2">
-    Web Socket Server URL - {$wsStatus}
+    Web Socket Server URL
   </Label>
   <Input
       type="text"
