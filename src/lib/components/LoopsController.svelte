@@ -14,6 +14,7 @@
   import {sourceInfo, videoChapters} from "@/lib/youtube/ui";
   import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
+  import {nanoid} from "nanoid";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -87,8 +88,12 @@
 
     log('Create Loop', loop)
 
+    const loopId = nanoid()
+
     // @ts-ignore
-    playLoop(store.addRow('loops', loop) || null)
+    store.setRow('loops', loopId, loop)
+
+    playLoop(loopId)
   }
 
   function selectLoop(e: any) {
@@ -115,7 +120,9 @@
 
       log('Duplicate Loop', loop)
 
-      store.addRow('loops', loop)
+      const loopId = nanoid()
+
+      store.setRow('loops', loopId, loop)
     }
   }
 
