@@ -132,13 +132,6 @@ export function useRowIds(tableId: Id) {
   const store = getTinyContextForce('store');
 
   return useReader(store, 'RowIds', tableId)
-  // return readable(store.getRowIds(tableId), (set) => {
-  //   const listener = store.addRowIdsListener(tableId, (store, tableId) => {
-  //     set(store.getRowIds(tableId));
-  //   })
-  //
-  //   return () => store.delListener(listener)
-  // });
 }
 
 export function useSortedRowIds(
@@ -198,8 +191,6 @@ export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value
 }
 
 // endregion
-
-
 
 export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) {
   const relationships = getTinyContextForce('relationships');
