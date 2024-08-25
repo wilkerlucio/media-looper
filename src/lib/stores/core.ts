@@ -30,6 +30,26 @@ export function setupStore(options?: Options) {
   const persister = startPersister(store, options?.persister)
   const synchronizer = createBrowserRuntimeSynchronizer(store, options as RuntimeSyncOptions)
 
+  const local = setupLocalSettingsStore(options)
+
+  const ready = (async () => {
+    await local.ready
+    await persister.startAutoLoad()
+    await persister.startAutoSave()
+    await synchronizer.startSync()
+  })()
+
+  return {
+    store, relationships, queries, persister, synchronizer, ready, local: local.store
+  }
+}
+
+export function setupLocalSettingsStore(options?: Options) {
+  const store = createMergeableStore();
+
+  const persister = startPersister(store, options?.persister)
+  const synchronizer = createBrowserRuntimeSynchronizer(store, options as RuntimeSyncOptions)
+
   const ready = (async () => {
     await persister.startAutoLoad()
     await persister.startAutoSave()
@@ -37,6 +57,6 @@ export function setupStore(options?: Options) {
   })()
 
   return {
-    store, relationships, queries, persister, synchronizer, ready
+    store, persister, synchronizer, ready
   }
 }

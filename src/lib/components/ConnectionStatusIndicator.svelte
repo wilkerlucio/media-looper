@@ -1,8 +1,8 @@
 <script>
 
-  import {useValue} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
 
-  const connectionStatus = useValue('websocket-server-status')
+  const connectionStatus = useValue('websocket-server-status', undefined, getTinyContextForce('local'))
 
 </script>
 

@@ -1,6 +1,17 @@
 import {readable, writable} from 'svelte/store';
 import {getContext, setContext} from 'svelte';
-import type {Checkpoints, Id, Indexes, Metrics, Queries, Relationships, Row, Store, Value} from 'tinybase';
+import type {
+  Checkpoints,
+  Id,
+  Indexes,
+  MergeableStore,
+  Metrics,
+  Queries,
+  Relationships,
+  Row,
+  Store,
+  Value
+} from 'tinybase';
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
 
 export type Context = {
@@ -10,6 +21,7 @@ export type Context = {
   relationships?: Relationships
   checkpoints?: Checkpoints
   queries?: Queries
+  local?: Store
 }
 
 export type ContextItem = keyof Context
@@ -63,8 +75,8 @@ export function useValueIds() {
   return useReader(store, 'ValueIds')
 }
 
-export function useValue(id: Id, defaultValue?: Value) {
-  const store = getTinyContextForce('store');
+export function useValue(id: Id, defaultValue?: Value, store?: Store | MergeableStore) {
+  store = getTinyContextForce('store');
 
   const { subscribe } = writable(store.getValue(id) || defaultValue, (set) => {
     const listener = store.addValueListener(id, (store, valueId, newValue) => {
