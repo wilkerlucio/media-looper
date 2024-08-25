@@ -4,6 +4,7 @@
   import {ExclamationCircleOutline, TrashBinOutline} from "flowbite-svelte-icons";
   import {deleteMedia} from "@/lib/controller";
   import {getThumbUrl} from "@/lib/helpers/youtube";
+  import {sp} from "@/lib/helpers/events";
 
   export let id: string;
 
@@ -26,11 +27,7 @@
     deleteMedia(store, relationships, id)
   }
 
-  function sp(e: Event) {
-    e.stopPropagation()
-  }
-
-</script>
+  </script>
 
 <TableBodyRow on:click>
   <TableBodyCell class="min-w-[120px]">

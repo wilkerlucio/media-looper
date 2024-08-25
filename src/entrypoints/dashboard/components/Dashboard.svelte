@@ -13,6 +13,7 @@
   import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
   import {keyBy, sortBy, deburr} from "lodash";
+  import SettingsModal from "@/entrypoints/dashboard/components/SettingsModal.svelte";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -119,6 +120,7 @@
     <Button on:click={downloadDatabase}>Export database</Button>
     <Button on:click={importLoops}>Import database</Button>
     <Button on:click={importLoopsPreviousPreview}>Import from previous version</Button>
+    <SettingsModal />
   </div>
 
   <TableSearch placeholder="Search" hoverable={true} shadow bind:inputValue={search}>
