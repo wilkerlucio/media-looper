@@ -11,9 +11,19 @@ import {MergeableStore} from "tinybase";
 
 async function setupWebSocketSync(store: MergeableStore, settingsStore: MergeableStore) {
   let wsSync: ReturnType<typeof createWsSynchronizer> | null = null
+  let retryTimer: number | undefined
+
+  function retry(f: any) {
+    clearTimeout(retryTimer)
+
+    // @ts-ignore
+    retryTimer = setTimeout(f, 5000)
+  }
 
   async function updateServer(connectionURL: string) {
     console.log('Updating server connection', connectionURL);
+
+    clearTimeout(retryTimer)
 
     if (wsSync) {
       console.log('Destroyed previous WS synchronizer');
@@ -41,13 +51,18 @@ async function setupWebSocketSync(store: MergeableStore, settingsStore: Mergeabl
 
         webSocket.addEventListener('error', (e) => {
           console.log('got websocket error', e);
+
           settingsStore.setValue('websocket-server-status', 'error');
         })
 
         webSocket.addEventListener('close', (e) => {
           console.log('websocket disconnected', e);
-          if (settingsStore.getValue('websocket-server-status') !== '')
+
+          if (settingsStore.getValue('websocket-server-status') !== '') {
             settingsStore.setValue('websocket-server-status', 'error');
+
+            retry(() => updateServer(connectionURL))
+          }
         })
 
         console.log('Background store WS sync ready');
@@ -57,6 +72,8 @@ async function setupWebSocketSync(store: MergeableStore, settingsStore: Mergeabl
         console.log(`Failed to connect to ${connectionURL}`, e);
 
         settingsStore.setValue('websocket-server-status', 'error');
+
+        retry(() => updateServer(connectionURL))
       }
     } else {
       settingsStore.setValue('websocket-server-status', '');
