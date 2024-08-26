@@ -37,6 +37,14 @@ IMAGE
 
 The label is automatically saved as you type. Hit return or escape to remove the focus from label input.
 
+### Tree View
+
+When a loop time is contained inside the range of another loop, this loop will be displayed as a child of the parent
+loop. This is common when you want, for example, to break a section to train in smaller sections and later go wider.
+If there are many levels of nesting, the loops will indent accordingly.
+
+IMAGE
+
 ### Duplicate loop
 
 ### Delete loop
