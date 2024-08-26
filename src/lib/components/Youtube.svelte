@@ -46,7 +46,9 @@
 {#await ctx.ready then x}
   {#if sourceId}
     <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={toggleVisible}>
-      <img src={logoData} alt="Youtube Looper" />
+      <div class="button-inner-container">
+        <img src={logoData} alt="Youtube Looper" />
+      </div>
     </button>
 
     <div class="ytp-popup ytp-settings-menu ml-popup" class:popupVisible use:portal={{target: ".html5-video-player"}}>
@@ -60,6 +62,17 @@
     img {
         display: block;
         width: 32px;
+    }
+
+    .ytp-button {
+        float: left;
+    }
+
+    .button-inner-container {
+        width: 100%;
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
     }
 
     .ml-popup {
