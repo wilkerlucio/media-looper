@@ -1,7 +1,7 @@
 <script lang="ts">
   import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores";
   import {Button, Heading, Modal, TableBody, TableHead, TableHeadCell, TableSearch} from "flowbite-svelte";
-  import {createMergeableStore, type MergeableStore} from "tinybase";
+  import {type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
   import type {Loop, Media} from "@/lib/model";
@@ -12,7 +12,7 @@
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
   import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
-  import {keyBy, sortBy, deburr} from "lodash";
+  import {deburr, keyBy, sortBy} from "lodash";
   import SettingsModal from "@/entrypoints/dashboard/components/SettingsModal.svelte";
 
   const store = getTinyContextForce('store') as MergeableStore
@@ -21,18 +21,32 @@
   let search = ""
   let toImport: {[key: string]: any} | false = false
 
+  function exportDatabase() {
+    const medias = store.getTable('medias')
+    const loops = store.getTable('loops')
+
+    for (const [id, media] of Object.entries(medias)) {
+      media.sourceId = id
+    }
+
+    for (const [id, loop] of Object.entries(loops)) {
+      loop.id = id
+      medias[loop.source].loops ||= []
+      medias[loop.source].loops.push(loop)
+    }
+
+    return medias
+  }
+
   function downloadDatabase() {
-    download('media-looper-backup.json', new Blob([JSON.stringify(store.getMergeableContent())], {type: "application/json"}))
+    download('media-looper-backup.json', new Blob([JSON.stringify(exportDatabase())], {type: "application/json"}))
   }
 
   async function importLoops() {
     const file = await pickFile()
     const content = await readFileText(file)
 
-    const importStore = createMergeableStore()
-    importStore.setMergeableContent(JSON.parse(content))
-
-    store.merge(importStore)
+    toImport = JSON.parse(content)
   }
 
   function parseLoops(videoId: string, loopsEdn: string): Loop[] {
@@ -59,8 +73,6 @@
 
       return {sourceId: sourceIdFromVideoId(match[1]), loops: parseLoops(match[1], x)}
     }), x => x.sourceId)
-
-    console.log('import', toImport);
   }
 
   function importLoopsPrevious() {
@@ -131,7 +143,6 @@
         <MediaAdmin {id} on:click={() => media = id}/>
       {/each}
     </TableBody>
-
   </TableSearch>
 
   <Modal bind:open={media} autoclose outsideclose dismissable={false} size={'xl'} classDialog="outline-0">
@@ -142,7 +153,7 @@
     {/if}
   </Modal>
 
-  <Modal title="Import videos" bind:open={toImport} autoclose outsideclose classDialog="outline-0">
+  <Modal title="Import medias" bind:open={toImport} autoclose outsideclose classDialog="outline-0">
     <div class="flex flex-row flex-wrap justify-between">
       {#each Object.values(toImport) as media}
         <ImportEntry media={media}/>
