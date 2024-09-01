@@ -15,6 +15,8 @@
   import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
   import {nanoid} from "nanoid";
+  import {cutLoop} from "@/lib/controller";
+  import {videoCurrentTimeStore} from "@/lib/stores/video";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -126,6 +128,12 @@
     }
   }
 
+  function divideLoop(e: any) {
+    log('Cut Loop', loopLogDetail(e.detail.id))
+
+    cutLoop(store, e.detail.id, video?.currentTime)
+  }
+
   function deleteLoop(e: any) {
     if (activeLoop === e.detail.id) {
       activeLoop = null
@@ -169,6 +177,8 @@
 
   const connectionStatus = useValue('websocket-server-status')
 
+  $: currentTimeStore = videoCurrentTimeStore(video)
+
 </script>
 
 <svelte:document on:keydown={shortcutsHandler} />
@@ -181,9 +191,11 @@
           {id}
           {children}
           {video}
+          currentTime={$currentTimeStore}
           active={activeLoop}
           on:select={selectLoop}
           on:duplicate={duplicateLoop}
+          on:cut={divideLoop}
           on:delete={deleteLoop}
       />
     {/each}

@@ -15,6 +15,7 @@
   export let children: Loops | undefined;
   export let active: Id | null;
   export let nesting = 0;
+  export let currentTime: number;
 
   $: loopSource = useRow('loops', id)
   $: loop = ($loopSource) as unknown as Loop
@@ -69,6 +70,9 @@
     <Icon icon="ellipsis-h" style="margin-top: 2px;" />
     <div class="looper-dropdown-content">
       <a href="#duplicate" on:click|preventDefault={() => dispatch('duplicate', {id})}>Duplicate</a>
+      {#if loop.startTime < currentTime && currentTime < loop.endTime}
+        <a href="#cut" on:click|preventDefault={() => dispatch('cut', {id})}>Split</a>
+      {/if}
       {#if !loop.readonly}
         <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
       {/if}
@@ -83,9 +87,11 @@
       children={loop.children}
       {active}
       {video}
+      {currentTime}
       nesting={nesting + 1}
       on:select
       on:duplicate
+      on:cut
       on:delete
     />
   {/each}

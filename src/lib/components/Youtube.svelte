@@ -51,9 +51,11 @@
       </div>
     </button>
 
-    <div class="ytp-popup ytp-settings-menu ml-popup" class:popupVisible use:portal={{target: ".html5-video-player"}}>
-      <LoopsController {sourceId} />
-    </div>
+    {#if popupVisible}
+      <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}}>
+        <LoopsController {sourceId} />
+      </div>
+    {/if}
   {/if}
 {/await}
 
@@ -76,14 +78,10 @@
     }
 
     .ml-popup {
-        display: none;
+        display: block;
         height: calc(100% - 72px);
         top: 8px;
         overflow: hidden;
-    }
-
-    .ml-popup.popupVisible {
-        display: block;
     }
 
 </style>

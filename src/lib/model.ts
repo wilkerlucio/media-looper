@@ -1,5 +1,9 @@
 import {Id} from "tinybase";
 
+export interface Identified {
+  id: string;
+}
+
 export interface Loop {
   startTime: number;
   endTime: number;

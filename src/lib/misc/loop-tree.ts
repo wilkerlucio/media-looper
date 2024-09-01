@@ -4,7 +4,7 @@ import {LoopEntry, Loops} from "@/lib/model";
 export function sortLoops(loops: Loops) {
   return loops.sort((a, b) => {
     const startCheck = a[1].startTime - b[1].startTime
-    return startCheck === 0 ? a[1].endTime - b[1].endTime : startCheck
+    return startCheck === 0 ? b[1].endTime - a[1].endTime : startCheck
   })
 }
 
