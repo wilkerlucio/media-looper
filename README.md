@@ -21,19 +21,19 @@ When a video has chapters (like in this example), YouTube Looper will automatica
 When you start a new loop, the current video time will be the start time of a loop. You can start a loop with the video
 running or paused.
 
-IMAGE
+![Start Loop](./doc-assets/start-loop.png)
 
 Once you mark the start point of the loop, you will see an indication of the time it started, and the `+` button gets
 replaced with a stop button:
 
-IMAGE
+![Stop Loop](./doc-assets/stop-loop.png)
 
 After click to stop, the new loop will be recorded and will be activated.
 
 Naming your loops will really help you later to remember what that section is about. You can click on the loop label
 to edit it:
 
-IMAGE
+![Edit label](./doc-assets/edit-label.gif)
 
 The label is automatically saved as you type. Hit return or escape to remove the focus from label input.
 
@@ -43,15 +43,29 @@ When a loop time is contained inside the range of another loop, this loop will b
 loop. This is common when you want, for example, to break a section to train in smaller sections and later go wider.
 If there are many levels of nesting, the loops will indent accordingly.
 
-IMAGE
+![Tree view](./doc-assets/tree-view.png)
+
+### Loop actions
+
+On the right side of each loop you can see a `...`, mouse over it to reveal the actions for that loop.
 
 ### Duplicate loop
 
+Use the duplicate action to create a copy from the loop.
+
 ### Delete loop
 
-### Cut loop
+Click on this action to delete the loop. Loops created from markers can't be deleted.
+
+### Split loop
+
+Split loop will create two loops by splitting the selected loop at the current video time. The split action only shows
+when the current time of the video is inside the boundaries of the loop you are seeing the actions for.
 
 ### Speed control
+
+The speed control at the lower right of the panel allows you to have precise control over the video playback speed.
+Click on the label `Speed` to return it to 100%.
 
 ## Keyboard shortcuts
 
