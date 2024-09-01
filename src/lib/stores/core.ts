@@ -19,13 +19,19 @@ function startPersister(store: Store, persisterBuilder: ((store: Store) => Persi
     createLocalPersister(store, 'youtube-looper-tb')
 }
 
-export function setupStore(options?: Options & {localOptions: Options}) {
+export function storeBase() {
   const store = createMergeableStore();
 
   const relationships: Relationships = createRelationships(store);
   relationships.setRelationshipDefinition('mediaLoops', 'loops', 'medias', 'source')
 
   const queries = createQueries(store);
+
+  return {store, relationships, queries}
+}
+
+export function setupStore(options?: Options & {localOptions: Options}) {
+  const {store, relationships, queries} = storeBase()
 
   const persister = startPersister(store, options?.persister)
   const synchronizer = createBrowserRuntimeSynchronizer(store, options as RuntimeSyncOptions)
