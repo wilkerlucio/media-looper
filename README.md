@@ -110,6 +110,10 @@ importing.
 
 ### Settings
 
+Currently, the only setting is to configure a sync service. This is an advanced topic and only recommended to people
+with some programming experience. You have to set up a service, that can run on your machine or somewhere that's
+accessible in the network.
+
 ## Running a sync server
 
 This version of the YouTube Looper uses [TinyBase](https://tinybase.org/) as the data layer. 
