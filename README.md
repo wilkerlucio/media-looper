@@ -167,3 +167,15 @@ pnpm run dev
 
 This will start the compilation and open the browser in an anonymous profile with the extension in dev mode installed
 on it.
+
+## Building extension
+
+To build releases:
+
+```
+# for chrome
+pnpm run zip
+
+# for firefox
+pnpm run zip:firefox
+```
