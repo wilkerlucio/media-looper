@@ -30,12 +30,22 @@ replaced with a stop button:
 
 After click to stop, the new loop will be recorded and will be activated.
 
+#### Update loop label
+
 Naming your loops will really help you later to remember what that section is about. You can click on the loop label
 to edit it:
 
 ![Edit label](./doc-assets/edit-label.gif)
 
 The label is automatically saved as you type. Hit return or escape to remove the focus from label input.
+
+#### Adjust loop timing
+
+You can edit the loop timing after it has been created. For this task you can use the `-` and `+` buttons around the
+timings. The buttons will adjust the timing by one second on each click. If you hold the `shift` key, you can do a 
+precise adjustment, that iterates in 100ms offsets.
+
+You can also click in the time to edit as a text.
 
 ### Tree View
 
@@ -76,13 +86,25 @@ Click on the label `Speed` to return it to 100%.
 
 ## Popup Window
 
-WIP: Talk about features on popup window
+You can open the popup window by clicking on the YouTube Looper icon in the Chrome toolbar:
+
+IMAGE
+
+The popup window gives a link to access the dashboard, and also displays the last four videos you have played a loop on.
 
 ## Dashboard
 
-WIP: Talk about features in dashboard page
+In the dashboard page you can see all the videos you have recorded loops for. Use the search input to find some video.
 
-### Export / Import
+### Export
+
+Use the export button to save all your loops in a file that you can use to restore later, or to copy to a different
+installation, or share loops with friends.
+
+### Import
+
+Here you can import files created using the export feature. You will see an import preview to see what you are 
+importing.
 
 ### Import from the previous version
 
@@ -120,13 +142,10 @@ The background will turn green when the connection is successfully made.
 
 When you have sync turned on, you will notice a circle in the bottom area of the modal:
 
-IMAGE
+![Sync status indicator](./doc-assets/sync-status-indicator.png)
 
-The green circle means the connection is working and your data is synced. If you see a red dot:
-
-IMAGE
-
-Go to the dashboard page and check your configuration.
+The green circle means the connection is working and your data is synced. If you see a red dot, go to the dashboard
+page and check your configuration.
 
 ### Backing up data
 
