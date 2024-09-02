@@ -1,6 +1,6 @@
 {
-  "name": "wxt-svelte-starter",
-  "description": "manifest.json description",
+  "name": "youtube-looper",
+  "description": "Custom loops extension for Youtube videos",
   "private": true,
   "version": "2024.09.02",
   "scripts": {
