@@ -2,7 +2,7 @@
   "name": "wxt-svelte-starter",
   "description": "manifest.json description",
   "private": true,
-  "version": "2.0.0",
+  "version": "2024.09.02",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
