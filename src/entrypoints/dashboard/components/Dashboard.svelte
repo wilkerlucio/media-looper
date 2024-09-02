@@ -63,16 +63,22 @@
     })
   }
 
-  async function importLoopsPreviousPreview() {
+  async function loadLoopsPrevious() {
     const data = await browser.storage.sync.get(null)
 
-    toImport = keyBy(keep(Object.entries(data), ([id, x]: [string, any]) => {
+    return keyBy(keep(Object.entries(data), ([id, x]: [string, any]) => {
       const match = id.match(/media-looper:youtube:([^"]+)/)
 
       if (!match) return null
 
       return {sourceId: sourceIdFromVideoId(match[1]), loops: parseLoops(match[1], x)}
     }), x => x.sourceId)
+  }
+
+  const prevData = loadLoopsPrevious()
+
+  async function importLoopsPreviousPreview() {
+    toImport = await prevData
   }
 
   function importLoopsPrevious() {
@@ -123,10 +129,15 @@
 <div class="px-10 w-full my-6">
   <Heading tag="h1" class="mb-5">Youtube Looper Dashboard</Heading>
 
-  <div class="my-4">
+  <div class="my-4 flex gap-3">
     <Button on:click={downloadDatabase}>Export database</Button>
     <Button on:click={importLoops}>Import database</Button>
-    <Button on:click={importLoopsPreviousPreview}>Import from previous version</Button>
+    {#await prevData then x}
+      {#if Object.entries(x).length > 0}
+        <Button on:click={importLoopsPreviousPreview}>Import from previous version</Button>
+      {/if}
+    {/await}
+    <div class="flex-1"></div>
     <SettingsModal />
   </div>
 
