@@ -14,7 +14,7 @@
     listener: channelListener(pullListener(), 'tiny-sync'),
     sender: channelSender(runtimeOnMessageSender, 'tiny-sync'),
     localOptions: {
-      listener: channelListener(pullListener(), 'tiny-sync-local-settings'),
+      listener: channelListener(pullListener({pullInterval: 5000}), 'tiny-sync-local-settings'),
       sender: channelSender(runtimeOnMessageSender, 'tiny-sync-local-settings'),
       persister: (store) => createLocalPersister(store, 'youtube-looper-tb-local')
     }

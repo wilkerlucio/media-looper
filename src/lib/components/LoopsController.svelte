@@ -25,12 +25,11 @@
   let activeComponent: ActiveLoop
   let recorderComponent: Recorder
 
-  const {store, relationships, queries}:
-    { store: Store, relationships: Relationships, queries: Queries } = getContext('tinybase') || {};
+  const {store}: { store: Store } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
 
-  $: activeLoop = (sourceId ? null : null) as Id | null;
+  $: activeLoop = null as Id | null;
 
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
@@ -43,28 +42,26 @@
   $: {
     sourceId
 
-    setTimeout(() => {
-      const chapters = videoChapters(video)
-      const groups = partition(chapters, 2, 1)
-      const loops = groups.map(([a, b]) => {
-        return {
-          id: sourceId + '-' + a.time,
-          label: a.title,
-          startTime: secondsFromTime(a.time),
-          endTime: secondsFromTime(b.time),
-          source: sourceId,
-          readonly: true
-        }
-      })
-
-      if (loops.length > 0) {
-        ensureMediaInfo()
+    const chapters = videoChapters(video)
+    const groups = partition(chapters, 2, 1)
+    const loops = groups.map(([a, b]) => {
+      return {
+        id: sourceId + '-' + a.time,
+        label: a.title,
+        startTime: secondsFromTime(a.time),
+        endTime: secondsFromTime(b.time),
+        source: sourceId,
+        readonly: true
       }
+    })
 
-      for (const {id, ...loop} of loops) {
-        store.setRow('loops', id, loop as Row)
-      }
-    }, 1000)
+    if (loops.length > 0) {
+      ensureMediaInfo()
+    }
+
+    for (const {id, ...loop} of loops) {
+      store.setRow('loops', id, loop as Row)
+    }
   }
 
   function log(event: string, details?: {[key: string]: any}) {
@@ -175,7 +172,7 @@
     sender({sourceId, ...sourceInfo() || {}})
   })
 
-  //
+  // automatic import data from a previous version when available
   onMount(async () => {
     const previousData = await browser.storage.sync.get(`"media-looper:youtube:${videoIdFromSourceId(sourceId)}"`)
 

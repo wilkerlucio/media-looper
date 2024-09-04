@@ -42,7 +42,7 @@ export function setupStore(options?: Options & {localOptions: Options}) {
     await local.ready
     await persister.startAutoLoad()
     await persister.startAutoSave()
-    await synchronizer.startSync()
+    synchronizer.startSync()
   })()
 
   return {
@@ -59,7 +59,7 @@ export function setupLocalSettingsStore(options?: Options) {
   const ready = (async () => {
     await persister.startAutoLoad()
     await persister.startAutoSave()
-    await synchronizer.startSync()
+    synchronizer.startSync()
   })()
 
   return {
