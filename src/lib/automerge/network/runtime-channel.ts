@@ -1,16 +1,15 @@
 import {type Message, NetworkAdapter, type PeerId, type PeerMetadata,} from "@automerge/automerge-repo/slim"
+import {ListenerLambda, SenderLambda} from "@/lib/misc/browser-network";
 
 export type RuntimeChannelNetworkAdapterOptions = {
-  listener: {
-    addListener: typeof browser.runtime.onMessage.addListener
-    removeListener: typeof browser.runtime.onMessage.removeListener
-  }
-  sender: { sendMessage: typeof browser.runtime.sendMessage }
+  listener: ListenerLambda<any>
+  sender: SenderLambda
 }
 
 export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   #options: RuntimeChannelNetworkAdapterOptions
   #connectCallback: ((message: BroadcastChannelMessage) => void) | undefined
+  #unlisten: any
 
   constructor(options: RuntimeChannelNetworkAdapterOptions) {
     super()
@@ -22,9 +21,6 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
     this.peerMetadata = peerMetadata
 
     this.#connectCallback = (message: BroadcastChannelMessage) => {
-      // @ts-ignore
-      if (message.__extensionBroadcastSync) return
-
       // @ts-ignore
       if (message.data) message.data = new Uint8Array(message.data)
 
@@ -68,7 +64,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
       }
     };
 
-    this.#options.listener.addListener(this.#connectCallback)
+    this.#unlisten = this.#options.listener(this.#connectCallback)
 
     this.postMessage({
       senderId: this.peerId,
@@ -85,7 +81,7 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   }
 
   postMessage(message: Message) {
-    this.#options.sender.sendMessage(message)
+    this.#options.sender(message)
   }
 
   send(message: Message) {
@@ -107,11 +103,10 @@ export class RuntimeChannelNetworkAdapter extends NetworkAdapter {
   }
 
   disconnect() {
-    // TODO:
-    if (this.#connectCallback)
-      this.#options.listener.removeListener(this.#connectCallback)
+    if (this.#unlisten)
+      this.#unlisten()
 
-    this.#connectCallback = undefined
+    this.#unlisten = undefined
   }
 }
 
