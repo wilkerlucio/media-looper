@@ -1,7 +1,7 @@
 <script lang="ts">
 
   import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
-  import {Input, Label, Spinner} from "flowbite-svelte";
+  import {A, Input, Label, Spinner} from "flowbite-svelte";
 
   const wsConfig = useValue('websocket-server-url', '', getTinyContextForce('localStore'))
   const wsStatus = useValue('websocket-server-status', '', getTinyContextForce('localStore'))
@@ -18,7 +18,7 @@
 
 <div class="mb-6">
   <Label for="ws-server-url" color={wsColor} class="mb-2">
-    Web Socket Server URL
+    Web Socket Server URL (<A href="https://github.com/wilkerlucio/media-looper?tab=readme-ov-file#running-a-sync-server" target="_blank">how to setup a sync server</A>)
   </Label>
   <Input
       type="text"
