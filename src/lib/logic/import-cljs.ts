@@ -1,6 +1,5 @@
 import {parseEDNString} from "edn-data";
 import type {Identified, Loop, Media} from "@/lib/model";
-import {videoIdFromSourceId} from "@/lib/youtube/ui";
 import {MergeableStore, Store} from "tinybase";
 
 export function parseEDN(edn: string) {
