@@ -40,7 +40,11 @@ export const createBrowserRuntimeSynchronizer = ((
       const [fromClientId, toClientId, requestId, message, body] = msg
 
       if (!toClientId || toClientId === clientId)
-        receive(fromClientId, requestId, message, body)
+        try {
+          receive(fromClientId, requestId, message, body)
+        } catch(e) {
+          console.error('Error in receive', e, fromClientId, requestId, message, body);
+        }
     })
   };
 
@@ -53,7 +57,7 @@ export const createBrowserRuntimeSynchronizer = ((
     send,
     registerReceive,
     destroy,
-    2,
+    3,
     onSend,
     onReceive,
     onIgnoredError
