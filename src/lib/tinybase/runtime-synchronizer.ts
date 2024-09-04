@@ -36,14 +36,12 @@ export const createBrowserRuntimeSynchronizer = ((
   let stopListening: (() => void) | null
 
   const registerReceive = (receive: Receive): void => {
-    const callback = (msg: any) => {
+    stopListening = options.listener((msg: any) => {
       const [fromClientId, toClientId, requestId, message, body] = msg
 
       if (!toClientId || toClientId === clientId)
         receive(fromClientId, requestId, message, body)
-    }
-
-    stopListening = options.listener(callback)
+    })
   };
 
   const destroy = (): void => {
