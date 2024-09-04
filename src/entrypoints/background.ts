@@ -8,6 +8,10 @@ import {
 
 import {createWsSynchronizer} from "tinybase/synchronizers/synchronizer-ws-client";
 import {MergeableStore} from "tinybase";
+import {parseEDNString} from "edn-data";
+import { Dictionary } from 'lodash';
+import {importMedia, parseLoops} from "@/lib/logic/import-cljs";
+import {videoIdFromSourceId} from "@/lib/youtube/ui";
 
 async function setupWebSocketSync(store: MergeableStore, settingsStore: MergeableStore) {
   let wsSync: ReturnType<typeof createWsSynchronizer> | null = null
@@ -87,6 +91,17 @@ async function setupWebSocketSync(store: MergeableStore, settingsStore: Mergeabl
   }, true)
 }
 
+function setupOnDemandImportFromPreviousProcess(store: MergeableStore) {
+  channelListener(runtimeOnMessageListener, 'import-from-previous')(
+    ({sourceId, edn, info}: {sourceId: string, edn: Dictionary<string>, info: any}) => {
+      const loops = parseLoops(videoIdFromSourceId(sourceId), Object.values(edn)[0]);
+
+      if (importMedia(store, sourceId, info, loops))
+        console.log('Imported from previous version', sourceId, info, loops);
+    }
+  )
+}
+
 export default defineBackground({
   persistent: true,
 
@@ -107,6 +122,7 @@ export default defineBackground({
     ctx.ready.then(async () => {
       console.log('Background store started');
 
+      setupOnDemandImportFromPreviousProcess(ctx.store)
       await setupWebSocketSync(ctx.store, ctx.localStore)
     })
 

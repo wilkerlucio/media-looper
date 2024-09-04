@@ -11,7 +11,7 @@
   import {secondsFromTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
   import * as amplitude from '@amplitude/analytics-browser';
-  import {sourceInfo, videoChapters} from "@/lib/youtube/ui";
+  import {sourceInfo, videoChapters, videoIdFromSourceId} from "@/lib/youtube/ui";
   import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
   import {nanoid} from "nanoid";
@@ -167,10 +167,25 @@
     }
   }
 
+  // broadcast the media info from this page so it can be used in places like the import screen to get the name of
+  // media being imported
   onMount(() => {
     const sender = channelSender(runtimeOnMessageSender, 'embed-media-info')
 
     sender({sourceId, ...sourceInfo() || {}})
+  })
+
+  //
+  onMount(async () => {
+    const previousData = await browser.storage.sync.get(`"media-looper:youtube:${videoIdFromSourceId(sourceId)}"`)
+
+    if (previousData) {
+      const sender = channelSender(runtimeOnMessageSender, 'import-from-previous')
+
+      sender({sourceId, info: sourceInfo(), edn: previousData})
+    }
+
+    console.log("previous data", previousData);
   })
 
   $: if (Object.entries($loops).length > 0) ensureMediaInfo()

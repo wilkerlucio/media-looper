@@ -4,9 +4,8 @@
   import {type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
-  import type {Loop, Media} from "@/lib/model";
+  import type {Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {parseEDNString} from "edn-data";
   import {keep} from "@/lib/helpers/array";
   import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
@@ -14,6 +13,7 @@
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
   import {deburr, keyBy, sortBy} from "lodash";
   import SettingsModal from "@/entrypoints/dashboard/components/SettingsModal.svelte";
+  import {importMedia, parseLoops} from "@/lib/logic/import-cljs";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -49,20 +49,6 @@
     toImport = JSON.parse(content)
   }
 
-  function parseLoops(videoId: string, loopsEdn: string): Loop[] {
-    const loops = parseEDNString(loopsEdn as string, { mapAs: 'object', keywordAs: 'string' }) as any[]
-
-    return loops.map((l) => {
-      return {
-        id: l['com.wsscode.media-looper.model/loop-id'].val,
-        startTime: l['com.wsscode.media-looper.model/loop-start'],
-        endTime: l['com.wsscode.media-looper.model/loop-finish'],
-        label: l['com.wsscode.media-looper.model/loop-title'],
-        source: 'youtube:' + videoId
-      }
-    })
-  }
-
   async function loadLoopsPrevious() {
     const data = await browser.storage.sync.get(null)
 
@@ -71,7 +57,7 @@
 
       if (!match) return null
 
-      return {sourceId: sourceIdFromVideoId(match[1]), loops: parseLoops(match[1], x)}
+      return {sourceId: sourceIdFromVideoId(match[1]), loops: parseLoops(match[1], x), fromCLJS: true}
     }), x => x.sourceId)
   }
 
@@ -81,13 +67,9 @@
     toImport = await prevData
   }
 
-  function importLoopsPrevious() {
-    for (const {sourceId, loops, ...media} of Object.values(toImport)) {
-      store.setPartialRow('medias', sourceId, {readonly: false, ...media})
-
-      for (const {id, ...loop} of loops) {
-        store.setRow('loops', id, loop)
-      }
+  function importLoopsFinish() {
+    for (const {sourceId, loops, fromCLJS, ...media} of Object.values(toImport)) {
+      importMedia(store, sourceId, {readonly: false, ...media}, loops)
     }
   }
 
@@ -172,7 +154,7 @@
     </div>
 
     <svelte:fragment slot="footer">
-      <Button on:click={importLoopsPrevious}>Import</Button>
+      <Button on:click={importLoopsFinish}>Import</Button>
       <Button color="alternative">Cancel</Button>
     </svelte:fragment>
   </Modal>

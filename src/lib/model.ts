@@ -15,7 +15,8 @@ export interface Loop {
 export interface Media {
   title: string,
   channel: string,
-  lastLoopPlay?: string
+  lastLoopPlay?: string,
+  importedFromCLJS?: boolean
 }
 
 export type LoopEntry = Loop & {children?: Loops}
