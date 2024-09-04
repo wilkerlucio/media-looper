@@ -88,13 +88,15 @@ Click on the label `Speed` to return it to 100%.
 
 You can open the popup window by clicking on the YouTube Looper icon in the Chrome toolbar:
 
-IMAGE
+![Popup Window](./doc-assets/popup.png)
 
 The popup window gives a link to access the dashboard, and also displays the last four videos you have played a loop on.
 
 ## Dashboard
 
 In the dashboard page you can see all the videos you have recorded loops for. Use the search input to find some video.
+
+![Dashboard](./doc-assets/dashboard.png)
 
 ### Export
 
