@@ -24,7 +24,9 @@
 
   setTinyContext(ctx)
 
-  let popupVisible = false
+  // need to use in this format so it clears the loop when the video changes
+  $: activeLoop = (sourceId ? null : null) as Id | null;
+  $: popupVisible = (sourceId ? false : false) as boolean;
   let activeComponent: ActiveLoop
   let controllerComponent: LoopsController
 
@@ -56,9 +58,6 @@
 
     activeLoop = loopId
   }
-
-  // need to use in this format so it clears the loop when the video changes
-  $: activeLoop = (sourceId ? null : null) as Id | null;
 
   function selectLoop(e: any) {
     const id = e.detail.id
