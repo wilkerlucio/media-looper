@@ -184,8 +184,6 @@
 
       sender({sourceId, info: sourceInfo(), edn: previousData})
     }
-
-    console.log("previous data", previousData);
   })
 
   $: if (Object.entries($loops).length > 0) ensureMediaInfo()
