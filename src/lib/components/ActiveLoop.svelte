@@ -53,7 +53,7 @@
     .bar {
         position: absolute;
         height: 3px;
-        background: rgb(5 255 0 / 71%);
+        background: rgb(5 255 0 / 50%);
         top: 1px;
         z-index: 100;
     }

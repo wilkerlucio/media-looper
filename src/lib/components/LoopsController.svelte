@@ -3,8 +3,8 @@
   import Recorder from "@/lib/components/Recorder.svelte";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext, onMount} from "svelte";
-  import type {Id, Queries, Relationships, Row, Store} from "tinybase";
-  import {useQueriesResultTable, useValue} from "@/lib/tinybase/tinybase-stores";
+  import type {Id, Row, Store} from "tinybase";
+  import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
   import {partition} from "@/lib/helpers/array";
@@ -22,14 +22,13 @@
 
   export let sourceId: string
 
-  let activeComponent: ActiveLoop
   let recorderComponent: Recorder
 
   const {store}: { store: Store } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
 
-  $: activeLoop = null as Id | null;
+  export let activeLoop: Id | null = null;
 
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
@@ -95,22 +94,6 @@
     playLoop(loopId)
   }
 
-  function selectLoop(e: any) {
-    const id = e.detail.id
-
-    if (activeLoop === id) {
-      log('Stop Loop', loopLogDetail(id))
-
-      activeLoop = null
-    } else {
-      if (activeLoop) log('Stop Loop', loopLogDetail(activeLoop))
-
-      log('Start Loop', loopLogDetail(id))
-
-      playLoop(id)
-    }
-  }
-
   function duplicateLoop(e: any) {
     const loop = store.getRow('loops', e.detail.id)
 
@@ -154,14 +137,8 @@
   // @ts-ignore
   $: sortedLoops = loopTree($loops)
 
-  function shortcutsHandler(e: KeyboardEvent) {
-    if (e.altKey && e.code === 'KeyZ') {
-      if (activeComponent) {
-        activeComponent.seekStart(e.shiftKey ? 3 : 0)
-      } else {
-        recorderComponent.record()
-      }
-    }
+  export function record() {
+    recorderComponent.record()
   }
 
   // broadcast the media info from this page so it can be used in places like the import screen to get the name of
@@ -185,13 +162,9 @@
 
   $: if (Object.entries($loops).length > 0) ensureMediaInfo()
 
-  const connectionStatus = useValue('websocket-server-status')
-
   $: currentTimeStore = videoCurrentTimeStore(video)
 
 </script>
-
-<svelte:document on:keydown={shortcutsHandler} />
 
 <div class="container">
   <Recorder {video} on:newLoop={(e) => createLoop(e.detail)} bind:this={recorderComponent}/>
@@ -203,7 +176,7 @@
           {video}
           currentTime={$currentTimeStore}
           active={activeLoop}
-          on:select={selectLoop}
+          on:select
           on:duplicate={duplicateLoop}
           on:cut={divideLoop}
           on:delete={deleteLoop}
@@ -221,10 +194,6 @@
     <SpeedControl {video}/>
   </div>
 </div>
-
-{#if activeLoop}
-  <ActiveLoop {video} id={activeLoop} bind:this={activeComponent}/>
-{/if}
 
 <style>
 

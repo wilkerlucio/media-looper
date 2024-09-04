@@ -9,6 +9,8 @@
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractVideoId} from "@/lib/youtube/ui";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
+  import type {Id} from "tinybase";
+  import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
 
   const ctx = setupStore({
     listener: channelListener(pullListener(), 'tiny-sync'),
@@ -23,9 +25,19 @@
   setTinyContext(ctx)
 
   let popupVisible = false
+  let activeComponent: ActiveLoop
+  let controllerComponent: LoopsController
 
   $: videoId = extractVideoId($locationStore)
   $: sourceId = (videoId ? "youtube:" + videoId : null) as string | null
+
+  function log(event: string, details?: {[key: string]: any}) {
+    amplitude.track(event, {sourceId, ...details})
+  }
+
+  function loopLogDetail(loopId: Id) {
+    return {label: ctx.store.getCell('loops', loopId, 'label')}
+  }
 
   function toggleVisible() {
     if (popupVisible) {
@@ -37,11 +49,51 @@
     }
   }
 
+  function playLoop(loopId: Id) {
+    if (!sourceId) return
+
+    ctx.store.setCell('medias', sourceId, 'lastLoopPlay', Date.now())
+
+    activeLoop = loopId
+  }
+
+  // need to use in this format so it clears the loop when the video changes
+  $: activeLoop = (sourceId ? null : null) as Id | null;
+
+  function selectLoop(e: any) {
+    const id = e.detail.id
+
+    if (activeLoop === id) {
+      log('Stop Loop', loopLogDetail(id))
+
+      activeLoop = null
+    } else {
+      if (activeLoop) log('Stop Loop', loopLogDetail(activeLoop))
+
+      log('Start Loop', loopLogDetail(id))
+
+      playLoop(id)
+    }
+  }
+
+  function shortcutsHandler(e: KeyboardEvent) {
+    if (e.altKey && e.code === 'KeyZ') {
+      if (activeComponent) {
+        activeComponent.seekStart(e.shiftKey ? 3 : 0)
+      } else {
+        if (controllerComponent)
+          controllerComponent.record()
+      }
+    }
+  }
+
 </script>
 
 <svelte:head>
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
 </svelte:head>
+
+<svelte:document on:keydown={shortcutsHandler} />
 
 {#await ctx.ready then x}
   {#if sourceId}
@@ -51,9 +103,18 @@
       </div>
     </button>
 
+    {#if activeLoop}
+      <ActiveLoop id={activeLoop} bind:this={activeComponent}/>
+    {/if}
+
     {#if popupVisible}
       <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}}>
-        <LoopsController {sourceId} />
+        <LoopsController
+            {sourceId}
+            {activeLoop}
+            on:select={selectLoop}
+            bind:this={controllerComponent}
+        />
       </div>
     {/if}
   {/if}
