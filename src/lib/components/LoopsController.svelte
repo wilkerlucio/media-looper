@@ -18,6 +18,8 @@
   import {cutLoop} from "@/lib/controller";
   import {videoCurrentTimeStore} from "@/lib/stores/video";
 
+  const dispatch = createEventDispatcher()
+
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
   export let sourceId: string
@@ -71,12 +73,6 @@
     return {label: store.getCell('loops', loopId, 'label')}
   }
 
-  function playLoop(loopId: Id) {
-    store.setCell('medias', sourceId, 'lastLoopPlay', Date.now())
-
-    activeLoop = loopId
-  }
-
   // region: event handlers
 
   function createLoop(loop: Loop) {
@@ -91,7 +87,7 @@
     // @ts-ignore
     store.setRow('loops', loopId, loop)
 
-    playLoop(loopId)
+    dispatch('select', {id: loopId})
   }
 
   function duplicateLoop(e: any) {
@@ -116,7 +112,7 @@
 
   function deleteLoop(e: any) {
     if (activeLoop === e.detail.id) {
-      activeLoop = null
+      dispatch('select', {id: null})
     }
 
     log('Remove Loop', loopLogDetail(e.detail.id))
