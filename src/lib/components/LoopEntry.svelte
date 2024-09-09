@@ -68,7 +68,7 @@
     <Icon icon="plus-circle" on:click={(e) => $loopSource.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
-  <div class="looper-dropdown" on:mouseenter={() => showActions = true} on:mouseleave={() => showActions = false}>
+  <div class="looper-dropdown" role="button" tabindex="0" aria-label="Loop actions" on:mouseenter={() => showActions = true} on:mouseleave={() => showActions = false}>
     <Icon icon="ellipsis-h" style="margin-top: 2px;" />
     {#if showActions}
       <LoopEntryActions
