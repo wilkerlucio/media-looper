@@ -5,7 +5,7 @@ export default defineContentScript({
   allFrames: true,
   matches: ["*://*.youtube.com/*"],
   main() {
-    const appVersion = browser?.runtime?.getManifest()?.version || "0.0.0"
+    const appVersion = browser?.runtime?.getManifest()?.version || "0.0.0-dev"
 
     amplitude.init('a252b7def7525ff7a88e3172423510c0', {
       appVersion,
