@@ -7,6 +7,7 @@
   import Icon from "@/lib/components/Icon.svelte";
   import EditableText from "@/lib/components/EditableTime.svelte";
   import type {Id} from "tinybase";
+  import LoopEntryActions from "@/lib/components/LoopEntryActions.svelte";
 
   const dispatch = createEventDispatcher()
 
@@ -15,7 +16,8 @@
   export let children: Loops | undefined;
   export let active: Id | null;
   export let nesting = 0;
-  export let currentTime: number;
+
+  let showActions: boolean = false
 
   $: loopSource = useRow('loops', id)
   $: loop = ($loopSource) as unknown as Loop
@@ -66,17 +68,17 @@
     <Icon icon="plus-circle" on:click={(e) => $loopSource.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
-  <div class="looper-dropdown">
+  <div class="looper-dropdown" on:mouseenter={() => showActions = true} on:mouseleave={() => showActions = false}>
     <Icon icon="ellipsis-h" style="margin-top: 2px;" />
-    <div class="looper-dropdown-content">
-      <a href="#duplicate" on:click|preventDefault={() => dispatch('duplicate', {id})}>Duplicate</a>
-      {#if loop.startTime < currentTime && currentTime < loop.endTime}
-        <a href="#cut" on:click|preventDefault={() => dispatch('cut', {id})}>Split</a>
-      {/if}
-      {#if !loop.readonly}
-        <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
-      {/if}
-    </div>
+    {#if showActions}
+      <LoopEntryActions
+          {id}
+          {loop}
+          on:duplicate
+          on:cut
+          on:delete
+      />
+    {/if}
   </div>
 </div>
 
@@ -87,7 +89,6 @@
       children={loop.children}
       {active}
       {video}
-      {currentTime}
       nesting={nesting + 1}
       on:select
       on:duplicate
@@ -147,29 +148,6 @@
         position: relative;
         display: inline-block;
         float: right;
-    }
-
-    .looper-dropdown-content {
-        display: none;
-        position: absolute;
-        right: 0;
-        background-color: #000;
-        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .looper-dropdown-content a {
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    .looper-dropdown-content a:hover {
-        background: #222;
-    }
-
-    .looper-dropdown:hover .looper-dropdown-content {
-        display: block;
     }
 
 </style>

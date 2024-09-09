@@ -16,7 +16,6 @@
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
   import {nanoid} from "nanoid";
   import {cutLoop} from "@/lib/controller";
-  import {videoCurrentTimeStore} from "@/lib/stores/video";
 
   const dispatch = createEventDispatcher()
 
@@ -158,8 +157,6 @@
 
   $: if (Object.entries($loops).length > 0) ensureMediaInfo()
 
-  $: currentTimeStore = videoCurrentTimeStore(video)
-
 </script>
 
 <div class="container">
@@ -170,7 +167,6 @@
           {id}
           {children}
           {video}
-          currentTime={$currentTimeStore}
           active={activeLoop}
           on:select
           on:duplicate={duplicateLoop}
