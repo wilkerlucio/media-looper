@@ -1,4 +1,4 @@
-import {uniqBy} from "lodash";
+import uniqBy from "lodash/uniqBy";
 import {formatTime} from "@/lib/helpers/time";
 
 export function extractVideoId(url: string) {

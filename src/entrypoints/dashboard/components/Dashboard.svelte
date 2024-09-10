@@ -11,7 +11,9 @@
   import {sourceIdFromVideoId} from "@/lib/youtube/ui";
   import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
-  import {deburr, keyBy, sortBy} from "lodash";
+  import deburr from "lodash/deburr";
+  import keyBy from "lodash/keyBy";
+  import sortBy from "lodash/sortBy";
   import SettingsModal from "@/entrypoints/dashboard/components/SettingsModal.svelte";
   import {importMedia, parseLoops} from "@/lib/logic/import-cljs";
 

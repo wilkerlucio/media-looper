@@ -8,8 +8,7 @@ import {
 
 import {createWsSynchronizer} from "tinybase/synchronizers/synchronizer-ws-client";
 import {MergeableStore} from "tinybase";
-import {parseEDNString} from "edn-data";
-import { Dictionary } from 'lodash';
+import type { Dictionary } from 'lodash';
 import {importMedia, parseLoops} from "@/lib/logic/import-cljs";
 import {videoIdFromSourceId} from "@/lib/youtube/ui";
 
