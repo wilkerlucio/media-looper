@@ -33,7 +33,7 @@
     "wxt": "^0.19.1"
   },
   "dependencies": {
-    "@amplitude/analytics-browser": "^2.10.0",
+    "@amplitude/analytics-browser": "2.9.2",
     "@automerge/automerge": "^2.2.8",
     "@automerge/automerge-repo": "^1.2.1",
     "@automerge/automerge-repo-network-broadcastchannel": "^1.2.1",
