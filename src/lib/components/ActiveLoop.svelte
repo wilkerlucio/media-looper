@@ -1,50 +1,49 @@
 <script lang="ts">
   import {portal} from './Portal.svelte'
-  import {onDestroy, onMount} from "svelte";
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
   import type {Id} from "tinybase";
+  import {Loop} from "@/lib/model";
 
-  export let video = document.querySelector("video")
-  export let id: Id;
+  let {video = document.querySelector("video"), id}: {
+    video: HTMLVideoElement | null,
+    id: Id
+  } = $props()
 
   const store = getTinyContextForce('store')
 
-  $: loop = useRow(store, 'loops', id)
+  let loop: Loop = $derived(useRow2(store, 'loops', id))
 
-  $: startTime = $loop.startTime as number
-  $: endTime = $loop.endTime as number
+  let duration = $derived(video?.duration as number)
 
-  $: duration = video?.duration as number;
-
-  $: left = startTime / duration * 100
-  $: width = (endTime - startTime) / duration * 100
+  let left = $derived(loop.startTime / duration * 100)
+  let width = $derived((loop.endTime - loop.startTime) / duration * 100)
 
   function ticker() {
     if (!video) return
 
-    if (video.currentTime > endTime) {
-      video.currentTime = startTime
+    if (video.currentTime > loop.endTime) {
+      video.currentTime = loop.startTime
     }
   }
 
-  $: video.currentTime = startTime
+  $effect(() => {
+    if (!video) return
 
-  onMount(() => {
+    video.currentTime = loop.startTime
+  })
+
+  $effect(() => {
     if (!video) return;
 
     video.addEventListener("timeupdate", ticker)
-  })
 
-  onDestroy(() => {
-    if (!video) return
-
-    video.removeEventListener("timeupdate", ticker)
+    return () => video.removeEventListener("timeupdate", ticker)
   })
 
   export function seekStart(preRoll = 0) {
     if (!video) return
 
-    video.currentTime = Math.max(startTime - preRoll, 0)
+    video.currentTime = Math.max(loop.startTime - preRoll, 0)
   }
 </script>
 
