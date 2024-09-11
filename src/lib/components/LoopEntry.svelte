@@ -14,7 +14,7 @@
     id: Id,
     children: Loops | undefined,
     active: Id | null,
-    nesting: number,
+    nesting?: number,
     onselect: (x: any) => void,
     onduplicate: (x: any) => void,
     oncut: (x: any) => void,
