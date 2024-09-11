@@ -6,12 +6,9 @@ export function videoCurrentTimeStore(videoElement: HTMLVideoElement | null) {
   $effect(() => {
     const ticker = () => currentTime = videoElement.currentTime
 
-    console.log('adding video time listener');
     videoElement.addEventListener('timeupdate', ticker)
 
     return () => {
-      console.log('removing video time listener');
-
       videoElement.removeEventListener('timeupdate', ticker)
     }
   })
