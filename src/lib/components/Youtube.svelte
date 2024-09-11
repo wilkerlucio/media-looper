@@ -32,7 +32,7 @@
   let activeLoop = $state(null) as Id | null;
   let popupVisible = $state(false) as boolean;
 
-  $effect(() => {
+  $effect.pre(() => {
     sourceId
     activeLoop = null
     popupVisible = false
