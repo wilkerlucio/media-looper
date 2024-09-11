@@ -4,24 +4,26 @@
   import type {Id} from "tinybase";
   import {videoCurrentTimeStore} from "@/lib/stores/video";
 
-  const dispatch = createEventDispatcher()
+  let {id, loop, video = document.querySelector("video"), onduplicate, oncut, ondelete}: {
+    id: Id,
+    loop: Loop,
+    video: HTMLVideoElement | null,
+    onduplicate: any,
+    oncut: any,
+    ondelete: any
+  } = $props()
 
-  export let id: Id
-  export let loop: Loop
-
-  export let video = document.querySelector("video");
-
-  $: currentTimeStore = videoCurrentTimeStore(video)
-  $: currentTime = $currentTimeStore
+  let currentTimeStore = $derived(videoCurrentTimeStore(video))
+  let currentTime = $derived($currentTimeStore || 0)
 
 </script>
 <div class="looper-dropdown-content">
-  <a href="#duplicate" on:click|preventDefault={() => dispatch('duplicate', {id})}>Duplicate</a>
+  <a href="#duplicate" onclick={(e) => {e.preventDefault(); onduplicate({id})}}>Duplicate</a>
   {#if loop.startTime < currentTime && currentTime < loop.endTime}
-    <a href="#cut" on:click|preventDefault={() => dispatch('cut', {id})}>Split</a>
+    <a href="#cut" onclick={(e) => {e.preventDefault(); oncut({id})}}>Split</a>
   {/if}
   {#if !loop.readonly}
-    <a href="#delete" on:click|preventDefault={() => dispatch('delete', {id})}>Delete</a>
+    <a href="#delete" onclick={(e) => {e.preventDefault(); ondelete({id})}}>Delete</a>
   {/if}
 </div>
 

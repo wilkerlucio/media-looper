@@ -1,6 +1,8 @@
 import {readable} from "svelte/store";
 
-export function videoCurrentTimeStore(videoElement: HTMLVideoElement) {
+export function videoCurrentTimeStore(videoElement: HTMLVideoElement | null) {
+  if (!videoElement) return
+
   return readable(videoElement.currentTime, (set) => {
     const ticker = () => set(videoElement.currentTime)
 

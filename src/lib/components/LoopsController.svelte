@@ -90,7 +90,7 @@
   }
 
   function duplicateLoop(e: any) {
-    const loop = store.getRow('loops', e.detail.id)
+    const loop = store.getRow('loops', e.id)
 
     if (loop) {
       loop.readonly = false
@@ -104,19 +104,19 @@
   }
 
   function divideLoop(e: any) {
-    log('Cut Loop', loopLogDetail(e.detail.id))
+    log('Cut Loop', loopLogDetail(e.id))
 
-    cutLoop(store, e.detail.id, video?.currentTime)
+    cutLoop(store, e.id, video?.currentTime)
   }
 
   function deleteLoop(e: any) {
-    if (activeLoop === e.detail.id) {
+    if (activeLoop === e.id) {
       onselect({id: null})
     }
 
-    log('Remove Loop', loopLogDetail(e.detail.id))
+    log('Remove Loop', loopLogDetail(e.id))
 
-    store.delRow('loops', e.detail.id)
+    store.delRow('loops', e.id)
   }
 
   // endregion
@@ -170,10 +170,10 @@
           {children}
           {video}
           active={activeLoop}
-          on:select={onselect}
-          on:duplicate={duplicateLoop}
-          on:cut={divideLoop}
-          on:delete={deleteLoop}
+          {onselect}
+          onduplicate={duplicateLoop}
+          oncut={divideLoop}
+          ondelete={deleteLoop}
       />
     {/each}
   </div>

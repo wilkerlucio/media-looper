@@ -67,7 +67,7 @@
   }
 
   function selectLoop(e: any) {
-    const id = e.detail.id
+    const id = e.id
 
     if (activeLoop === id) {
       log('Stop Loop', loopLogDetail(id))
