@@ -17,19 +17,19 @@
   import {nanoid} from "nanoid";
   import {cutLoop} from "@/lib/controller";
 
-  const dispatch = createEventDispatcher()
-
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
-  export let sourceId: string
+  let {sourceId, activeLoop = null, onselect}: {
+    sourceId: string,
+    activeLoop: Id | null,
+    onselect: (e: any) => void
+  } = $props()
 
   let recorderComponent: Recorder
 
   const {store}: { store: Store } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
-
-  export let activeLoop: Id | null = null;
 
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
@@ -39,7 +39,7 @@
     }
   }
 
-  $: {
+  $effect(() => {
     sourceId
 
     const chapters = videoChapters(video)
@@ -62,7 +62,7 @@
     for (const {id, ...loop} of loops) {
       store.setRow('loops', id, loop as Row)
     }
-  }
+  })
 
   function log(event: string, details?: {[key: string]: any}) {
     amplitude.track(event, {sourceId, ...details})
@@ -86,7 +86,7 @@
     // @ts-ignore
     store.setRow('loops', loopId, loop)
 
-    dispatch('select', {id: loopId})
+    onselect({id: loopId})
   }
 
   function duplicateLoop(e: any) {
@@ -111,7 +111,7 @@
 
   function deleteLoop(e: any) {
     if (activeLoop === e.detail.id) {
-      dispatch('select', {id: null})
+      onselect({id: null})
     }
 
     log('Remove Loop', loopLogDetail(e.detail.id))
@@ -121,16 +121,16 @@
 
   // endregion
 
-  $: queryId = "loopsQ:" + sourceId
+  let queryId = $derived("loopsQ:" + sourceId)
 
-  $: loops = useQueriesResultTable(queryId, 'loops', ({select, where}) => {
+  let loops = $derived(useQueriesResultTable(queryId, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
     where('source', sourceId)
-  })
+  }))
 
   // @ts-ignore
-  $: sortedLoops = loopTree($loops)
+  let sortedLoops = $derived(loopTree($loops))
 
   export function record() {
     recorderComponent.record()
@@ -138,7 +138,7 @@
 
   // broadcast the media info from this page so it can be used in places like the import screen to get the name of
   // media being imported
-  onMount(() => {
+  $effect(() => {
     const sender = channelSender(runtimeOnMessageSender, 'embed-media-info')
 
     sender({sourceId, ...sourceInfo() || {}})
@@ -155,7 +155,9 @@
     }
   })
 
-  $: if (Object.entries($loops).length > 0) ensureMediaInfo()
+  $effect(() => {
+    if (Object.entries($loops).length > 0) ensureMediaInfo()
+  })
 
 </script>
 
@@ -168,7 +170,7 @@
           {children}
           {video}
           active={activeLoop}
-          on:select
+          on:select={onselect}
           on:duplicate={duplicateLoop}
           on:cut={divideLoop}
           on:delete={deleteLoop}

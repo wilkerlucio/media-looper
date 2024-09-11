@@ -24,14 +24,21 @@
 
   setTinyContext(ctx)
 
-  // need to use in this format so it clears the loop when the video changes
-  $: activeLoop = (sourceId ? null : null) as Id | null;
-  $: popupVisible = (sourceId ? false : false) as boolean;
-  let activeComponent: ActiveLoop
-  let controllerComponent: LoopsController
+  let videoId = $derived(extractVideoId($locationStore))
+  let sourceId = $derived(videoId ? "youtube:" + videoId : null) as string | null
 
-  $: videoId = extractVideoId($locationStore)
-  $: sourceId = (videoId ? "youtube:" + videoId : null) as string | null
+  // need to use in this format so it clears the loop when the video changes
+  let activeLoop = $state(null) as Id | null;
+  let popupVisible = $state(false) as boolean;
+
+  $effect(() => {
+    sourceId
+    activeLoop = null
+    popupVisible = false
+  })
+
+  let activeComponent: ActiveLoop | undefined = $state()
+  let controllerComponent: LoopsController | undefined = $state()
 
   function log(event: string, details?: {[key: string]: any}) {
     amplitude.track(event, {sourceId, ...details})
@@ -96,7 +103,7 @@
 
 {#await ctx.ready then x}
   {#if sourceId}
-    <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} on:click={toggleVisible}>
+    <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} onclick={toggleVisible}>
       <div class="button-inner-container">
         <img src={logoData} alt="Youtube Looper" />
       </div>
@@ -111,7 +118,7 @@
         <LoopsController
             {sourceId}
             {activeLoop}
-            on:select={selectLoop}
+            onselect={selectLoop}
             bind:this={controllerComponent}
         />
       </div>
