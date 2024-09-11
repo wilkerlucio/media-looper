@@ -1,4 +1,4 @@
-type Path = any[]
+type Path = (string | symbol)[]
 
 type SetterNotification<T> = (snapshot: T, path: Path, prop: any, value: any) => any
 
