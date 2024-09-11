@@ -4,19 +4,20 @@
   import {A, Tooltip} from "flowbite-svelte";
   import type {Loop, Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
   import {sourceIdFromVideoId, videoIdFromSourceId} from "@/lib/youtube/ui";
 
-  export let media: { sourceId: string, loops: Loop[], title?: string, readInfoFailed?: boolean, fromCLJS?: boolean };
+  let {media}: {
+    media: { sourceId: string, loops: Loop[], title?: string, readInfoFailed?: boolean, fromCLJS?: boolean }
+  } = $props()
 
   const store = getTinyContextForce('store')
 
-  $: videoId = videoIdFromSourceId(media.sourceId)
+  let videoId = $derived(videoIdFromSourceId(media.sourceId))
 
-  $: dbMediaSource = useRow(store, 'medias', sourceIdFromVideoId(videoId))
-  $: dbMedia = $dbMediaSource as unknown as Media
+  let dbMedia: Media = $derived(useRow2(store, 'medias', sourceIdFromVideoId(videoId)))
 
-  $: title = media.title || dbMedia.title
+  let title = $derived(media.title || dbMedia.title)
 
 </script>
 {#if !media.fromCLJS || (media.fromCLJS && !dbMedia.importedFromCLJS)}

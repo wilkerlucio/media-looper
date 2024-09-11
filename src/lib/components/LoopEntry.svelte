@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
   import type {Loop, Loops} from "@/lib/model";
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
@@ -27,8 +27,7 @@
 
   let showActions: boolean = $state(false)
 
-  let loopSource = useRow(store, 'loops', id)
-  let loop = $derived(($loopSource) as unknown as Loop)
+  let loop: Loop = $derived(useRow2(store, 'loops', id))
 
   let formatPrecision = $derived($shiftKeyMod ? 3 : undefined)
   let imActive = $derived(active === id)
@@ -52,18 +51,18 @@
   {#if loop.readonly}
     <div>{loop.label}</div>
   {:else}
-    <input bind:value={$loopSource.label} class="full-width" onkeydown={loseFocus} onkeyup={sp}>
+    <input bind:value={loop.label} class="full-width" onkeydown={loseFocus} onkeyup={sp}>
   {/if}
   <div class="flex"></div>
 
   {#if loop.readonly}
     <div>{formatTime(loop.startTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" onclick={(e) => $loopSource.startTime = Math.max(loop.startTime - p(e), 0)} />
-    <EditableText bind:value={$loopSource.startTime}>
+    <Icon icon="minus-circle" onclick={(e: MouseEvent) => loop.startTime = Math.max(loop.startTime - p(e), 0)} />
+    <EditableText bind:value={loop.startTime}>
       {formatTime(loop.startTime, formatPrecision)}
     </EditableText>
-    <Icon icon="plus-circle" onclick={(e) => $loopSource.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+    <Icon icon="plus-circle" onclick={(e: MouseEvent) => loop.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
   {/if}
 
   <div>/</div>
@@ -71,11 +70,11 @@
   {#if loop.readonly}
     <div>{formatTime(loop.endTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" onclick={(e) => $loopSource.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
-    <EditableText bind:value={$loopSource.endTime}>
+    <Icon icon="minus-circle" onclick={(e: MouseEvent) => loop.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
+    <EditableText bind:value={loop.endTime}>
       {formatTime(loop.endTime, formatPrecision)}
     </EditableText>
-    <Icon icon="plus-circle" onclick={(e) => $loopSource.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
+    <Icon icon="plus-circle" onclick={(e: MouseEvent) => loop.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
   <div class="looper-dropdown" role="button" tabindex="0" aria-label="Loop actions" onmouseenter={() => showActions = true} onmouseleave={() => showActions = false}>

@@ -13,6 +13,7 @@ import type {
   Value
 } from 'tinybase';
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
+import {stateProxy} from "@/lib/stores/nested-state.svelte";
 
 type GenericStore = Store | MergeableStore
 
@@ -56,7 +57,7 @@ function useReader(container: any, name: string, ...args: any[]) {
 
   let x = $state(container[getName](...args))
 
-  $effect(() => {
+  $effect.pre(() => {
     const listener = container[listenerName](...args, () => {
       x = container[getName](...args);
     })
@@ -144,6 +145,26 @@ export function useRow(store: GenericStore, tableId: Id, rowId: Id) {
       store.setRow(tableId, rowId, x)
     }
   }
+}
+
+export function useRow2<T extends Object>(store: GenericStore, tableId: Id, rowId: Id) {
+  let x = $state(store.getRow(tableId, rowId))
+
+  $effect.pre(() => {
+    const listener = store.addRowListener(tableId, rowId, () => {
+      const row = store.getRow(tableId, rowId)
+
+      for (const k in row) {
+        x[k] = row[k]
+      }
+    })
+
+    return () => store.delListener(listener)
+  })
+
+  return stateProxy(x as unknown as T, (newValue) => {
+    store.setRow(tableId, rowId, newValue as unknown as Row)
+  })
 }
 
 export function useCellIds(store: GenericStore, tableId: Id) {
