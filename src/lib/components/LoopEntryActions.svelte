@@ -2,28 +2,29 @@
 
   import type {Loop} from "@/lib/model";
   import type {Id} from "tinybase";
-  import {videoCurrentTimeStore} from "@/lib/stores/video";
+  import {videoCurrentTimeStore} from "@/lib/stores/video.svelte";
+  import {pd} from "@/lib/helpers/events";
 
   let {id, loop, video = document.querySelector("video"), onduplicate, oncut, ondelete}: {
     id: Id,
     loop: Loop,
-    video: HTMLVideoElement | null,
+    video?: HTMLVideoElement | null,
     onduplicate: any,
     oncut: any,
     ondelete: any
   } = $props()
 
   let currentTimeStore = $derived(videoCurrentTimeStore(video))
-  let currentTime = $derived($currentTimeStore || 0)
+  let currentTime = $derived(currentTimeStore?.value || 0)
 
 </script>
 <div class="looper-dropdown-content">
-  <a href="#duplicate" onclick={(e) => {e.preventDefault(); onduplicate({id})}}>Duplicate</a>
+  <a href="#duplicate" onclick={pd(() => onduplicate({id}))}>Duplicate</a>
   {#if loop.startTime < currentTime && currentTime < loop.endTime}
-    <a href="#cut" onclick={(e) => {e.preventDefault(); oncut({id})}}>Split</a>
+    <a href="#cut" onclick={pd(() => oncut({id}))}>Split</a>
   {/if}
   {#if !loop.readonly}
-    <a href="#delete" onclick={(e) => {e.preventDefault(); ondelete({id})}}>Delete</a>
+    <a href="#delete" onclick={pd(() => ondelete({id}))}>Delete</a>
   {/if}
 </div>
 
