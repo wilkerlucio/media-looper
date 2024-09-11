@@ -1,13 +1,15 @@
 <script lang="ts">
   import {portal} from './Portal.svelte'
   import {onDestroy, onMount} from "svelte";
-  import {useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import type {Id} from "tinybase";
 
   export let video = document.querySelector("video")
   export let id: Id;
 
-  $: loop = useRow('loops', id)
+  const store = getTinyContextForce('store')
+
+  $: loop = useRow(store, 'loops', id)
 
   $: startTime = $loop.startTime as number
   $: endTime = $loop.endTime as number

@@ -4,14 +4,16 @@
   import {A, Tooltip} from "flowbite-svelte";
   import type {Loop, Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import {sourceIdFromVideoId, videoIdFromSourceId} from "@/lib/youtube/ui";
 
   export let media: { sourceId: string, loops: Loop[], title?: string, readInfoFailed?: boolean, fromCLJS?: boolean };
 
+  const store = getTinyContextForce('store')
+
   $: videoId = videoIdFromSourceId(media.sourceId)
 
-  $: dbMediaSource = useRow('medias', sourceIdFromVideoId(videoId))
+  $: dbMediaSource = useRow(store, 'medias', sourceIdFromVideoId(videoId))
   $: dbMedia = $dbMediaSource as unknown as Media
 
   $: title = media.title || dbMedia.title

@@ -1,8 +1,8 @@
 <script>
 
-  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores.svelte";
 
-  const connectionStatus = useValue('websocket-server-status', '', getTinyContextForce('localStore'))
+  const connectionStatus = useValue(getTinyContextForce('localStore'), 'websocket-server-status', '')
 
 </script>
 

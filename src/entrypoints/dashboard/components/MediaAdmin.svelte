@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import {A, Button, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";
   import {ExclamationCircleOutline, TrashBinOutline} from "flowbite-svelte-icons";
   import {deleteMedia} from "@/lib/controller";
@@ -15,7 +15,7 @@
   let queries = getTinyContextForce('queries')
   let relationships = getTinyContextForce('relationships')
 
-  const media = useRow('medias', id)
+  const media = useRow(store, 'medias', id)
 
   $: loops = useQueriesResultTable(queries, "loopsQ:" + id, 'loops', ({select, where}) => {
     select('startTime')

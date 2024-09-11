@@ -1,10 +1,12 @@
 <script lang="ts">
-  import {useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import {formatTime} from "@/lib/helpers/time";
 
   export let id: string;
 
-  const loop = useRow('loops', id)
+  const store = getTinyContextForce('store')
+
+  const loop = useRow(store, 'loops', id)
 </script>
 
 <div>

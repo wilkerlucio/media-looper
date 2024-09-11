@@ -54,32 +54,30 @@ function useReader(container: any, name: string, ...args: any[]) {
   const getName = `get${name}`
   const listenerName = `add${name}Listener`
 
-  return readable(container[getName](...args), (set) => {
+  let x = $state(container[getName](...args))
+
+  $effect(() => {
     const listener = container[listenerName](...args, () => {
-      set(container[getName](...args));
+      x = container[getName](...args);
     })
 
     return () => container.delListener(listener)
-  });
+  })
+
+  return { get value() { return x }}
 }
 
 // region: values
 
-export function useValues() {
-  const store = getTinyContextForce('store');
-
+export function useValues(store: GenericStore) {
   return useReader(store, 'Values')
 }
 
-export function useValueIds() {
-  const store = getTinyContextForce('store');
-
+export function useValueIds(store: GenericStore) {
   return useReader(store, 'ValueIds')
 }
 
-export function useValue(id: Id, defaultValue?: Value, store?: Store | MergeableStore) {
-  store = store || getTinyContextForce('store');
-
+export function useValue(store: GenericStore, id: Id, defaultValue?: Value) {
   const { subscribe } = writable(store.getValue(id) || defaultValue, (set) => {
     const listener = store.addValueListener(id, (store, valueId, newValue) => {
       set(newValue)
@@ -100,57 +98,38 @@ export function useValue(id: Id, defaultValue?: Value, store?: Store | Mergeable
 
 // region: tabular
 
-export function useTables() {
-  const store = getTinyContextForce('store');
-
+export function useTables(store: GenericStore) {
   return useReader(store, 'Tables')
 }
 
-export function useTableIds() {
-  const store = getTinyContextForce('store');
-
+export function useTableIds(store: GenericStore) {
   return useReader(store, 'TableIds')
 }
 
-export function useTable(tableId: Id) {
-  const store = getTinyContextForce('store');
-
-  return readable(store.getTable(tableId), (set) => {
-    const listener = store.addTableListener(tableId, (store, tableId) => {
-      set(store.getTable(tableId));
-    })
-
-    return () => store.delListener(listener)
-  });
+export function useTable(store: GenericStore, tableId: Id) {
+  return useReader(store, 'Table', tableId)
 }
 
-export function useTableCellIds(tableId: Id) {
-  const store = getTinyContextForce('store');
-
+export function useTableCellIds(store: GenericStore, tableId: Id) {
   return useReader(store, 'TableCellIds', tableId)
 }
 
-export function useRowIds(tableId: Id) {
-  const store = getTinyContextForce('store');
-
+export function useRowIds(store: GenericStore, tableId: Id) {
   return useReader(store, 'RowIds', tableId)
 }
 
 export function useSortedRowIds(
+  store: GenericStore,
   tableId: Id,
   cellId?: Id,
   descending?: boolean,
   offset?: number,
   limit?: number,
 ) {
-  const store = getTinyContextForce('store');
-
   return useReader(store, 'SortedRowIds', tableId, cellId, descending, offset, limit)
 }
 
-export function useRow(tableId: Id, rowId: Id) {
-  const store = getTinyContextForce('store');
-
+export function useRow(store: GenericStore, tableId: Id, rowId: Id) {
   const { subscribe } = writable(store.getRow(tableId, rowId), (set) => {
     const listener = store.addRowListener(tableId, rowId, () => {
       set(store.getRow(tableId, rowId));
@@ -167,15 +146,11 @@ export function useRow(tableId: Id, rowId: Id) {
   }
 }
 
-export function useCellIds(tableId: Id) {
-  const store = getTinyContextForce('store');
-
+export function useCellIds(store: GenericStore, tableId: Id) {
   return useReader(store, 'RowIds', tableId)
 }
 
-export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value) {
-  const store = getTinyContextForce('store');
-
+export function useCell(store: GenericStore, tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value) {
   const { subscribe } = writable(store.getCell(tableId, rowId, cellId) || defaultValue, (set) => {
     const listener = store.addCellListener(tableId, rowId, cellId, (store, tableId, rowId, cellId, newCell) => {
       set(newCell)
@@ -194,9 +169,7 @@ export function useCell(tableId: Id, rowId: Id, cellId: Id, defaultValue?: Value
 
 // endregion
 
-export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) {
-  const relationships = getTinyContextForce('relationships');
-
+export function useRelationshipLocalRowIds(relationships: Relationships, relationshipId: Id, remoteRowId: Id) {
   return readable(relationships.getLocalRowIds(relationshipId, remoteRowId), (set) => {
     const listener = relationships.addLocalRowIdsListener(relationshipId, remoteRowId, (relationships, relationshipId, remoteRowId) => {
       set(relationships.getLocalRowIds(relationshipId, remoteRowId));

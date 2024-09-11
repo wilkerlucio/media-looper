@@ -1,6 +1,6 @@
 <script lang="ts">
   import {setupStore} from "@/lib/stores/core";
-  import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
+  import {setTinyContext} from "@/lib/tinybase/tinybase-stores.svelte";
   import {
     channelListener,
     channelSender,

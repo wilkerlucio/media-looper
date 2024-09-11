@@ -1,7 +1,7 @@
 <script lang="ts">
   import Popup from "@/entrypoints/popup/components/Popup.svelte";
   import {setupStore} from "@/lib/stores/core";
-  import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
+  import {setTinyContext} from "@/lib/tinybase/tinybase-stores.svelte";
   import {
     channelListener,
     channelSender,

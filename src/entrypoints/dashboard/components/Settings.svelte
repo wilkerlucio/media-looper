@@ -1,10 +1,12 @@
 <script lang="ts">
 
-  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores.svelte";
   import {A, Input, Label, Spinner} from "flowbite-svelte";
 
-  const wsConfig = useValue('websocket-server-url', '', getTinyContextForce('localStore'))
-  const wsStatus = useValue('websocket-server-status', '', getTinyContextForce('localStore'))
+  let localStore = getTinyContextForce('localStore');
+
+  const wsConfig = useValue(localStore, 'websocket-server-url', '')
+  const wsStatus = useValue(localStore, 'websocket-server-status', '')
 
   const statusColors = {
     'connected': 'green',

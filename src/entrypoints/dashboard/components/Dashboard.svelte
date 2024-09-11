@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores.svelte";
   import {Button, Heading, Modal, TableBody, TableHead, TableHeadCell, TableSearch} from "flowbite-svelte";
   import {type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
@@ -75,9 +75,9 @@
     }
   }
 
-  const mediaIds = useTable('medias')
+  const mediaIds = useTable(store, 'medias')
 
-  $: medias = sortBy(Object.entries($mediaIds).filter(([id, r]) => {
+  $: medias = sortBy(Object.entries(mediaIds.value).filter(([id, r]) => {
     if (search === '') return true
 
     const media = r as unknown as Media
