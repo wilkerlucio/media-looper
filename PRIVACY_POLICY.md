@@ -1,6 +1,6 @@
 ## YouTube Looper Privacy Policy
 
-Last Updated: 2024.03.21
+Last Updated: 2024.09.11
 
 Welcome to the YouTube Looper Chrome Extension Privacy Policy. Your privacy is of paramount importance to us. This policy outlines the types of information we collect from the users of the YouTube Looper Chrome Extension, how we use this information, and the measures we take to ensure your data is protected.
 
@@ -11,6 +11,8 @@ YouTube Looper uses Amplitude, a sophisticated analytics service, to collect inf
 User Interaction Data: Information on how you interact with YouTube Looper, such as features used and frequency of use.
 Technical Data: Data about your device, including the type of device, operating system, Chrome version, and other technical details necessary for the operation and optimization of YouTube Looper.
 Usage Data: Information on your use of YouTube, including the videos you loop, to better understand how our extension adds value to your YouTube experience.
+
+Also, important to mention YouTube Looper ONLY collects data when you interact with YouTube Looper. So, for instance, it doesn't record data when you just navigate to videos.
 
 ## Data Usage
 
