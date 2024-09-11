@@ -14,6 +14,8 @@ import type {
 } from 'tinybase';
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
 
+type GenericStore = Store | MergeableStore
+
 export type Context = {
   store: Store
   metrics?: Metrics
@@ -204,15 +206,15 @@ export function useRelationshipLocalRowIds(relationshipId: Id, remoteRowId: Id) 
   });
 }
 
-export function useQueriesResultTable(queryId: Id, table?: Id, query?: (keywords: {
+type QueryBuilder = (keywords: {
   select: Select;
   join: Join;
   where: Where;
   group: Group;
   having: Having;
-}) => void) {
-  const queries = getTinyContextForce('queries');
+}) => void
 
+export function useQueriesResultTable(queries: Queries, queryId: Id, table?: Id, query?: QueryBuilder) {
   if (table && query) {
     queries.setQueryDefinition(queryId, table, query)
   }

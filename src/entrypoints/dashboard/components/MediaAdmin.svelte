@@ -12,11 +12,12 @@
   let videoId = id.substring(8)
 
   let store = getTinyContextForce('store')
+  let queries = getTinyContextForce('queries')
   let relationships = getTinyContextForce('relationships')
 
   const media = useRow('medias', id)
 
-  $: loops = useQueriesResultTable("loopsQ:" + id, 'loops', ({select, where}) => {
+  $: loops = useQueriesResultTable(queries, "loopsQ:" + id, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
     select('label')

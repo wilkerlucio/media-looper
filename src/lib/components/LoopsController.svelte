@@ -3,7 +3,7 @@
   import Recorder from "@/lib/components/Recorder.svelte";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext, onMount} from "svelte";
-  import type {Id, Row, Store} from "tinybase";
+  import type {Id, Queries, Row, Store} from "tinybase";
   import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
@@ -27,7 +27,7 @@
 
   let recorderComponent: Recorder
 
-  const {store}: { store: Store } = getContext('tinybase') || {};
+  const {store, queries}: { store: Store, queries: Queries } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
 
@@ -123,7 +123,7 @@
 
   let queryId = $derived("loopsQ:" + sourceId)
 
-  let loops = $derived(useQueriesResultTable(queryId, 'loops', ({select, where}) => {
+  let loops = $derived(useQueriesResultTable(queries, queryId, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
     where('source', sourceId)
@@ -183,7 +183,7 @@
     <ConnectionStatusIndicator/>
   </div>
   <div class="support-speed">
-    <div><a href="https://www.patreon.com/wsscode" on:click={() => log('Click support link')} target="_blank">Support my work</a></div>
+    <div><a href="https://www.patreon.com/wsscode" onclick={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
     <SpeedControl {video}/>
   </div>
