@@ -16,7 +16,7 @@ export function sp(e: Event | Function) {
       e2.stopPropagation()
       e(e2, ...args)
     }
-  } else if(e) {
+  } else {
     e.stopPropagation()
   }
 }
@@ -39,7 +39,7 @@ export function pd(e: Event | Function) {
       e2.preventDefault()
       e(e2, ...args)
     }
-  } else if (e) {
+  } else {
     e.preventDefault()
   }
 }
