@@ -7,7 +7,7 @@
   import * as amplitude from '@amplitude/analytics-browser';
   import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores.svelte";
-  import {extractVideoId} from "@/lib/youtube/ui";
+  import {extractMediaId} from "@/lib/youtube/ui";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
   import type {Id} from "tinybase";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
@@ -25,7 +25,7 @@
   setTinyContext(ctx)
 
   let location = useLocation()
-  let videoId = $derived(extractVideoId(location.value))
+  let videoId = $derived(extractMediaId(location.value))
   let sourceId = $derived(videoId ? "youtube:" + videoId : null) as string | null
 
   // need to use in this format so it clears the loop when the video changes

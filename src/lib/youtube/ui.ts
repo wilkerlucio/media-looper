@@ -1,7 +1,7 @@
 import uniqBy from "lodash/uniqBy";
 import {formatTime} from "@/lib/helpers/time";
 
-export function extractVideoId(url: string) {
+export function extractMediaId(url: string) {
   const matches = url.match(/watch.+v=([^&]+)/) || url.match(/\/embed\/([^?]+)/)
 
   return matches ? matches[1] : null
