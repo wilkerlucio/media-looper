@@ -51,7 +51,7 @@
   {#if loop.readonly}
     <div>{loop.label}</div>
   {:else}
-    <input bind:value={loop.label} class="full-width" onkeydown={loseFocus} onkeyup={sp}>
+    <input bind:value={loop.label} class="full-width" onkeydowncapture={loseFocus} onkeyupcapture={sp}>
   {/if}
   <div class="flex"></div>
 
