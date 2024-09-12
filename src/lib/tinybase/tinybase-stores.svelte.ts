@@ -57,10 +57,12 @@ function useReader(container: any, name: string, ...args: any[]) {
 
   let x = $state(container[getName](...args))
 
-  $effect.pre(() => {
+  $effect(() => {
     const listener = container[listenerName](...args, () => {
       x = container[getName](...args);
     })
+
+    x = container[getName](...args)
 
     return () => container.delListener(listener)
   })
@@ -150,7 +152,7 @@ export function useRow(store: GenericStore, tableId: Id, rowId: Id) {
 export function useRow2<T extends Object>(store: GenericStore, tableId: Id, rowId: Id) {
   let x = $state(store.getRow(tableId, rowId))
 
-  $effect.pre(() => {
+  $effect(() => {
     const listener = store.addRowListener(tableId, rowId, () => {
       const row = store.getRow(tableId, rowId)
 
@@ -226,4 +228,32 @@ export function useQueriesResultTable(queries: Queries, queryId: Id, table?: Id,
       }
     }
   });
+}
+
+export function useQueriesResultTable2(queries: Queries, queryId: Id, table?: Id, query?: QueryBuilder) {
+  if (table && query) {
+    queries.setQueryDefinition(queryId, table, query)
+  }
+
+  let x = $state({})
+
+  $effect(() => {
+    const listener = queries.addResultTableListener(queryId, (queries) => {
+      console.log('update results');
+
+      x = queries.getResultTable(queryId);
+    })
+
+    x = queries.getResultTable(queryId)
+
+    return () => {
+      queries.delListener(listener)
+
+      if (table && query) {
+        queries.delQueryDefinition(queryId)
+      }
+    }
+  })
+
+  return { get value() { return x }}
 }
