@@ -1,7 +1,6 @@
 <script lang="ts">
   import SpeedControl from "@/lib/components/SpeedControl.svelte";
   import Recorder from "@/lib/components/Recorder.svelte";
-  import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext, onMount} from "svelte";
   import type {Id, Queries, Row, Store} from "tinybase";
   import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores.svelte";
@@ -106,7 +105,7 @@
   function divideLoop(e: any) {
     log('Cut Loop', loopLogDetail(e.id))
 
-    cutLoop(store, e.id, video?.currentTime)
+    cutLoop(store, e.id, video?.currentTime || 0)
   }
 
   function deleteLoop(e: any) {
@@ -123,14 +122,16 @@
 
   let queryId = $derived("loopsQ:" + sourceId)
 
-  let loops = $derived(useQueriesResultTable(queries, queryId, 'loops', ({select, where}) => {
+  let loopsContainer = $derived(useQueriesResultTable(queries, queryId, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
     where('source', sourceId)
   }))
 
+  let loops = $derived($loopsContainer)
+
   // @ts-ignore
-  let sortedLoops = $derived(loopTree($loops))
+  let sortedLoops = $derived(loopTree(loops))
 
   export function record() {
     recorderComponent.record()
@@ -156,7 +157,7 @@
   })
 
   $effect(() => {
-    if (Object.entries($loops).length > 0) ensureMediaInfo()
+    if (Object.entries(loops).length > 0) ensureMediaInfo()
   })
 
 </script>
