@@ -2,7 +2,7 @@
   import {portal} from './Portal.svelte'
   import {getTinyContextForce, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
   import type {Id} from "tinybase";
-  import {Loop} from "@/lib/model";
+  import type {Loop} from "@/lib/model";
 
   let {video = document.querySelector("video"), id}: {
     video: HTMLVideoElement | null,
