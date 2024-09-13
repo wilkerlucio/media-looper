@@ -4,13 +4,13 @@
   import {A, Tooltip} from "flowbite-svelte";
   import type {Media} from "@/lib/model";
 
-  export let id: string;
+  let {id}: {id: string} = $props()
 
   const store = getTinyContextForce('store')
 
   const media = useRow<Media>(store, 'medias', id)
 
-  $: videoId = id.substring(8)
+  let videoId = $derived(id.substring(8))
 </script>
 
 <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
