@@ -114,6 +114,7 @@ export function useValue2(store: GenericStore, id: Id, defaultValue?: Value) {
     },
 
     set value(newValue) {
+      // @ts-ignore
       store.setValue(id, newValue)
     }
   }
