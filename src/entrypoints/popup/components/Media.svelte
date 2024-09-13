@@ -2,12 +2,13 @@
   import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import {getThumbUrl} from "@/lib/helpers/youtube";
   import {A, Tooltip} from "flowbite-svelte";
+  import type {Media} from "@/lib/model";
 
   export let id: string;
 
   const store = getTinyContextForce('store')
 
-  const media = useRow(store, 'medias', id)
+  const media = useRow<Media>(store, 'medias', id)
 
   $: videoId = id.substring(8)
 </script>

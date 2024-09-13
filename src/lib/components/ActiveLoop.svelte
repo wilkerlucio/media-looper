@@ -1,6 +1,6 @@
 <script lang="ts">
   import {portal} from './Portal.svelte'
-  import {getTinyContextForce, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import type {Id} from "tinybase";
   import type {Loop} from "@/lib/model";
 
@@ -11,7 +11,8 @@
 
   const store = getTinyContextForce('store')
 
-  let loop: Loop = $derived(useRow2(store, 'loops', id))
+  let loopStore = $derived(useRow<Loop>(store, 'loops', id))
+  let loop = $derived($loopStore)
 
   let duration = $derived(video?.duration as number)
 

@@ -143,26 +143,6 @@ export function useRow<T extends Object>(store: GenericStore, tableId: Id, rowId
   }
 }
 
-export function useRow2<T extends Object>(store: GenericStore, tableId: Id, rowId: Id) {
-  let x = $state(store.getRow(tableId, rowId))
-
-  $effect(() => {
-    const listener = store.addRowListener(tableId, rowId, () => {
-      const row = store.getRow(tableId, rowId)
-
-      for (const k in row) {
-        x[k] = row[k]
-      }
-    })
-
-    return () => store.delListener(listener)
-  })
-
-  return stateProxy(x as unknown as T, (newValue) => {
-    store.setRow(tableId, rowId, newValue as unknown as Row)
-  })
-}
-
 export function useCellIds(store: GenericStore, tableId: Id) {
   return useReader(store, 'RowIds', tableId)
 }

@@ -4,7 +4,7 @@
   import {A, Tooltip} from "flowbite-svelte";
   import type {Loop, Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {getTinyContextForce, useRow, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import {sourceIdFromVideoId, videoIdFromSourceId} from "@/lib/youtube/ui";
 
   let {media}: {
@@ -15,12 +15,12 @@
 
   let videoId = $derived(videoIdFromSourceId(media.sourceId))
 
-  let dbMedia: Media = $derived(useRow2(store, 'medias', sourceIdFromVideoId(videoId)))
+  let dbMedia = $derived(useRow<Media>(store, 'medias', sourceIdFromVideoId(videoId)))
 
-  let title = $derived(media.title || dbMedia.title)
+  let title = $derived(media.title || $dbMedia.title)
 
 </script>
-{#if !media.fromCLJS || (media.fromCLJS && !dbMedia.importedFromCLJS)}
+{#if !media.fromCLJS || (media.fromCLJS && !$dbMedia.importedFromCLJS)}
   <div class="text-center m-1 w-[120px]">
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
       <img src={getThumbUrl(videoId, 'default')} alt="Unknown" width="120" height="90" />

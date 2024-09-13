@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useRow, useRow2} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
   import type {Loop, Loops} from "@/lib/model";
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
@@ -27,7 +27,8 @@
 
   let showActions: boolean = $state(false)
 
-  let loop: Loop = $derived(useRow2(store, 'loops', id))
+  let loopSource = $derived(useRow<Loop>(store, 'loops', id))
+  let loop = $derived($loopSource)
 
   let formatPrecision = $derived($shiftKeyMod ? 3 : undefined)
   let imActive = $derived(active === id)

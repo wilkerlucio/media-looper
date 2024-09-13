@@ -5,6 +5,7 @@
   import {deleteMedia} from "@/lib/controller";
   import {getThumbUrl} from "@/lib/helpers/youtube";
   import {sp} from "@/lib/helpers/events";
+  import type {Media} from "@/lib/model";
 
   export let id: string;
 
@@ -15,7 +16,7 @@
   let queries = getTinyContextForce('queries')
   let relationships = getTinyContextForce('relationships')
 
-  const media = useRow(store, 'medias', id)
+  const media = useRow<Media>(store, 'medias', id)
 
   $: loops = useQueriesResultTable(queries, "loopsQ:" + id, 'loops', ({select, where}) => {
     select('startTime')
