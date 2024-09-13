@@ -7,23 +7,23 @@
   import {sp} from "@/lib/helpers/events";
   import type {Media} from "@/lib/model";
 
-  export let id: string;
+  let {id}: {id: string} = $props()
 
-  let showDeleteModal = false
-  let videoId = id.substring(8)
+  let showDeleteModal = $state(false)
+  let videoId = $derived(id.substring(8))
 
-  let store = getTinyContextForce('store')
-  let queries = getTinyContextForce('queries')
-  let relationships = getTinyContextForce('relationships')
+  const store = getTinyContextForce('store')
+  const queries = getTinyContextForce('queries')
+  const relationships = getTinyContextForce('relationships')
 
   const media = useRow<Media>(store, 'medias', id)
 
-  $: loops = useQueriesResultTable(queries, "loopsQ:" + id, 'loops', ({select, where}) => {
+  let loops = $derived(useQueriesResultTable(queries, "loopsQ:" + id, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
     select('label')
     where('source', id)
-  })
+  }))
 
   function remove() {
     deleteMedia(store, relationships, id)
