@@ -12,8 +12,7 @@
   import deburr from "lodash/deburr";
   import sortBy from "lodash/sortBy";
   import SettingsModal from "@/entrypoints/dashboard/components/SettingsModal.svelte";
-  import {importMedia} from "@/lib/logic/import-cljs";
-  import {exportDatabase, loadLoopsPrevious} from "@/lib/logic/database";
+  import {exportDatabase, importMedia, loadLoopsPrevious} from "@/lib/logic/database";
 
   const store = getTinyContextForce('store') as MergeableStore
 
