@@ -17,7 +17,7 @@
   <A href="{dashboardUrl}" target="_blank">Open Dashboard</A>
 
   <div class="flex flex-wrap gap-3 w-[252px] mx-auto mt-3">
-    {#each medias.value as id (id)}
+    {#each $medias as id (id)}
       <Media {id}/>
     {/each}
   </div>

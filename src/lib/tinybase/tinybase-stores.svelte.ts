@@ -55,19 +55,13 @@ function useReader(container: any, name: string, ...args: any[]) {
   const getName = `get${name}`
   const listenerName = `add${name}Listener`
 
-  let x = $state(container[getName](...args))
-
-  $effect(() => {
+  return readable(container[getName](...args), (set) => {
     const listener = container[listenerName](...args, () => {
-      x = container[getName](...args);
+      set(container[getName](...args));
     })
 
-    x = container[getName](...args)
-
     return () => container.delListener(listener)
-  })
-
-  return { get value() { return x }}
+  });
 }
 
 // region: values
@@ -93,29 +87,6 @@ export function useValue(store: GenericStore, id: Id, defaultValue?: Value) {
     subscribe,
     set: (x: Value) => {
       store.setValue(id, x)
-    }
-  }
-}
-
-export function useValue2(store: GenericStore, id: Id, defaultValue?: Value) {
-  let x = $state(store.getValue(id) || defaultValue)
-
-  $effect(() => {
-    const listener = store.addValueListener(id, (store, valueId, newValue) => {
-      x = newValue
-    })
-
-    return () => store.delListener(listener)
-  })
-
-  return {
-    get value() {
-      return x
-    },
-
-    set value(newValue) {
-      // @ts-ignore
-      store.setValue(id, newValue)
     }
   }
 }
@@ -155,10 +126,10 @@ export function useSortedRowIds(
   return useReader(store, 'SortedRowIds', tableId, cellId, descending, offset, limit)
 }
 
-export function useRow(store: GenericStore, tableId: Id, rowId: Id) {
-  const { subscribe } = writable(store.getRow(tableId, rowId), (set) => {
+export function useRow<T extends Object>(store: GenericStore, tableId: Id, rowId: Id) {
+  const { subscribe } = writable(store.getRow(tableId, rowId) as unknown as T, (set) => {
     const listener = store.addRowListener(tableId, rowId, () => {
-      set(store.getRow(tableId, rowId));
+      set(store.getRow(tableId, rowId) as unknown as T);
     })
 
     return () => store.delListener(listener)

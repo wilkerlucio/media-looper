@@ -44,7 +44,7 @@
 
   const mediaIds = useTable(store, 'medias')
 
-  let medias = $derived(sortBy(Object.entries(mediaIds.value).filter(([id, r]) => {
+  let medias = $derived(sortBy(Object.entries($mediaIds).filter(([id, r]) => {
     if (search === '') return true
 
     const media = r as unknown as Media
