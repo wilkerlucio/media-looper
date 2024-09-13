@@ -13,7 +13,6 @@ import type {
   Value
 } from 'tinybase';
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
-import {stateProxy} from "@/lib/stores/nested-state.svelte";
 
 export type GenericStore = Store | MergeableStore
 
