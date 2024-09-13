@@ -97,6 +97,28 @@ export function useValue(store: GenericStore, id: Id, defaultValue?: Value) {
   }
 }
 
+export function useValue2(store: GenericStore, id: Id, defaultValue?: Value) {
+  let x = $state(store.getValue(id) || defaultValue)
+
+  $effect(() => {
+    const listener = store.addValueListener(id, (store, valueId, newValue) => {
+      x = newValue
+    })
+
+    return () => store.delListener(listener)
+  })
+
+  return {
+    get value() {
+      return x
+    },
+
+    set value(newValue) {
+      store.setValue(id, newValue)
+    }
+  }
+}
+
 // endregion
 
 // region: tabular
