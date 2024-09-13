@@ -3,7 +3,7 @@
   import {formatTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
 
-  export let id: string;
+  let {id}: {id: string} = $props()
 
   const store = getTinyContextForce('store')
 
