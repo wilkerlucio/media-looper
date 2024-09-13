@@ -8,13 +8,12 @@
   const wsConfig = useValue(localStore, 'websocket-server-url', '')
   const wsStatus = useValue(localStore, 'websocket-server-status', '')
 
-  const statusColors = {
+  const statusColors: {[k: string]: string} = {
     'connected': 'green',
     'error': 'red'
   }
 
-  // @ts-ignore
-  $: wsColor = statusColors[$wsStatus] || 'base'
+  let wsColor = $derived(statusColors[$wsStatus] || 'base')
 
 </script>
 

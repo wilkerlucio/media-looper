@@ -73,10 +73,10 @@ export function useValueIds(store: GenericStore) {
   return useReader(store, 'ValueIds')
 }
 
-export function useValue(store: GenericStore, id: Id, defaultValue?: Value) {
-  const { subscribe } = writable(store.getValue(id) || defaultValue, (set) => {
+export function useValue<T>(store: GenericStore, id: Id, defaultValue?: T) {
+  const { subscribe } = writable(store.getValue(id) as unknown as T || defaultValue, (set) => {
     const listener = store.addValueListener(id, (store, valueId, newValue) => {
-      set(newValue)
+      set(newValue as unknown as T)
     })
 
     return () => store.delListener(listener)
