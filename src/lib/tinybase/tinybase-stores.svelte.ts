@@ -202,29 +202,3 @@ export function useQueriesResultTable(queries: Queries, queryId: Id, table?: Id,
     }
   });
 }
-
-export function useQueriesResultTable2(queries: Queries, queryId: Id, table?: Id, query?: QueryBuilder) {
-  if (table && query) {
-    queries.setQueryDefinition(queryId, table, query)
-  }
-
-  let x = $state({})
-
-  $effect(() => {
-    const listener = queries.addResultTableListener(queryId, (queries) => {
-      x = queries.getResultTable(queryId);
-    })
-
-    x = queries.getResultTable(queryId)
-
-    return () => {
-      queries.delListener(listener)
-
-      if (table && query) {
-        queries.delQueryDefinition(queryId)
-      }
-    }
-  })
-
-  return { get value() { return x }}
-}
