@@ -261,8 +261,6 @@ export function useQueriesResultTable2(queries: Queries, queryId: Id, table?: Id
 
   $effect(() => {
     const listener = queries.addResultTableListener(queryId, (queries) => {
-      console.log('update results');
-
       x = queries.getResultTable(queryId);
     })
 
