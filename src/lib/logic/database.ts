@@ -3,10 +3,11 @@ import keyBy from "lodash/keyBy";
 import {keep} from "@/lib/helpers/array";
 import {sourceIdFromVideoId} from "@/lib/youtube/ui";
 import {parseLoops} from "@/lib/logic/import-cljs";
+import type {Id} from "tinybase";
 
 export function exportDatabase(store: GenericStore) {
-  const medias = store.getTable('medias')
-  const loops = store.getTable('loops')
+  const medias = store.getTable('medias') as {[k: Id]: any}
+  const loops = store.getTable('loops') as {[k: Id]: any}
 
   for (const [id, media] of Object.entries(medias)) {
     media.sourceId = id
