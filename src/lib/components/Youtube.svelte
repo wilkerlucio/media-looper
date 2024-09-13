@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {useLocation} from "@/lib/stores/location.svelte";
+  import {locationStore} from "@/lib/stores/location";
   import {portal} from './Portal.svelte'
   import LoopsController from "@/lib/components/LoopsController.svelte";
   import {logoData} from "@/lib/misc/app-icon";
@@ -24,8 +24,7 @@
 
   setTinyContext(ctx)
 
-  let location = useLocation()
-  let videoId = $derived(extractMediaId(location.value))
+  let videoId = $derived(extractVideoId($locationStore))
   let sourceId = $derived(videoId ? "youtube:" + videoId : null) as string | null
 
   // need to use in this format so it clears the loop when the video changes
