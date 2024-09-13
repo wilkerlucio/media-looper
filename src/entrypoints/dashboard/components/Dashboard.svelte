@@ -7,7 +7,6 @@
   import type {Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
   import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
-  import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
   import deburr from "lodash/deburr";
   import sortBy from "lodash/sortBy";
@@ -16,9 +15,9 @@
 
   const store = getTinyContextForce('store') as MergeableStore
 
-  let media: string | false = false
-  let search = ""
-  let toImport: {[key: string]: any} | false = false
+  let media: string | false = $state(false)
+  let search = $state("")
+  let toImport: { [key: string]: any } | false = $state(false)
 
   function downloadDatabase() {
     download('media-looper-backup.json', new Blob([JSON.stringify(exportDatabase(store))], {type: "application/json"}))
@@ -45,7 +44,7 @@
 
   const mediaIds = useTable(store, 'medias')
 
-  $: medias = sortBy(Object.entries(mediaIds.value).filter(([id, r]) => {
+  let medias = $derived(sortBy(Object.entries(mediaIds.value).filter(([id, r]) => {
     if (search === '') return true
 
     const media = r as unknown as Media
@@ -54,14 +53,12 @@
     if (media.channel?.toLowerCase().indexOf(search) > -1) return true
 
     return false
-  }), ([id, r]) => [deburr(r.channel?.toLowerCase() || ''), deburr(r.title?.toLowerCase() || '')])
+  }), ([id, r]) => [deburr(r.channel?.toLowerCase() || ''), deburr(r.title?.toLowerCase() || '')]))
 
-  $: ids = medias.map(([id]) => id)
+  let ids = $derived(medias.map(([id]) => id))
 
-  let embedListener: any;
-
-  onMount(() => {
-    embedListener = channelListener(runtimeOnMessageListener, 'embed-media-info')((msg: any) => {
+  $effect(() => {
+    return channelListener(runtimeOnMessageListener, 'embed-media-info')((msg: any) => {
       if (!toImport) return
 
       if (toImport[msg.sourceId]) {
@@ -73,9 +70,6 @@
     })
   })
 
-  onDestroy(() => {
-    if (embedListener) embedListener()
-  })
 </script>
 
 <div class="px-10 w-full my-6">
