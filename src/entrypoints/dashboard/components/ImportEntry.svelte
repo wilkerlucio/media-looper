@@ -4,7 +4,7 @@
   import {A, Tooltip} from "flowbite-svelte";
   import type {Loop, Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import {sourceIdFromVideoId, videoIdFromSourceId} from "@/lib/youtube/ui";
 
   let {media}: {

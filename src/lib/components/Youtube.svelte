@@ -6,7 +6,7 @@
   import {setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
   import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/browser-network";
-  import {setTinyContext} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractMediaId} from "@/lib/youtube/ui";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
   import type {Id} from "tinybase";

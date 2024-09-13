@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useTable} from "@/lib/tinybase/tinybase-stores";
   import {Button, Heading, Modal, TableBody, TableHead, TableHeadCell, TableSearch} from "flowbite-svelte";
   import {type MergeableStore} from "tinybase";
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores";
   import {A, Button, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";
   import {ExclamationCircleOutline, TrashBinOutline} from "flowbite-svelte-icons";
   import {deleteMedia} from "@/lib/controller";

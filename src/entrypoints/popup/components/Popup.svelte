@@ -1,6 +1,6 @@
 <script lang="ts">
 
-  import {getTinyContextForce, useSortedRowIds} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useSortedRowIds} from "@/lib/tinybase/tinybase-stores";
   import Media from "@/entrypoints/popup/components/Media.svelte";
   import {A, Heading} from "flowbite-svelte";
 

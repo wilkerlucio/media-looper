@@ -1,6 +1,6 @@
 <script lang="ts">
   import {portal} from './Portal.svelte'
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import type {Id} from "tinybase";
   import type {Loop} from "@/lib/model";
 

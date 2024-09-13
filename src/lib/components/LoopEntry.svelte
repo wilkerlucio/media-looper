@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import type {Loop, Loops} from "@/lib/model";
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";

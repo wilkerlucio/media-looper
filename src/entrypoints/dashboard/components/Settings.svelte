@@ -1,6 +1,6 @@
 <script lang="ts">
 
-  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
   import {A, Input, Label, Spinner} from "flowbite-svelte";
 
   let localStore = getTinyContextForce('localStore');

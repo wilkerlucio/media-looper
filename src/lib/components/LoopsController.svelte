@@ -3,7 +3,7 @@
   import Recorder from "@/lib/components/Recorder.svelte";
   import {getContext, onMount} from "svelte";
   import type {Id, Queries, Row, Store} from "tinybase";
-  import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
   import {partition} from "@/lib/helpers/array";

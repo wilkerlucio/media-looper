@@ -1,4 +1,4 @@
-import type {GenericStore} from "@/lib/tinybase/tinybase-stores.svelte";
+import type {GenericStore} from "@/lib/tinybase/tinybase-stores";
 import keyBy from "lodash/keyBy";
 import {keep} from "@/lib/helpers/array";
 import {sourceIdFromVideoId} from "@/lib/youtube/ui";

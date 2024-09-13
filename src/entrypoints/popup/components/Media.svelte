@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores.svelte";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import {getThumbUrl} from "@/lib/helpers/youtube";
   import {A, Tooltip} from "flowbite-svelte";
   import type {Media} from "@/lib/model";
