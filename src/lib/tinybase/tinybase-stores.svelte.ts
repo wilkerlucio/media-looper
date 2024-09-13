@@ -15,7 +15,7 @@ import type {
 import type {Group, Having, Join, Select, Where} from "tinybase/queries";
 import {stateProxy} from "@/lib/stores/nested-state.svelte";
 
-type GenericStore = Store | MergeableStore
+export type GenericStore = Store | MergeableStore
 
 export type Context = {
   store: Store

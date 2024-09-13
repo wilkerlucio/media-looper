@@ -6,16 +6,14 @@
   import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
   import type {Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {keep} from "@/lib/helpers/array";
   import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
-  import {sourceIdFromVideoId} from "@/lib/youtube/ui";
   import {onDestroy, onMount} from "svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
   import deburr from "lodash/deburr";
-  import keyBy from "lodash/keyBy";
   import sortBy from "lodash/sortBy";
   import SettingsModal from "@/entrypoints/dashboard/components/SettingsModal.svelte";
-  import {importMedia, parseLoops} from "@/lib/logic/import-cljs";
+  import {importMedia} from "@/lib/logic/import-cljs";
+  import {exportDatabase, loadLoopsPrevious} from "@/lib/logic/database";
 
   const store = getTinyContextForce('store') as MergeableStore
 
@@ -23,25 +21,8 @@
   let search = ""
   let toImport: {[key: string]: any} | false = false
 
-  function exportDatabase() {
-    const medias = store.getTable('medias')
-    const loops = store.getTable('loops')
-
-    for (const [id, media] of Object.entries(medias)) {
-      media.sourceId = id
-    }
-
-    for (const [id, loop] of Object.entries(loops)) {
-      loop.id = id
-      medias[loop.source].loops ||= []
-      medias[loop.source].loops.push(loop)
-    }
-
-    return medias
-  }
-
   function downloadDatabase() {
-    download('media-looper-backup.json', new Blob([JSON.stringify(exportDatabase())], {type: "application/json"}))
+    download('media-looper-backup.json', new Blob([JSON.stringify(exportDatabase(store))], {type: "application/json"}))
   }
 
   async function importLoops() {
@@ -49,18 +30,6 @@
     const content = await readFileText(file)
 
     toImport = JSON.parse(content)
-  }
-
-  async function loadLoopsPrevious() {
-    const data = await browser.storage.sync.get(null)
-
-    return keyBy(keep(Object.entries(data), ([id, x]: [string, any]) => {
-      const match = id.match(/media-looper:youtube:([^"]+)/)
-
-      if (!match) return null
-
-      return {sourceId: sourceIdFromVideoId(match[1]), loops: parseLoops(match[1], x), fromCLJS: true}
-    }), x => x.sourceId)
   }
 
   const prevData = loadLoopsPrevious()
