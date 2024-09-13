@@ -30,6 +30,8 @@
 
   let video = document.querySelector("video")
 
+  if (!video) throw new Error("Tried to start looping controller without a video on the page")
+
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
       const info = sourceInfo()
@@ -73,7 +75,7 @@
 
   // region: event handlers
 
-  function createLoop(loop: Loop) {
+  function createLoop(loop: Partial<Loop>) {
     ensureMediaInfo()
 
     loop.source = sourceId
@@ -163,7 +165,7 @@
 </script>
 
 <div class="container">
-  <Recorder {video} on:newLoop={(e) => createLoop(e.detail)} bind:this={recorderComponent}/>
+  <Recorder {video} onNewLoop={createLoop} bind:this={recorderComponent}/>
   <div class="loops">
     {#each sortedLoops as [id, {children}] (id)}
       <LoopEntry
