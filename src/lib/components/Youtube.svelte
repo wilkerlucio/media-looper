@@ -24,7 +24,7 @@
 
   setTinyContext(ctx)
 
-  let videoId = $derived(extractVideoId($locationStore))
+  let videoId = $derived(extractMediaId($locationStore))
   let sourceId = $derived(videoId ? "youtube:" + videoId : null) as string | null
 
   // need to use in this format so it clears the loop when the video changes

@@ -4,7 +4,7 @@
   import {formatTime} from "@/lib/helpers/time";
   import {shiftKeyMod} from "@/lib/stores/modifier-keys-stores";
   import Icon from "@/lib/components/Icon.svelte";
-  import EditableText from "@/lib/components/EditableTime.svelte";
+  import EditableTime from "@/lib/components/EditableTime.svelte";
   import type {Id} from "tinybase";
   import LoopEntryActions from "@/lib/components/LoopEntryActions.svelte";
   import {sp} from "@/lib/helpers/events";
@@ -52,18 +52,16 @@
   {#if loop.readonly}
     <div>{loop.label}</div>
   {:else}
-    <input bind:value={loop.label} class="full-width" onkeydowncapture={loseFocus} onkeyupcapture={sp}>
+    <input bind:value={$loopSource.label} class="full-width" onkeydowncapture={loseFocus} onkeyupcapture={sp}>
   {/if}
   <div class="flex"></div>
 
   {#if loop.readonly}
     <div>{formatTime(loop.startTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" onclick={(e: MouseEvent) => loop.startTime = Math.max(loop.startTime - p(e), 0)} />
-    <EditableText bind:value={loop.startTime}>
-      {formatTime(loop.startTime, formatPrecision)}
-    </EditableText>
-    <Icon icon="plus-circle" onclick={(e: MouseEvent) => loop.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+    <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource.startTime = Math.max(loop.startTime - p(e), 0)} />
+    <EditableTime bind:value={$loopSource.startTime} {formatPrecision} />
+    <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
   {/if}
 
   <div>/</div>
@@ -71,11 +69,9 @@
   {#if loop.readonly}
     <div>{formatTime(loop.endTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" onclick={(e: MouseEvent) => loop.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
-    <EditableText bind:value={loop.endTime}>
-      {formatTime(loop.endTime, formatPrecision)}
-    </EditableText>
-    <Icon icon="plus-circle" onclick={(e: MouseEvent) => loop.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
+    <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
+    <EditableTime bind:value={$loopSource.endTime} {formatPrecision} />
+    <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
   <div class="looper-dropdown" role="button" tabindex="0" aria-label="Loop actions" onmouseenter={() => showActions = true} onmouseleave={() => showActions = false}>
