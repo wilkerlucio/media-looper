@@ -5,7 +5,7 @@
   import type {Loop} from "@/lib/model";
 
   let {video = document.querySelector("video"), id}: {
-    video: HTMLVideoElement | null,
+    video?: HTMLVideoElement | null,
     id: Id
   } = $props()
 
