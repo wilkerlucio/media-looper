@@ -13,6 +13,7 @@
 
   let loopStore = $derived(useRow<Loop>(store, 'loops', id))
   let loop = $derived($loopStore)
+  let startTime = $derived(loop.startTime)
 
   let duration = $derived(video?.duration as number)
 
@@ -30,7 +31,7 @@
   $effect(() => {
     if (!video) return
 
-    video.currentTime = loop.startTime
+    video.currentTime = startTime
   })
 
   $effect(() => {
