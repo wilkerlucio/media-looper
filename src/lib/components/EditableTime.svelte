@@ -7,6 +7,8 @@
     formatPrecision: number | undefined
   } = $props()
 
+  let input: HTMLInputElement | undefined = $state()
+
   let editing = $state(false);
   let baseValue = $state(typeof value === "number" ? formatTime(value, 3) : value)
 
@@ -14,13 +16,18 @@
     editing = true
     baseValue = typeof value === "number" ? formatTime(value, 3) : value
   }
+
+  $effect(() => {
+    if (input) {
+      input.focus()
+    }
+  })
 </script>
 
 {#if editing}
-  <!-- svelte-ignore a11y_autofocus -->
   <input
-    autofocus
     type="text"
+    bind:this={input}
     bind:value={baseValue}
 
     onblur={() => {
@@ -51,7 +58,7 @@
 
     input {
         border: none;
-        background: #ffff004d;
+        background: none;
         color: #fff;
         font-size: 11px;
         font-family: "YouTube Noto", Roboto, Arial, Helvetica, sans-serif;
