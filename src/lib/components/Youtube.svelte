@@ -5,22 +5,13 @@
   import {logoData} from "@/lib/misc/app-icon";
   import {setupStore} from "@/lib/stores/core";
   import * as amplitude from '@amplitude/analytics-browser';
-  import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/browser-network";
+  import {contentScriptDomainStoreSetup} from "@/lib/misc/browser-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractMediaId} from "@/lib/youtube/ui";
-  import {createLocalPersister} from "tinybase/persisters/persister-browser";
   import type {Id} from "tinybase";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
 
-  const ctx = setupStore({
-    listener: channelListener(pullListener(), 'tiny-sync'),
-    sender: channelSender(runtimeOnMessageSender, 'tiny-sync'),
-    localOptions: {
-      listener: channelListener(pullListener({pullInterval: 5000}), 'tiny-sync-local-settings'),
-      sender: channelSender(runtimeOnMessageSender, 'tiny-sync-local-settings'),
-      persister: (store) => createLocalPersister(store, 'youtube-looper-tb-local')
-    }
-  });
+  const ctx = setupStore(contentScriptDomainStoreSetup());
 
   setTinyContext(ctx)
 

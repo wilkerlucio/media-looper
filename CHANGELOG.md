@@ -1,5 +1,8 @@
 # Changelog
 
+## NEXT
+- Improved sync communication, faster messaging to content script pages
+
 ## 2024.9.10
 - Downgraded Amplitude to a version that complies with Chrome Manifest V3 policy
 

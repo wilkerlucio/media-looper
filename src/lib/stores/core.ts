@@ -13,6 +13,8 @@ type Options = {
   persister?: (store: Store) => Persister
 } & RuntimeSyncOptions
 
+export type TinyBaseStoreOptions = Options & {localOptions: Options}
+
 function startPersister(store: Store, persisterBuilder: ((store: Store) => Persister) | undefined) {
   return persisterBuilder ?
     persisterBuilder(store) :
@@ -30,7 +32,7 @@ export function storeBase() {
   return {store, relationships, queries}
 }
 
-export function setupStore(options?: Options & {localOptions: Options}) {
+export function setupStore(options?: TinyBaseStoreOptions) {
   const {store, relationships, queries} = storeBase()
 
   const persister = startPersister(store, options?.persister)

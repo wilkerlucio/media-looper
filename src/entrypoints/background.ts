@@ -1,10 +1,5 @@
-import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db';
-import {setupLocalSettingsStore, setupStore} from "@/lib/stores/core";
-import {
-  hubServer,
-  multiSender,
-  runtimeOnMessageSender, runtimeOnMessageListener, channelListener, channelSender
-} from "@/lib/misc/browser-network";
+import {setupStore} from "@/lib/stores/core";
+import {channelListener, extensionDomainStoreSetup, runtimeOnMessageListener} from "@/lib/misc/browser-network";
 
 import {createWsSynchronizer} from "tinybase/synchronizers/synchronizer-ws-client";
 import {MergeableStore} from "tinybase";
@@ -105,18 +100,7 @@ export default defineBackground({
   persistent: true,
 
   main() {
-    const hub = hubServer()
-
-    const ctx = setupStore({
-      listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),
-      sender: channelSender(multiSender(hub, runtimeOnMessageSender), 'tiny-sync'),
-      persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb'),
-      localOptions: {
-        listener: channelListener(runtimeOnMessageListener, 'tiny-sync-local-settings'),
-        sender: channelSender(multiSender(hub, runtimeOnMessageSender), 'tiny-sync-local-settings'),
-        persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb-local'),
-      }
-    })
+    const ctx = setupStore(extensionDomainStoreSetup())
 
     ctx.ready.then(async () => {
       console.log('Background store started');

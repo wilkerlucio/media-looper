@@ -9,7 +9,10 @@ export default defineConfig({
   manifest: {
     name: "YouTube Looper",
     description: "Custom loops extension for Youtube videos",
-    permissions: ["storage"],
+    permissions: ["storage", "tabs"],
+    host_permissions: [
+      "*://*.youtube.com/*"
+    ],
     web_accessible_resources: [
       {
         resources: ["dashboard.html"],

@@ -1,6 +1,9 @@
 import {nanoid} from "nanoid";
 // @ts-ignore
-import type {Runtime} from "webextension-polyfill";
+import {Runtime, Tabs} from "webextension-polyfill";
+import {createIndexedDbPersister} from "tinybase/persisters/persister-indexed-db";
+import {createLocalPersister} from "tinybase/persisters/persister-browser";
+import {TinyBaseStoreOptions} from "@/lib/stores/core";
 
 export type ListenerLambda<T extends (...args: any[]) => any> = (callback: T) => () => void
 export type SenderLambda = (msg: any) => Promise<any> | void
@@ -22,6 +25,16 @@ export function multiSender(...senders: SenderLambda[]) {
   return async (msg: any) => {
     for (const sender of senders) {
       sender(msg)
+    }
+  }
+}
+
+export function tabsSender(query: Tabs.QueryQueryInfoType) {
+  return async (msg: any) => {
+    const tabs = await browser.tabs.query(query)
+
+    for (const t of tabs) {
+      if (t.id) browser.tabs.sendMessage(t.id, msg).catch((e) => null)
     }
   }
 }
@@ -134,6 +147,38 @@ export function pullListener(options?: {pullInterval?: number }) {
   listener.disconnect = disconnect
 
   return listener
+}
+
+// endregion
+
+// region: templates
+
+export function contentScriptDomainStoreSetup(): TinyBaseStoreOptions {
+  return {
+    listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),
+    sender: channelSender(runtimeOnMessageSender, 'tiny-sync'),
+    localOptions: {
+      listener: channelListener(runtimeOnMessageListener, 'tiny-sync-local-settings'),
+      sender: channelSender(runtimeOnMessageSender, 'tiny-sync-local-settings'),
+      persister: (store) => createLocalPersister(store, 'youtube-looper-tb-local')
+    }
+  }
+}
+
+export function extensionDomainStoreSetup(): TinyBaseStoreOptions {
+  const tabsComm = tabsSender({url: "*://*.youtube.com/*"})
+  const sender = multiSender(tabsComm, runtimeOnMessageSender)
+
+  return {
+    listener: channelListener(runtimeOnMessageListener, 'tiny-sync'),
+    sender: channelSender(sender, 'tiny-sync'),
+    persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb'),
+    localOptions: {
+      listener: channelListener(runtimeOnMessageListener, 'tiny-sync-local-settings'),
+      sender: channelSender(sender, 'tiny-sync-local-settings'),
+      persister: (store) => createIndexedDbPersister(store, 'youtube-looper-tb-local'),
+    }
+  }
 }
 
 // endregion
