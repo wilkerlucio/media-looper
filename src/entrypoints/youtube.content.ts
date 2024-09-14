@@ -1,5 +1,6 @@
 import Youtube from "@/lib/components/Youtube.svelte";
 import * as amplitude from '@amplitude/analytics-browser';
+import {mount} from "svelte";
 
 export default defineContentScript({
   allFrames: true,
@@ -12,8 +13,8 @@ export default defineContentScript({
       autocapture: false
     });
 
-    new Youtube({
+    mount(Youtube, {
       target: document.body
     })
-  },
+  }
 });

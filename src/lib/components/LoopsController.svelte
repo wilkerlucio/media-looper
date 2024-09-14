@@ -1,9 +1,8 @@
 <script lang="ts">
   import SpeedControl from "@/lib/components/SpeedControl.svelte";
   import Recorder from "@/lib/components/Recorder.svelte";
-  import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import {getContext, onMount} from "svelte";
-  import type {Id, Row, Store} from "tinybase";
+  import type {Id, Queries, Row, Store} from "tinybase";
   import {useQueriesResultTable} from "@/lib/tinybase/tinybase-stores";
   import LoopEntry from "@/lib/components/LoopEntry.svelte";
   import {loopTree} from "@/lib/misc/loop-tree";
@@ -17,19 +16,21 @@
   import {nanoid} from "nanoid";
   import {cutLoop} from "@/lib/controller";
 
-  const dispatch = createEventDispatcher()
-
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
-  export let sourceId: string
+  let {sourceId, activeLoop = null, onselect}: {
+    sourceId: string,
+    activeLoop: Id | null,
+    onselect: (e: any) => void
+  } = $props()
 
   let recorderComponent: Recorder
 
-  const {store}: { store: Store } = getContext('tinybase') || {};
+  const {store, queries}: { store: Store, queries: Queries } = getContext('tinybase') || {};
 
   let video = document.querySelector("video")
 
-  export let activeLoop: Id | null = null;
+  if (!video) throw new Error("Tried to start looping controller without a video on the page")
 
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
@@ -39,7 +40,7 @@
     }
   }
 
-  $: {
+  $effect(() => {
     sourceId
 
     const chapters = videoChapters(video)
@@ -62,7 +63,7 @@
     for (const {id, ...loop} of loops) {
       store.setRow('loops', id, loop as Row)
     }
-  }
+  })
 
   function log(event: string, details?: {[key: string]: any}) {
     amplitude.track(event, {sourceId, ...details})
@@ -74,7 +75,7 @@
 
   // region: event handlers
 
-  function createLoop(loop: Loop) {
+  function createLoop(loop: Partial<Loop>) {
     ensureMediaInfo()
 
     loop.source = sourceId
@@ -86,11 +87,11 @@
     // @ts-ignore
     store.setRow('loops', loopId, loop)
 
-    dispatch('select', {id: loopId})
+    onselect({id: loopId})
   }
 
   function duplicateLoop(e: any) {
-    const loop = store.getRow('loops', e.detail.id)
+    const loop = store.getRow('loops', e.id)
 
     if (loop) {
       loop.readonly = false
@@ -104,33 +105,35 @@
   }
 
   function divideLoop(e: any) {
-    log('Cut Loop', loopLogDetail(e.detail.id))
+    log('Cut Loop', loopLogDetail(e.id))
 
-    cutLoop(store, e.detail.id, video?.currentTime)
+    cutLoop(store, e.id, video?.currentTime || 0)
   }
 
   function deleteLoop(e: any) {
-    if (activeLoop === e.detail.id) {
-      dispatch('select', {id: null})
+    if (activeLoop === e.id) {
+      onselect({id: null})
     }
 
-    log('Remove Loop', loopLogDetail(e.detail.id))
+    log('Remove Loop', loopLogDetail(e.id))
 
-    store.delRow('loops', e.detail.id)
+    store.delRow('loops', e.id)
   }
 
   // endregion
 
-  $: queryId = "loopsQ:" + sourceId
+  let queryId = $derived("loopsQ:" + sourceId)
 
-  $: loops = useQueriesResultTable(queryId, 'loops', ({select, where}) => {
+  let loopsContainer = $derived(useQueriesResultTable(queries, queryId, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
     where('source', sourceId)
-  })
+  }))
+
+  let loops = $derived($loopsContainer)
 
   // @ts-ignore
-  $: sortedLoops = loopTree($loops)
+  let sortedLoops = $derived(loopTree(loops))
 
   export function record() {
     recorderComponent.record()
@@ -138,7 +141,7 @@
 
   // broadcast the media info from this page so it can be used in places like the import screen to get the name of
   // media being imported
-  onMount(() => {
+  $effect(() => {
     const sender = channelSender(runtimeOnMessageSender, 'embed-media-info')
 
     sender({sourceId, ...sourceInfo() || {}})
@@ -155,12 +158,14 @@
     }
   })
 
-  $: if (Object.entries($loops).length > 0) ensureMediaInfo()
+  $effect(() => {
+    if (Object.entries(loops).length > 0) ensureMediaInfo()
+  })
 
 </script>
 
 <div class="container">
-  <Recorder {video} on:newLoop={(e) => createLoop(e.detail)} bind:this={recorderComponent}/>
+  <Recorder {video} onNewLoop={createLoop} bind:this={recorderComponent}/>
   <div class="loops">
     {#each sortedLoops as [id, {children}] (id)}
       <LoopEntry
@@ -168,10 +173,10 @@
           {children}
           {video}
           active={activeLoop}
-          on:select
-          on:duplicate={duplicateLoop}
-          on:cut={divideLoop}
-          on:delete={deleteLoop}
+          {onselect}
+          onduplicate={duplicateLoop}
+          oncut={divideLoop}
+          ondelete={deleteLoop}
       />
     {/each}
   </div>
@@ -181,7 +186,7 @@
     <ConnectionStatusIndicator/>
   </div>
   <div class="support-speed">
-    <div><a href="https://www.patreon.com/wsscode" on:click={() => log('Click support link')} target="_blank">Support my work</a></div>
+    <div><a href="https://www.patreon.com/wsscode" onclick={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
     <SpeedControl {video}/>
   </div>

@@ -1,9 +1,11 @@
 <script lang="ts">
 
-  export let videoId;
+  let {videoId, ...props}: {
+    videoId: string,
+    class?: string
+  } = $props()
 
-  let clazz = '';
-  export { clazz as class };
+  let clazz = $derived(props.class || '')
 
 </script>
 

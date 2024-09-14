@@ -1,8 +1,7 @@
 import './dashboard.css'
 import DashboardWrapper from "@/entrypoints/dashboard/components/DashboardWrapper.svelte";
+import {mount} from "svelte";
 
-const app = new DashboardWrapper({
+mount(DashboardWrapper, {
   target: document.getElementById('app')!,
-});
-
-export default app;
+})

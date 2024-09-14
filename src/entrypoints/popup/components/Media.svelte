@@ -1,13 +1,16 @@
 <script lang="ts">
-  import {useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import {getThumbUrl} from "@/lib/helpers/youtube";
   import {A, Tooltip} from "flowbite-svelte";
+  import type {Media} from "@/lib/model";
 
-  export let id: string;
+  let {id}: {id: string} = $props()
 
-  const media = useRow('medias', id)
+  const store = getTinyContextForce('store')
 
-  let videoId = id.substring(8)
+  const media = useRow<Media>(store, 'medias', id)
+
+  let videoId = $derived(id.substring(8))
 </script>
 
 <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">

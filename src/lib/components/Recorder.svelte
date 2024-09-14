@@ -1,28 +1,31 @@
 <script lang="ts">
-  import {createEventDispatcher} from "svelte";
   import {formatTime} from "@/lib/helpers/time";
   import Icon from "@/lib/components/Icon.svelte";
+  import type {Loop} from "@/lib/model";
+  import {pd} from "@/lib/helpers/events";
 
-  export let video = document.querySelector("video")
-  let startTime: number | undefined;
+  let {video, onNewLoop}: {
+    video: HTMLVideoElement,
+    onNewLoop: (loop: Partial<Loop>) => void
+  } = $props()
 
-  const dispatch = createEventDispatcher()
+  let startTime: number | undefined = $state()
 
   export function record() {
     if (startTime !== undefined) {
-      const endTime = video?.currentTime
+      const endTime = video.currentTime
       const loop = {startTime, endTime, label: "New loop"}
 
-      dispatch('newLoop', loop)
+      onNewLoop(loop)
 
       startTime = undefined
     } else {
-      startTime = video?.currentTime
+      startTime = video.currentTime
     }
   }
 </script>
 
-<a href="#record" class="container" class:recording={startTime !== undefined} on:click|preventDefault={record}>
+<a href="#record" class="container" class:recording={startTime !== undefined} onclick={pd(record)}>
   {#if startTime !== undefined}
     <Icon icon="stop-circle" />
     <div>Stop recording [{formatTime(startTime, 3)}]</div>

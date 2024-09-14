@@ -1,37 +1,52 @@
 <script lang="ts">
   import {formatTime, secondsFromTime} from "@/lib/helpers/time";
+  import {sp} from "@/lib/helpers/events";
 
-  export let value: any;
-  let editing = false;
+  let {value = $bindable(), formatPrecision}: {
+    value: any,
+    formatPrecision: number | undefined
+  } = $props()
 
-  $: baseValue = typeof value === "number" ? formatTime(value, 3) : value
+  let input: HTMLInputElement | undefined = $state()
+
+  let editing = $state(false);
+  let baseValue = $state(typeof value === "number" ? formatTime(value, 3) : value)
+
+  function startEditing() {
+    editing = true
+    baseValue = typeof value === "number" ? formatTime(value, 3) : value
+  }
+
+  $effect(() => {
+    if (input) {
+      input.focus()
+    }
+  })
 </script>
 
 {#if editing}
-
-  <!-- svelte-ignore a11y-autofocus -->
   <input
-    autofocus
     type="text"
+    bind:this={input}
     bind:value={baseValue}
 
-    on:blur={() => {
+    onblur={() => {
       editing = false
       if (baseValue) value = secondsFromTime(baseValue) || value
     }}
 
-    on:keydown|stopPropagation={(e) => {
+    onkeydowncapture={sp((e: KeyboardEvent) => {
       if (e.code === "Enter" || e.code === "NumpadEnter") e.target.blur()
       if (e.code === "Escape") {
         baseValue = formatTime(value, 3)
         e.target.blur()
-    }}}
+    }})}
 
-    on:keyup|stopPropagation
+    onkeyupcapture={sp}
   />
 {:else}
-  <div on:click={() => editing = true} aria-hidden="true">
-    <slot/>
+  <div onclick={startEditing} aria-hidden="true">
+    {formatTime(value, formatPrecision)}
   </div>
 {/if}
 

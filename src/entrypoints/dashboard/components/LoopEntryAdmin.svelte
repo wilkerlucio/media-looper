@@ -1,10 +1,13 @@
 <script lang="ts">
-  import {useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import {formatTime} from "@/lib/helpers/time";
+  import type {Loop} from "@/lib/model";
 
-  export let id: string;
+  let {id}: {id: string} = $props()
 
-  const loop = useRow('loops', id)
+  const store = getTinyContextForce('store')
+
+  const loop = useRow<Loop>(store, 'loops', id)
 </script>
 
 <div>

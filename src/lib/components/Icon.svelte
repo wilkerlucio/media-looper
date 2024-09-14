@@ -1,9 +1,11 @@
 <script lang="ts">
-  export let icon: string;
+
+  let {icon, ...restProps}: {icon: string} = $props()
+
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<i class="fa fa-{icon}" {...$$restProps} aria-hidden="true" on:click />
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<i class="fa fa-{icon}" {...restProps} aria-hidden="true"></i>
 
 <style>
 

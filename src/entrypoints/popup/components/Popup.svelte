@@ -1,12 +1,13 @@
 <script lang="ts">
 
-  import {useSortedRowIds} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useSortedRowIds} from "@/lib/tinybase/tinybase-stores";
   import Media from "@/entrypoints/popup/components/Media.svelte";
   import {A, Heading} from "flowbite-svelte";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
+  const store = getTinyContextForce('store')
 
-  const medias = useSortedRowIds('medias', 'lastLoopPlay', true, 0, 4)
+  const medias = useSortedRowIds(store, 'medias', 'lastLoopPlay', true, 0, 4)
 
 </script>
 

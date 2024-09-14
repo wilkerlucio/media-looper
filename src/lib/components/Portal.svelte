@@ -1,4 +1,10 @@
-<script context="module">
+<script>
+
+  let {target = 'body', children} = $props()
+
+</script>
+
+<script module>
   import { tick } from "svelte";
 
   /**
@@ -6,7 +12,7 @@
    *
    */
 
-  const positioners = {
+  const positions = {
     "end": (targetEl, el) => {
       targetEl.appendChild(el)
     },
@@ -40,7 +46,7 @@
           }. Allowed types: string (CSS selector) or HTMLElement.`
         );
       }
-      positioners[position](targetEl, el)
+      positions[position](targetEl, el)
 
       el.hidden = false;
     }
@@ -59,14 +65,6 @@
   }
 </script>
 
-<script>
-  /**
-   * DOM Element or CSS Selector
-   * @type { HTMLElement|string}
-   */
-  export let target = "body";
-</script>
-
 <div use:portal={target} hidden>
-  <slot />
+  {@render children()}
 </div>

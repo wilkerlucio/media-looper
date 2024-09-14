@@ -3,16 +3,17 @@
   import {getTinyContextForce, useValue} from "@/lib/tinybase/tinybase-stores";
   import {A, Input, Label, Spinner} from "flowbite-svelte";
 
-  const wsConfig = useValue('websocket-server-url', '', getTinyContextForce('localStore'))
-  const wsStatus = useValue('websocket-server-status', '', getTinyContextForce('localStore'))
+  let localStore = getTinyContextForce('localStore');
 
-  const statusColors = {
+  const wsConfig = useValue(localStore, 'websocket-server-url', '')
+  const wsStatus = useValue(localStore, 'websocket-server-status', '')
+
+  const statusColors: {[k: string]: string} = {
     'connected': 'green',
     'error': 'red'
   }
 
-  // @ts-ignore
-  $: wsColor = statusColors[$wsStatus] || 'base'
+  let wsColor = $derived(statusColors[$wsStatus] || 'base')
 
 </script>
 

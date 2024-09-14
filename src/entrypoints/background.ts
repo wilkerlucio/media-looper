@@ -8,10 +8,9 @@ import {
 
 import {createWsSynchronizer} from "tinybase/synchronizers/synchronizer-ws-client";
 import {MergeableStore} from "tinybase";
-import {parseEDNString} from "edn-data";
-import { Dictionary } from 'lodash';
-import {importMedia, parseLoops} from "@/lib/logic/import-cljs";
+import type { Dictionary } from 'lodash';
 import {videoIdFromSourceId} from "@/lib/youtube/ui";
+import {importMedia, parseLoops} from "@/lib/logic/database";
 
 async function setupWebSocketSync(store: MergeableStore, settingsStore: MergeableStore) {
   let wsSync: ReturnType<typeof createWsSynchronizer> | null = null

@@ -4,20 +4,23 @@
   import {A, Tooltip} from "flowbite-svelte";
   import type {Loop, Media} from "@/lib/model";
   import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
-  import {useRow} from "@/lib/tinybase/tinybase-stores";
+  import {getTinyContextForce, useRow} from "@/lib/tinybase/tinybase-stores";
   import {sourceIdFromVideoId, videoIdFromSourceId} from "@/lib/youtube/ui";
 
-  export let media: { sourceId: string, loops: Loop[], title?: string, readInfoFailed?: boolean, fromCLJS?: boolean };
+  let {media}: {
+    media: { sourceId: string, loops: Loop[], title?: string, readInfoFailed?: boolean, fromCLJS?: boolean }
+  } = $props()
 
-  $: videoId = videoIdFromSourceId(media.sourceId)
+  const store = getTinyContextForce('store')
 
-  $: dbMediaSource = useRow('medias', sourceIdFromVideoId(videoId))
-  $: dbMedia = $dbMediaSource as unknown as Media
+  let videoId = $derived(videoIdFromSourceId(media.sourceId))
 
-  $: title = media.title || dbMedia.title
+  let dbMedia = $derived(useRow<Media>(store, 'medias', sourceIdFromVideoId(videoId)))
+
+  let title = $derived(media.title || $dbMedia.title)
 
 </script>
-{#if !media.fromCLJS || (media.fromCLJS && !dbMedia.importedFromCLJS)}
+{#if !media.fromCLJS || (media.fromCLJS && !$dbMedia.importedFromCLJS)}
   <div class="text-center m-1 w-[120px]">
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank">
       <img src={getThumbUrl(videoId, 'default')} alt="Unknown" width="120" height="90" />

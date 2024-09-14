@@ -2,13 +2,12 @@
 
   import {Button, Modal} from "flowbite-svelte";
   import Settings from "@/entrypoints/dashboard/components/Settings.svelte";
-  import {sp} from "@/lib/helpers/events";
 
-  let showSettingsModal = false
+  let showSettingsModal = $state(false)
 
 </script>
 
-<Button on:click={(e) => {showSettingsModal = true; sp(e)}} class="gap-2">
+<Button onclick={() => showSettingsModal = true} class="gap-2">
   Settings
 </Button>
 
