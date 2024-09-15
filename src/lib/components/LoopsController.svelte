@@ -15,6 +15,7 @@
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
   import {nanoid} from "nanoid";
   import {cutLoop} from "@/lib/controller";
+  import MediaImportExport from "@/lib/components/MediaImportExport.svelte";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -183,6 +184,7 @@
   <div class="dashboard">
     <a href="{dashboardUrl}" target="_blank">Open Dashboard</a>
     <div class="spacer"></div>
+    <MediaImportExport {sourceId} />
     <ConnectionStatusIndicator/>
   </div>
   <div class="support-speed">

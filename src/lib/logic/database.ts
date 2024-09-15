@@ -8,8 +8,8 @@ import {parseEDNString} from "edn-data";
 
 // region: import
 
-export function parseEDN(edn: string) {
-  return parseEDNString(edn, {mapAs: 'object', keywordAs: 'string'})
+export function parseEDN<T>(edn: string): T {
+  return parseEDNString(edn, {mapAs: 'object', keywordAs: 'string'}) as T
 }
 
 export function adaptLoop(videoId: string, loop: any) {
@@ -23,12 +23,23 @@ export function adaptLoop(videoId: string, loop: any) {
 }
 
 export function parseLoops(videoId: string, loopsEdn: string): (Loop & Identified)[] {
-  const loops = parseEDN(loopsEdn as string) as any[]
+  const loops = parseEDN(loopsEdn) as any[]
 
   return loops.map((l) => adaptLoop(videoId, l))
 }
 
-export function importMedia(store: Store | MergeableStore, sourceId: string, info: Media, loops: (Loop & Identified)[]) {
+export function parseFromImportFile(videoId: string, contentString: string) {
+  const content = parseEDN<any>(contentString)
+  const loops = content['com.wsscode.media-looper.model/loops']
+
+  if (!videoId || !loops) {
+    throw new Error("Invalid file format.")
+  }
+
+  return loops.map((l: any) => adaptLoop(videoId, l))
+}
+
+export function importMedia(store: Store | MergeableStore, sourceId: string, info: Partial<Media>, loops: (Loop & Identified)[]) {
   const skipImport = store.getCell('medias', sourceId, 'importedFromCLJS')
 
   if (skipImport) return false
