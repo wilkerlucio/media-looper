@@ -24,7 +24,7 @@
   }
 
   async function importLoops() {
-    const file = await pickFile()
+    const file = await pickFile({accept: ".json"})
     const content = await readFileText(file)
 
     toImport = JSON.parse(content)
