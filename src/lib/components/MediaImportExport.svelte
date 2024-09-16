@@ -79,7 +79,7 @@
       return !loop.readonly
     })
 
-    const exportJSON = JSON.stringify({loops})
+    const exportJSON = JSON.stringify({loops, sourceId})
 
     const title = store.getCell('medias', sourceId, 'title') || sourceInfo()?.title || 'Unknown title';
 
