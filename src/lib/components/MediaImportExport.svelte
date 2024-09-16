@@ -1,23 +1,34 @@
 <script lang="ts">
 
-  import {pickFile, readFileText} from "@/lib/misc/browser-file";
+  import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import {pd} from "@/lib/helpers/events";
-  import {parseFromImportFile} from "@/lib/logic/database";
+  import {exportDatabase, parseFromImportFile} from "@/lib/logic/database";
   import {getTinyContextForce} from "@/lib/tinybase/tinybase-stores";
-  import {videoIdFromSourceId} from "@/lib/youtube/ui";
+  import {sourceInfo, videoIdFromSourceId} from "@/lib/youtube/ui";
+  import {IdentifiedLoop, Loop} from "@/lib/model";
 
   let {sourceId}: {
     sourceId: string
   } = $props()
 
   const store = getTinyContextForce('store')
+  const relationships = getTinyContextForce('relationships')
 
   let importError: string | undefined = $state()
   let videoId = $derived(videoIdFromSourceId(sourceId))
 
   async function importFromJSON(file: File) {
     const content = await readFileText(file)
-    console.log('import from json', file, content);
+
+    try {
+      const {loops} = JSON.parse(content)
+
+      for (const {id, ...loop} of loops) {
+        store.setRow('loops', id, loop)
+      }
+    } catch(e: any) {
+      importError = e.message
+    }
   }
 
   async function importFromEdn(file: File) {
@@ -31,8 +42,6 @@
         store.setRow('loops', id, loop)
       }
     } catch (e: any) {
-      console.error('error', e);
-      console.log(e.message, e);
       importError = e.message
     }
   }
@@ -48,8 +57,6 @@
 
     importError = undefined
 
-    console.log('importing', file);
-
     const extension = pathExtension(file.name)
 
     switch (extension) {
@@ -64,13 +71,28 @@
     }
   }
 
+  function exportMediaToFile() {
+    const loops = relationships.getLocalRowIds('mediaLoops', sourceId).map((loopId): IdentifiedLoop => {
+      const loop = store.getRow('loops', loopId) as unknown as Loop
+      return {id: loopId, ...loop}
+    }).filter((loop) => {
+      return !loop.readonly
+    })
+
+    const exportJSON = JSON.stringify({loops})
+
+    const title = store.getCell('medias', sourceId, 'title') || sourceInfo()?.title || 'Unknown title';
+
+    download(title, new Blob([exportJSON], {type: "application/json"}))
+  }
+
 </script>
 
 {#if importError}
   <div class="error"><strong>Error:</strong> {importError}</div>
 {/if}
 <a href="#import-media" onclick={pd(importMediaFromFile)}>Import</a>
-<a href="#export-media">Export</a>
+<a href="#export-media" onclick={pd(exportMediaToFile)}>Export</a>
 
 <style>
     a {

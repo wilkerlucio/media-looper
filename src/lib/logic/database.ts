@@ -3,7 +3,7 @@ import keyBy from "lodash/keyBy";
 import {keep} from "@/lib/helpers/array";
 import {sourceIdFromVideoId} from "@/lib/youtube/ui";
 import {Id, MergeableStore, Store} from "tinybase";
-import type {Identified, Loop, Media} from "@/lib/model";
+import {IdentifiedLoop, Media} from "@/lib/model";
 import {parseEDNString} from "edn-data";
 
 // region: import
@@ -12,7 +12,7 @@ export function parseEDN<T>(edn: string): T {
   return parseEDNString(edn, {mapAs: 'object', keywordAs: 'string'}) as T
 }
 
-export function adaptLoop(videoId: string, loop: any) {
+export function adaptLoop(videoId: string, loop: any): IdentifiedLoop {
   return {
     id: loop['com.wsscode.media-looper.model/loop-id'].val,
     startTime: loop['com.wsscode.media-looper.model/loop-start'],
@@ -22,7 +22,7 @@ export function adaptLoop(videoId: string, loop: any) {
   }
 }
 
-export function parseLoops(videoId: string, loopsEdn: string): (Loop & Identified)[] {
+export function parseLoops(videoId: string, loopsEdn: string): (IdentifiedLoop)[] {
   const loops = parseEDN(loopsEdn) as any[]
 
   return loops.map((l) => adaptLoop(videoId, l))
@@ -39,7 +39,7 @@ export function parseFromImportFile(videoId: string, contentString: string) {
   return loops.map((l: any) => adaptLoop(videoId, l))
 }
 
-export function importMedia(store: Store | MergeableStore, sourceId: string, info: Partial<Media>, loops: (Loop & Identified)[]) {
+export function importMedia(store: Store | MergeableStore, sourceId: string, info: Partial<Media>, loops: (IdentifiedLoop)[]) {
   const skipImport = store.getCell('medias', sourceId, 'importedFromCLJS')
 
   if (skipImport) return false
@@ -72,6 +72,10 @@ export async function loadLoopsPrevious() {
 // endregion
 
 // region: export
+
+export function exportLoopsFromSource(store: GenericStore, sourceId: string) {
+
+}
 
 export function exportDatabase(store: GenericStore) {
   const medias = store.getTable('medias') as {[k: Id]: any}
