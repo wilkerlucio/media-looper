@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## 2024.9.15
 - Upgraded system to Svelte 5
 - Return the import/export feature for single media
 - Keep split action visible while looking at actions from active loop
