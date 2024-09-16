@@ -2,10 +2,10 @@
 
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import {pd} from "@/lib/helpers/events";
-  import {exportDatabase, parseFromImportFile} from "@/lib/logic/database";
+  import {parseFromImportFile} from "@/lib/logic/database";
   import {getTinyContextForce} from "@/lib/tinybase/tinybase-stores";
   import {sourceInfo, videoIdFromSourceId} from "@/lib/youtube/ui";
-  import {IdentifiedLoop, Loop} from "@/lib/model";
+  import type {IdentifiedLoop, Loop} from "@/lib/model";
 
   let {sourceId}: {
     sourceId: string
