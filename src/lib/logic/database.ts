@@ -73,10 +73,6 @@ export async function loadLoopsPrevious() {
 
 // region: export
 
-export function exportLoopsFromSource(store: GenericStore, sourceId: string) {
-
-}
-
 export function exportDatabase(store: GenericStore) {
   const medias = store.getTable('medias') as {[k: Id]: any}
   const loops = store.getTable('loops') as {[k: Id]: any}
