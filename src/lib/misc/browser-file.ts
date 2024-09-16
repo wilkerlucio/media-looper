@@ -7,12 +7,12 @@ export function download(filename: string, blob: Blob) {
   link.click()
 }
 
-export function pickFile(): Promise<File> {
+export function pickFile({accept = ".json"}): Promise<File> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
 
     input.setAttribute('type', 'file')
-    input.setAttribute('accept', '.json')
+    input.setAttribute('accept', accept)
     input.onchange = (e: any) => {
       resolve(e.target?.files[0])
     }

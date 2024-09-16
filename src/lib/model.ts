@@ -12,6 +12,8 @@ export interface Loop {
   readonly?: boolean;
 }
 
+export type IdentifiedLoop = Loop & Identified
+
 export interface Media {
   title: string,
   channel: string,
