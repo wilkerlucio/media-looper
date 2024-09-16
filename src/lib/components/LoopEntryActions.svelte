@@ -5,9 +5,10 @@
   import {videoCurrentTimeStore} from "@/lib/stores/video.svelte";
   import {pd} from "@/lib/helpers/events";
 
-  let {id, loop, video = document.querySelector("video"), onduplicate, oncut, ondelete}: {
+  let {id, loop, active, video = document.querySelector("video"), onduplicate, oncut, ondelete}: {
     id: Id,
     loop: Loop,
+    active: Id | null,
     video?: HTMLVideoElement | null,
     onduplicate: any,
     oncut: any,
@@ -20,7 +21,7 @@
 </script>
 <div class="looper-dropdown-content">
   <a href="#duplicate" onclick={pd(() => onduplicate({id}))}>Duplicate</a>
-  {#if loop.startTime < currentTime && currentTime < loop.endTime}
+  {#if id === active || (loop.startTime < currentTime && currentTime < loop.endTime)}
     <a href="#cut" onclick={pd(() => oncut({id}))}>Split</a>
   {/if}
   {#if !loop.readonly}

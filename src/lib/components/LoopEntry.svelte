@@ -80,6 +80,7 @@
       <LoopEntryActions
           {id}
           {loop}
+          {active}
           {onduplicate}
           {oncut}
           {ondelete}
