@@ -108,7 +108,11 @@
   function divideLoop(e: any) {
     log('Cut Loop', loopLogDetail(e.id))
 
-    cutLoop(store, e.id, video?.currentTime || 0)
+    const loopFinish = store.getCell('loops', e.id, 'endTime') as number
+
+    let cutPoint = Math.min(video?.currentTime || 0, loopFinish)
+
+    cutLoop(store, e.id, cutPoint)
   }
 
   function deleteLoop(e: any) {
