@@ -9,14 +9,27 @@
   function increment(e: MouseEvent) {
     return e.shiftKey ? 0.01 : 0.1
   }
+
+  let rate = $state(video.playbackRate)
+
+  let playbackRate = {
+    get rate() {
+      return rate
+    },
+
+    set rate(x: number) {
+      rate = x
+      video.playbackRate = x
+    }
+  }
 </script>
 
 <div class="container">
-  <a href="#reset-speed" class="label" onclick={pd(() => video.playbackRate = 1)}>Speed</a>
-  <Icon icon="minus-circle" onclick={(e: MouseEvent) => video.playbackRate -= increment(e)} />
-  <input type="range" min="0.1" max="2" step="0.01" bind:value={video.playbackRate}/>
-  <Icon icon="plus-circle" onclick={(e: MouseEvent) => video.playbackRate += increment(e)} />
-  <div>{Math.round(video.playbackRate * 100)}%</div>
+  <a href="#reset-speed" class="label" onclick={pd(() => playbackRate.rate = 1)}>Speed</a>
+  <Icon icon="minus-circle" onclick={(e: MouseEvent) => playbackRate.rate -= increment(e)} />
+  <input type="range" min="0.1" max="2" step="0.01" bind:value={playbackRate.rate}/>
+  <Icon icon="plus-circle" onclick={(e: MouseEvent) => playbackRate.rate += increment(e)} />
+  <div>{Math.round(playbackRate.rate * 100)}%</div>
 </div>
 
 <style>

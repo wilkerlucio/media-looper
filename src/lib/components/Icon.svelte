@@ -1,6 +1,9 @@
 <script lang="ts">
 
-  let {icon, ...restProps}: {icon: string} = $props()
+  let {icon, ...restProps}: {
+    icon: string,
+    onclick: (e: MouseEvent) => void
+  } = $props()
 
 </script>
 
