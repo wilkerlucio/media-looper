@@ -3,6 +3,7 @@
 ## NEXT
 - Upgraded system to Svelte 5
 - Return the import/export feature for single media
+- Keep split action visible while looking at actions from active loop
 
 ## 2024.9.10
 - Downgraded Amplitude to a version that complies with Chrome Manifest V3 policy
