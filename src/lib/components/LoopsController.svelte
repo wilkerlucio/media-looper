@@ -166,7 +166,20 @@
   $effect(() => {
     if (Object.entries(loops).length > 0) ensureMediaInfo()
   })
+  let speedControlComponent: SpeedControl | undefined = $state()
 
+  // Expose speed control methods to parent
+  export function increaseSpeed(precise = false) {
+    speedControlComponent?.increaseSpeed(precise)
+  }
+
+  export function decreaseSpeed(precise = false) {
+    speedControlComponent?.decreaseSpeed(precise)
+  }
+
+  export function setSpeed(speed: number) {
+    speedControlComponent?.setSpeed(speed)
+  }
 </script>
 
 <div class="container">
@@ -194,7 +207,7 @@
   <div class="support-speed">
     <div><a href="https://www.patreon.com/wsscode" onclick={() => log('Click support link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
-    <SpeedControl {video}/>
+    <SpeedControl {video} bind:this={speedControlComponent}/>
   </div>
 </div>
 

@@ -10,6 +10,18 @@
     return e.shiftKey ? 0.01 : 0.1
   }
 
+  export function increaseSpeed(precise = false) {
+    playbackRate.rate += precise ? 0.05 : 0.1
+  }
+
+  export function decreaseSpeed(precise = false) {
+    playbackRate.rate -= precise ? 0.05 : 0.1
+  }
+
+  export function setSpeed(speed: number) {
+    playbackRate.rate = speed
+  }
+
   let rate = $state(video.playbackRate)
 
   let playbackRate = {

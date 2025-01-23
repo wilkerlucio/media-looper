@@ -11,6 +11,8 @@
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
   import type {Id} from "tinybase";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
+  import JumpBack from "@/lib/components/JumpBack.svelte";
+  import type { ComponentType } from 'svelte';
 
   const ctx = setupStore({
     listener: channelListener(pullListener(), 'tiny-sync'),
@@ -39,6 +41,7 @@
 
   let activeComponent: ActiveLoop | undefined = $state()
   let controllerComponent: LoopsController | undefined = $state()
+  let jumpBackComponent: JumpBack | undefined = $state();
 
   function log(event: string, details?: {[key: string]: any}) {
     amplitude.track(event, {sourceId, ...details})
@@ -83,12 +86,51 @@
   }
 
   function shortcutsHandler(e: KeyboardEvent) {
-    if (e.altKey && e.code === 'KeyZ') {
+    if (e.altKey && e.code === "KeyV") {
+      toggleVisible();
+    }
+    if (e.altKey && e.code === "KeyZ") {
       if (activeComponent) {
-        activeComponent.seekStart(e.shiftKey ? 3 : 0)
+        activeComponent.seekStart(e.shiftKey ? 3 : 0);
       } else {
-        if (controllerComponent)
-          controllerComponent.record()
+        if (controllerComponent) controllerComponent.record();
+      }
+    }
+    if (e.altKey && e.code === "KeyX") {
+      if (activeLoop) {
+        log("Stop Loop", loopLogDetail(activeLoop));
+        activeLoop = null;
+      }
+    }
+    if (e.altKey && e.code === "KeyS") {
+      if (controllerComponent) {
+        controllerComponent.decreaseSpeed(e.shiftKey);
+      }
+    }
+    if (e.altKey && e.code === "KeyD") {
+      if (controllerComponent) {
+        controllerComponent.increaseSpeed(e.shiftKey);
+      }
+    }
+    if (e.altKey && e.code === "KeyF") {
+      if (controllerComponent) {
+        controllerComponent.setSpeed(1);
+      }
+    }
+    if (e.altKey && e.code === "KeyG") {
+      if (controllerComponent) {
+        controllerComponent.setSpeed(2);
+      }
+    }
+    if (e.altKey && e.code.match(/^Digit[1-9]$/)) {
+      if (controllerComponent) {
+        const speed = parseInt(e.code.slice(-1)) / 10;
+        controllerComponent.setSpeed(speed);
+      }
+    }
+    if (e.altKey && e.code === "KeyB") {
+      if (jumpBackComponent) {
+        jumpBackComponent.backToStart();
       }
     }
   }
@@ -114,13 +156,14 @@
     {/if}
 
     {#if popupVisible}
-      <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}}>
+      <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}} style="display: {popupVisible ? 'block' : 'none'}">
         <LoopsController
             {sourceId}
             {activeLoop}
             onselect={selectLoop}
             bind:this={controllerComponent}
         />
+        <JumpBack bind:this={jumpBackComponent} />
       </div>
     {/if}
   {/if}
