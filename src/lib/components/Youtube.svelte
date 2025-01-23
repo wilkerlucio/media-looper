@@ -155,7 +155,6 @@
       <ActiveLoop id={activeLoop} bind:this={activeComponent}/>
     {/if}
 
-    {#if popupVisible}
       <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}} style="display: {popupVisible ? 'block' : 'none'}">
         <LoopsController
             {sourceId}
@@ -165,7 +164,6 @@
         />
         <JumpBack bind:this={jumpBackComponent} />
       </div>
-    {/if}
   {/if}
 {/await}
 
