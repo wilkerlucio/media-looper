@@ -1,12 +1,9 @@
 import {
-  createCustomSynchronizer,
   getUniqueId,
   type IdOrNull,
-  type MergeableStore,
-  type Message,
-  type Receive
+  type MergeableStore
 } from "tinybase";
-import {Send} from "tinybase/synchronizers";
+import {createCustomSynchronizer, Receive, Message, Send} from "tinybase/synchronizers";
 import type {ListenerLambda, SenderLambda} from "@/lib/misc/browser-network";
 
 export type RuntimeSyncOptions = {
@@ -23,7 +20,7 @@ export const createBrowserRuntimeSynchronizer = ((
 ) => {
   const clientId = getUniqueId();
 
-  const send = (
+  const send: Send = (
     toClientId: IdOrNull,
     requestId: IdOrNull,
     message: Message,
