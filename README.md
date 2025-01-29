@@ -79,10 +79,20 @@ Click on the label `Speed` to return it to 100%.
 
 ## Keyboard shortcuts
 
+* `alt+v` - Show YouTube Looper
 * `alt+z` - Start loop recording
 * `alt+z` - End loop recording (after started)
 * `alt+z` - Seek to begin of loop (when loop is active)
 * `alt+shift+z` - Seek to begin of loop minus 3 seconds (when loop is active)
+* `alt+x` - Exit loop (when loop is active)
+* `alt+b` - Jump back to and play from last start time
+* `alt+s` - Slow down by 10%
+* `alt+shift+s` - Slow down by 5%
+* `alt+d` - Speed up by 10%
+* `alt+shift+d` - Speed up by 5%
+* `alt+f` - Reset speed to 100%
+* `alt+g` - Set speed to 200%
+* `alt+NUMBER` - Set speed to 0.NUMBER
 
 ## Popup Window
 
