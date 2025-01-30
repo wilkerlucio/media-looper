@@ -8,6 +8,7 @@
   import type {Id} from "tinybase";
   import LoopEntryActions from "@/lib/components/LoopEntryActions.svelte";
   import {sp} from "@/lib/helpers/events";
+  import Self from './LoopEntry.svelte'
 
   let {video, id, children, active, nesting = 0, onselect, onduplicate, oncut, ondelete}: {
     video: HTMLVideoElement | null,
@@ -91,7 +92,7 @@
 
 {#if children}
   {#each children as [id, loop] (id)}
-    <svelte:self
+    <Self
       {id}
       children={loop.children}
       {active}

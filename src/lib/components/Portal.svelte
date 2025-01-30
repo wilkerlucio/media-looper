@@ -24,14 +24,19 @@
 
   export function portal(el, {target = "body", position = "end"}) {
     let targetEl;
+
     async function update(newTarget) {
       target = newTarget;
+
       if (typeof target === "string") {
+
         targetEl = document.querySelector(target);
+
         if (targetEl === null) {
           await tick();
           targetEl = document.querySelector(target);
         }
+
         if (targetEl === null) {
           throw new Error(
             `No element found matching css selector: "${target}"`
@@ -46,6 +51,7 @@
           }. Allowed types: string (CSS selector) or HTMLElement.`
         );
       }
+
       positions[position](targetEl, el)
 
       el.hidden = false;
@@ -58,6 +64,7 @@
     }
 
     update(target);
+
     return {
       update,
       destroy,
