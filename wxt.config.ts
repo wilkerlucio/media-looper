@@ -23,7 +23,7 @@ export default defineConfig({
       topLevelAwait()
     ],
   }),
-  runner: {
+  webExt: {
     startUrls: ['https://www.youtube.com/watch?v=EDRRbuWuUbQ']
     // chromiumArgs: ['--user-data-dir=./.chrome-data']
   }
