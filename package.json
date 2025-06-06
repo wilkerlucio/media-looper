@@ -30,7 +30,7 @@
     "typescript": "^5.7.3",
     "vite-plugin-top-level-await": "^1.4.4",
     "vite-plugin-wasm": "^3.4.1",
-    "wxt": "^0.20.6"
+    "wxt": "^0.20.7"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "2.9.2",
