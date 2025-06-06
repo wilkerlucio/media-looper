@@ -9,13 +9,13 @@
   import {partition} from "@/lib/helpers/array";
   import {secondsFromTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
-  import * as amplitude from '@amplitude/analytics-browser';
   import {sourceInfo, videoChapters, videoIdFromSourceId} from "@/lib/youtube/ui";
   import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
   import {nanoid} from "nanoid";
   import {cutLoop} from "@/lib/controller";
   import MediaImportExport from "@/lib/components/MediaImportExport.svelte";
+  import {trackEvent} from "@/lib/misc/analytics";
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
@@ -67,7 +67,10 @@
   })
 
   function log(event: string, details?: {[key: string]: any}) {
-    amplitude.track(event, {sourceId, ...details})
+    trackEvent(event, {
+      source_id: sourceId,
+      ...details
+    });
   }
 
   function loopLogDetail(loopId: Id) {
@@ -81,7 +84,7 @@
 
     loop.source = sourceId
 
-    log('Create Loop', loop)
+    log('create_loop', loop)
 
     const loopId = nanoid()
 
@@ -97,7 +100,7 @@
     if (loop) {
       loop.readonly = false
 
-      log('Duplicate Loop', loop)
+      log('duplicate_loop', loop)
 
       const loopId = nanoid()
 
@@ -106,7 +109,7 @@
   }
 
   function divideLoop(e: any) {
-    log('Cut Loop', loopLogDetail(e.id))
+    log('cut_loop', loopLogDetail(e.id))
 
     const loopFinish = store.getCell('loops', e.id, 'endTime') as number
 
@@ -120,7 +123,7 @@
       onselect({id: null})
     }
 
-    log('Remove Loop', loopLogDetail(e.id))
+    log('remove_loop', loopLogDetail(e.id))
 
     store.delRow('loops', e.id)
   }
@@ -205,7 +208,7 @@
     <ConnectionStatusIndicator/>
   </div>
   <div class="support-speed">
-    <div><a href="https://www.patreon.com/wsscode" onclick={() => log('Click support link')} target="_blank">Support my work</a></div>
+    <div><a href="https://www.patreon.com/wsscode" onclick={() => log('click_support_link')} target="_blank">Support my work</a></div>
     <div class="spacer"></div>
     <SpeedControl {video} bind:this={speedControlComponent}/>
   </div>

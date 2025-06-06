@@ -4,15 +4,14 @@
   import LoopsController from "@/lib/components/LoopsController.svelte";
   import {logoData} from "@/lib/misc/app-icon";
   import {setupStore} from "@/lib/stores/core";
-  import * as amplitude from '@amplitude/analytics-browser';
   import {channelListener, channelSender, pullListener, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import {setTinyContext} from "@/lib/tinybase/tinybase-stores";
   import {extractMediaId} from "@/lib/youtube/ui";
   import {createLocalPersister} from "tinybase/persisters/persister-browser";
+  import {trackEvent} from "@/lib/misc/analytics";
   import type {Id} from "tinybase";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import JumpBack from "@/lib/components/JumpBack.svelte";
-  import type { ComponentType } from 'svelte';
 
   const ctx = setupStore({
     listener: channelListener(pullListener(), 'tiny-sync'),
@@ -44,7 +43,10 @@
   let jumpBackComponent: JumpBack | undefined = $state();
 
   function log(event: string, details?: {[key: string]: any}) {
-    amplitude.track(event, {sourceId, ...details})
+    trackEvent(event, {
+      source_id: sourceId,
+      ...details
+    });
   }
 
   function loopLogDetail(loopId: Id) {
@@ -53,10 +55,10 @@
 
   function toggleVisible() {
     if (popupVisible) {
-      amplitude.track('Open Dialog', {sourceId})
+      log('open_dialog')
       popupVisible = false
     } else {
-      amplitude.track('Close Dialog', {sourceId})
+      log('close_dialog')
       popupVisible = true
     }
   }
@@ -73,13 +75,13 @@
     const id = e.id
 
     if (activeLoop === id) {
-      log('Stop Loop', loopLogDetail(id))
+      log('stop_loop', loopLogDetail(id))
 
       activeLoop = null
     } else {
-      if (activeLoop) log('Stop Loop', loopLogDetail(activeLoop))
+      if (activeLoop) log('stop_loop', loopLogDetail(activeLoop))
 
-      log('Start Loop', loopLogDetail(id))
+      log('start_loop', loopLogDetail(id))
 
       playLoop(id)
     }
@@ -98,7 +100,7 @@
     }
     if (e.altKey && e.code === "KeyX") {
       if (activeLoop) {
-        log("Stop Loop", loopLogDetail(activeLoop));
+        log('stop_loop', loopLogDetail(activeLoop));
         activeLoop = null;
       }
     }
