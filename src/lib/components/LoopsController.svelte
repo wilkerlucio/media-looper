@@ -44,26 +44,33 @@
   $effect(() => {
     sourceId
 
-    const chapters = videoChapters(video)
-    const groups = partition(chapters, 2, 1)
-    const loops = groups.map(([a, b]) => {
-      return {
-        id: sourceId + '-' + a.time,
-        label: a.title,
-        startTime: secondsFromTime(a.time),
-        endTime: secondsFromTime(b.time),
-        source: sourceId,
-        readonly: true
+    const loadChapters = async () => {
+      const chapters = await videoChapters(video)
+
+      if (chapters.length > 1) {
+        const groups = partition(chapters, 2, 1)
+        const loops = groups.map(([a, b]) => {
+          return {
+            id: sourceId + '-' + a.time,
+            label: a.title,
+            startTime: secondsFromTime(a.time),
+            endTime: secondsFromTime(b.time),
+            source: sourceId,
+            readonly: true
+          }
+        })
+
+        if (loops.length > 0) {
+          ensureMediaInfo()
+        }
+
+        for (const {id, ...loop} of loops) {
+          store.setRow('loops', id, loop as Row)
+        }
       }
-    })
-
-    if (loops.length > 0) {
-      ensureMediaInfo()
     }
 
-    for (const {id, ...loop} of loops) {
-      store.setRow('loops', id, loop as Row)
-    }
+    loadChapters()
   })
 
   function log(event: string, details?: {[key: string]: any}) {

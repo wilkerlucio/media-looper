@@ -1,5 +1,6 @@
 import uniqBy from "lodash/uniqBy";
 import {formatTime} from "@/lib/helpers/time";
+import {pollUntil} from "@/lib/helpers/polling";
 
 export function extractMediaId(url: string) {
   const matches = url.match(/watch.+v=([^&]+)/) || url.match(/\/embed\/([^?]+)/)
@@ -29,7 +30,7 @@ export function sourceInfo() {
   return base.title === 'YouTube' && base.channel === '' ? null : base
 }
 
-export function videoChapters(video: HTMLVideoElement | null) {
+function getChaptersSync(video: HTMLVideoElement | null) {
   if (!video) return []
 
   const chapters = uniqBy(Array.from(document.querySelectorAll(".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")).map((node) => {
@@ -40,6 +41,17 @@ export function videoChapters(video: HTMLVideoElement | null) {
   chapters.push({title: "END", time: formatTime(video.duration - 0.1, 3)})
 
   return chapters
+}
+
+export async function videoChapters(video: HTMLVideoElement | null) {
+  const chapters = await pollUntil(
+    () => getChaptersSync(video),
+    (chapters) => chapters.length > 1, // Stop when we have more than 1 chapter
+    100, // Poll every 100ms
+    5000 // Timeout after 5 seconds
+  )
+
+  return chapters || []
 }
 
 export function sourceIdFromVideoId(videoId: string) {
