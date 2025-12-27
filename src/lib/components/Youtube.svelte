@@ -147,7 +147,7 @@
 
 {#await ctx.ready then x}
   {#if sourceId}
-    <button class="ytp-button" use:portal={{target: ".ytp-right-controls", position: 'start'}} onclick={toggleVisible}>
+    <button class="ytp-button" use:portal={{target: ".ytp-right-controls .ytp-right-controls-left", position: 'end'}} onclick={toggleVisible}>
       <div class="button-inner-container">
         <img src={logoData} alt="Youtube Looper" />
       </div>
@@ -185,6 +185,7 @@
         height: 100%;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
     }
 
     .ml-popup {
