@@ -38,7 +38,8 @@ function getChaptersSync(video: HTMLVideoElement | null) {
     return {title: node.querySelector("h4")?.innerText, time: node.querySelector("#time")?.innerText}
   }), (x) => x.time)
 
-  chapters.push({title: "END", time: formatTime(video.duration - 0.1, 3)})
+  if (chapters.length > 0)
+    chapters.push({title: "END", time: formatTime(video.duration - 0.1, 3)})
 
   return chapters
 }
