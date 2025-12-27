@@ -30,7 +30,7 @@ export function sourceInfo() {
   return base.title === 'YouTube' && base.channel === '' ? null : base
 }
 
-function getChaptersSync(video: HTMLVideoElement | null) {
+export function getChaptersSync(video: HTMLVideoElement | null) {
   if (!video) return []
 
   const chapters = uniqBy(Array.from(document.querySelectorAll(".ytd-macro-markers-list-renderer ytd-macro-markers-list-item-renderer #details")).map((node) => {

@@ -45,6 +45,7 @@
     sourceId
 
     const loadChapters = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       const chapters = await videoChapters(video)
 
       if (chapters.length > 1) {
