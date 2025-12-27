@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025.12.27
+- Fix button UI on new YouTube design
+- Fix issue where YouTube buttons get missing after a page change
+- Improve reliability of the chapters feature
+
+## 2025.6.6
+- Change analytics to use GA
+
 ## 2024.9.15
 - Upgraded system to Svelte 5
 - Return the import/export feature for single media
