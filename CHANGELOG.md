@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026.01.04
+- Fix button insertion when using with YouTube embed player
+
 ## 2025.12.27
 - Fix button UI on new YouTube design
 - Fix issue where YouTube buttons get missing after a page change

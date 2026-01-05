@@ -2,7 +2,7 @@
   "name": "youtube-looper",
   "description": "Custom loops extension for Youtube videos",
   "private": true,
-  "version": "2025.12.27",
+  "version": "2026.01.04",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
