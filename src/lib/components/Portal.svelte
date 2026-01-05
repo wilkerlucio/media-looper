@@ -22,35 +22,57 @@
     }
   }
 
-  export function portal(el, {target = "body", position = "end"}) {
+  async function findTarget(target) {
     let targetEl;
 
-    async function update(newTarget) {
-      target = newTarget;
+    if (Array.isArray(target)) {
+      const errors = [];
 
-      if (typeof target === "string") {
-
-        targetEl = document.querySelector(target);
-
-        if (targetEl === null) {
-          await tick();
-          targetEl = document.querySelector(target);
+      for (const t of target) {
+        try {
+          targetEl = await findTarget(t)
+          return targetEl
+        } catch(e) {
+          errors.push(e)
         }
 
         if (targetEl === null) {
           throw new Error(
-            `No element found matching css selector: "${target}"`
+            `All selectors have failed: ${errors}`
           );
         }
-      } else if (target instanceof HTMLElement) {
-        targetEl = target;
-      } else {
-        throw new TypeError(
-          `Unknown portal target type: ${
-            target === null ? "null" : typeof target
-          }. Allowed types: string (CSS selector) or HTMLElement.`
+      }
+    } else if (typeof target === "string") {
+      targetEl = document.querySelector(target);
+
+      if (targetEl === null) {
+        await tick();
+        targetEl = document.querySelector(target);
+      }
+
+      if (targetEl === null) {
+        throw new Error(
+          `No element found matching css selector: "${target}"`
         );
       }
+    } else if (target instanceof HTMLElement) {
+      targetEl = target;
+    } else {
+      throw new TypeError(
+        `Unknown portal target type: ${
+          target === null ? "null" : typeof target
+        }. Allowed types: string (CSS selector) or HTMLElement.`
+      );
+    }
+
+    return targetEl
+  }
+
+  export function portal(el, {target = "body", position = "end"}) {
+    let targetEl;
+
+    async function update(newTarget) {
+      targetEl = await findTarget(newTarget)
 
       positions[position](targetEl, el)
 
