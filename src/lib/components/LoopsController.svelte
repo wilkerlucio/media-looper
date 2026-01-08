@@ -33,6 +33,9 @@
 
   if (!video) throw new Error("Tried to start looping controller without a video on the page")
 
+  // Store chapter-based loops in memory only (not persisted to TinyBase)
+  let chapterLoops = $state<{[key: Id]: Loop}>({})
+
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
       const info = sourceInfo()
@@ -65,9 +68,12 @@
           ensureMediaInfo()
         }
 
+        // Store chapter loops in memory only
+        const chaptersMap: {[key: Id]: Loop} = {}
         for (const {id, ...loop} of loops) {
-          store.setRow('loops', id, loop as Row)
+          chaptersMap[id] = loop as Loop
         }
+        chapterLoops = chaptersMap
       }
     }
 
@@ -148,8 +154,11 @@
 
   let loops = $derived($loopsContainer)
 
+  // Merge chapter loops (in-memory only) with persisted loops from store
+  let mergedLoops = $derived({...chapterLoops, ...loops})
+
   // @ts-ignore
-  let sortedLoops = $derived(loopTree(loops))
+  let sortedLoops = $derived(loopTree(mergedLoops))
 
   export function record() {
     recorderComponent.record()
