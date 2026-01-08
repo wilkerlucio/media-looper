@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026.01.08
+## 2026.1.8
 - Chapter loops are managed differently now, they wont be stored in DB.
   - This will solve an issue that YouTube Looper was creating entries even without the user interacting with the looper.
   - It also fixes potential cases where YouTube Looper might create loops from chapters from a different video.
