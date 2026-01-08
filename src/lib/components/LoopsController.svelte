@@ -64,10 +64,6 @@
           }
         })
 
-        if (loops.length > 0) {
-          ensureMediaInfo()
-        }
-
         // Store chapter loops in memory only
         const chaptersMap: {[key: Id]: Loop} = {}
         for (const {id, ...loop} of loops) {
@@ -152,7 +148,10 @@
     where('source', sourceId)
   }))
 
-  let loops = $derived($loopsContainer)
+  // Filter out readonly loops (they're now loaded in memory only from chapters)
+  let loops = $derived(Object.fromEntries(
+    Object.entries($loopsContainer).filter(([_, loop]) => loop.readonly !== true)
+  ))
 
   // Merge chapter loops (in-memory only) with persisted loops from store
   let mergedLoops = $derived({...chapterLoops, ...loops})
