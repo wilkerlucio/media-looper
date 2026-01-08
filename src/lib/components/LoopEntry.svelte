@@ -10,9 +10,10 @@
   import {sp} from "@/lib/helpers/events";
   import Self from './LoopEntry.svelte'
 
-  let {video, id, children, active, nesting = 0, onselect, onduplicate, oncut, ondelete}: {
+  let {video, id, loop: loopProp, children, active, nesting = 0, onselect, onduplicate, oncut, ondelete}: {
     video: HTMLVideoElement | null,
     id: Id,
+    loop?: Loop,
     children: Loops | undefined,
     active: Id | null,
     nesting?: number,
@@ -28,8 +29,10 @@
 
   let showActions: boolean = $state(false)
 
-  let loopSource = $derived(useRow<Loop>(store, 'loops', id))
-  let loop = $derived($loopSource)
+  // Only use prop data for readonly loops (memory-only chapter loops)
+  // For persisted loops, always load from TinyBase to get reactive updates
+  let loopSource = $derived(loopProp?.readonly ? undefined : useRow<Loop>(store, 'loops', id))
+  let loop = $derived((loopProp?.readonly ? loopProp : $loopSource) as Loop)
 
   let formatPrecision = $derived($shiftKeyMod ? 3 : undefined)
   let imActive = $derived(active === id)
@@ -53,16 +56,16 @@
   {#if loop.readonly}
     <div>{loop.label}</div>
   {:else}
-    <input bind:value={$loopSource.label} class="full-width" onkeydowncapture={loseFocus} onkeyupcapture={sp}>
+    <input bind:value={$loopSource!.label} class="full-width" onkeydowncapture={loseFocus} onkeyupcapture={sp}>
   {/if}
   <div class="flex"></div>
 
   {#if loop.readonly}
     <div>{formatTime(loop.startTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource.startTime = Math.max(loop.startTime - p(e), 0)} />
-    <EditableTime bind:value={$loopSource.startTime} {formatPrecision} />
-    <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
+    <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource!.startTime = Math.max(loop.startTime - p(e), 0)} />
+    <EditableTime bind:value={$loopSource!.startTime} {formatPrecision} />
+    <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource!.startTime = Math.min(loop.startTime + p(e), loop.endTime)} />
   {/if}
 
   <div>/</div>
@@ -70,9 +73,9 @@
   {#if loop.readonly}
     <div>{formatTime(loop.endTime, formatPrecision)}</div>
   {:else}
-    <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
-    <EditableTime bind:value={$loopSource.endTime} {formatPrecision} />
-    <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
+    <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource!.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
+    <EditableTime bind:value={$loopSource!.endTime} {formatPrecision} />
+    <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource!.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
   {/if}
 
   <div class="looper-dropdown" role="button" tabindex="0" aria-label="Loop actions" onmouseenter={() => showActions = true} onmouseleave={() => showActions = false}>
@@ -94,6 +97,7 @@
   {#each children as [id, loop] (id)}
     <Self
       {id}
+      {loop}
       children={loop.children}
       {active}
       {video}

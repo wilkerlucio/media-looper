@@ -47,6 +47,9 @@
   $effect(() => {
     sourceId
 
+    // Clear chapter loops when sourceId changes
+    chapterLoops = {}
+
     const loadChapters = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       const chapters = await videoChapters(video)
@@ -84,7 +87,9 @@
   }
 
   function loopLogDetail(loopId: Id) {
-    return {label: store.getCell('loops', loopId, 'label')}
+    // Get from merged loops (includes memory-only chapter loops)
+    const loop = mergedLoops[loopId]
+    return {label: loop?.label || ''}
   }
 
   // region: event handlers
@@ -105,23 +110,26 @@
   }
 
   function duplicateLoop(e: any) {
-    const loop = store.getRow('loops', e.id)
+    const loop = mergedLoops[e.id]
 
     if (loop) {
-      loop.readonly = false
+      const newLoop = {...loop, readonly: false}
 
-      log('duplicate_loop', loop)
+      log('duplicate_loop', newLoop)
 
       const loopId = nanoid()
 
-      store.setRow('loops', loopId, loop)
+      store.setRow('loops', loopId, newLoop)
     }
   }
 
   function divideLoop(e: any) {
     log('cut_loop', loopLogDetail(e.id))
 
-    const loopFinish = store.getCell('loops', e.id, 'endTime') as number
+    const loop = mergedLoops[e.id]
+    if (!loop) return
+
+    const loopFinish = loop.endTime
 
     let cutPoint = Math.min(video?.currentTime || 0, loopFinish)
 
@@ -145,6 +153,7 @@
   let loopsContainer = $derived(useQueriesResultTable(queries, queryId, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
+    select('readonly')
     where('source', sourceId)
   }))
 
@@ -161,6 +170,10 @@
 
   export function record() {
     recorderComponent.record()
+  }
+
+  export function getLoop(id: Id): Loop | undefined {
+    return mergedLoops[id]
   }
 
   // broadcast the media info from this page so it can be used in places like the import screen to get the name of
@@ -204,10 +217,11 @@
 <div class="container">
   <Recorder {video} onNewLoop={createLoop} bind:this={recorderComponent}/>
   <div class="loops">
-    {#each sortedLoops as [id, {children}] (id)}
+    {#each sortedLoops as [id, loop] (id)}
       <LoopEntry
           {id}
-          {children}
+          {loop}
+          children={loop.children}
           {video}
           active={activeLoop}
           {onselect}

@@ -42,6 +42,9 @@
   let controllerComponent: LoopsController | undefined = $state()
   let jumpBackComponent: JumpBack | undefined = $state();
 
+  // Get loop data from controller (includes both persisted and memory-only chapter loops)
+  let activeLoopData = $derived(activeLoop && controllerComponent ? controllerComponent.getLoop(activeLoop) : undefined)
+
   function log(event: string, details?: {[key: string]: any}) {
     trackEvent(event, {
       source_id: sourceId,
@@ -50,7 +53,9 @@
   }
 
   function loopLogDetail(loopId: Id) {
-    return {label: ctx.store.getCell('loops', loopId, 'label')}
+    // Try to get from controller (includes memory-only loops), fallback to store
+    const loop = controllerComponent?.getLoop(loopId)
+    return {label: loop?.label || ctx.store.getCell('loops', loopId, 'label')}
   }
 
   function toggleVisible() {
@@ -154,7 +159,7 @@
     </button>
 
     {#if activeLoop}
-      <ActiveLoop id={activeLoop} bind:this={activeComponent}/>
+      <ActiveLoop id={activeLoop} loop={activeLoopData} bind:this={activeComponent}/>
     {/if}
 
       <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}} style="display: {popupVisible ? 'block' : 'none'}">

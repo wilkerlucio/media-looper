@@ -4,15 +4,18 @@
   import type {Id} from "tinybase";
   import type {Loop} from "@/lib/model";
 
-  let {video = document.querySelector("video"), id}: {
+  let {video = document.querySelector("video"), id, loop: loopProp}: {
     video?: HTMLVideoElement | null,
-    id: Id
+    id: Id,
+    loop?: Loop
   } = $props()
 
   const store = getTinyContextForce('store')
 
-  let loopStore = $derived(useRow<Loop>(store, 'loops', id))
-  let loop = $derived($loopStore)
+  // Only use prop data for readonly loops (memory-only chapter loops)
+  // For persisted loops, always load from TinyBase to get reactive updates
+  let loopStore = $derived(loopProp?.readonly ? undefined : useRow<Loop>(store, 'loops', id))
+  let loop = $derived((loopProp?.readonly ? loopProp : $loopStore) as Loop)
   let startTime = $derived(loop.startTime)
 
   let duration = $derived(video?.duration as number)
