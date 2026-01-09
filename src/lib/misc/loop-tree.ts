@@ -19,11 +19,14 @@ function iterateBreak([first, ...rest]: Loops): Loops {
       }
     }
 
+    // Create a new loop object instead of mutating the original
+    const newFirst: LoopEntry = [first[0], {...first[1]}]
+
     if (separation >= 0) {
-      first[1].children = iterateBreak(rest.slice(0, separation + 1))
+      newFirst[1].children = iterateBreak(rest.slice(0, separation + 1))
     }
 
-    return [first, ...iterateBreak(rest.slice(separation + 1))]
+    return [newFirst, ...iterateBreak(rest.slice(separation + 1))]
   } else {
     return []
   }

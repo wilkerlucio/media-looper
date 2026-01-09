@@ -33,6 +33,9 @@
 
   if (!video) throw new Error("Tried to start looping controller without a video on the page")
 
+  // Store chapter-based loops in memory only (not persisted to TinyBase)
+  let chapterLoops = $state<{[key: Id]: Loop}>({})
+
   function ensureMediaInfo() {
     if (!store.getCell('medias', sourceId, 'title')) {
       const info = sourceInfo()
@@ -43,6 +46,9 @@
 
   $effect(() => {
     sourceId
+
+    // Clear chapter loops when sourceId changes
+    chapterLoops = {}
 
     const loadChapters = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -61,13 +67,12 @@
           }
         })
 
-        if (loops.length > 0) {
-          ensureMediaInfo()
-        }
-
+        // Store chapter loops in memory only
+        const chaptersMap: {[key: Id]: Loop} = {}
         for (const {id, ...loop} of loops) {
-          store.setRow('loops', id, loop as Row)
+          chaptersMap[id] = loop as Loop
         }
+        chapterLoops = chaptersMap
       }
     }
 
@@ -82,7 +87,9 @@
   }
 
   function loopLogDetail(loopId: Id) {
-    return {label: store.getCell('loops', loopId, 'label')}
+    // Get from merged loops (includes memory-only chapter loops)
+    const loop = mergedLoops[loopId]
+    return {label: loop?.label || ''}
   }
 
   // region: event handlers
@@ -103,23 +110,26 @@
   }
 
   function duplicateLoop(e: any) {
-    const loop = store.getRow('loops', e.id)
+    const loop = mergedLoops[e.id]
 
     if (loop) {
-      loop.readonly = false
+      const newLoop = {...loop, readonly: false}
 
-      log('duplicate_loop', loop)
+      log('duplicate_loop', newLoop)
 
       const loopId = nanoid()
 
-      store.setRow('loops', loopId, loop)
+      store.setRow('loops', loopId, newLoop)
     }
   }
 
   function divideLoop(e: any) {
     log('cut_loop', loopLogDetail(e.id))
 
-    const loopFinish = store.getCell('loops', e.id, 'endTime') as number
+    const loop = mergedLoops[e.id]
+    if (!loop) return
+
+    const loopFinish = loop.endTime
 
     let cutPoint = Math.min(video?.currentTime || 0, loopFinish)
 
@@ -143,16 +153,27 @@
   let loopsContainer = $derived(useQueriesResultTable(queries, queryId, 'loops', ({select, where}) => {
     select('startTime')
     select('endTime')
+    select('readonly')
     where('source', sourceId)
   }))
 
-  let loops = $derived($loopsContainer)
+  // Filter out readonly loops (they're now loaded in memory only from chapters)
+  let loops = $derived(Object.fromEntries(
+    Object.entries($loopsContainer).filter(([_, loop]) => loop.readonly !== true)
+  ))
+
+  // Merge chapter loops (in-memory only) with persisted loops from store
+  let mergedLoops = $derived({...chapterLoops, ...loops})
 
   // @ts-ignore
-  let sortedLoops = $derived(loopTree(loops))
+  let sortedLoops = $derived(loopTree(mergedLoops))
 
   export function record() {
     recorderComponent.record()
+  }
+
+  export function getLoop(id: Id): Loop | undefined {
+    return mergedLoops[id]
   }
 
   // broadcast the media info from this page so it can be used in places like the import screen to get the name of
@@ -196,10 +217,11 @@
 <div class="container">
   <Recorder {video} onNewLoop={createLoop} bind:this={recorderComponent}/>
   <div class="loops">
-    {#each sortedLoops as [id, {children}] (id)}
+    {#each sortedLoops as [id, loop] (id)}
       <LoopEntry
           {id}
-          {children}
+          {loop}
+          children={loop.children}
           {video}
           active={activeLoop}
           {onselect}
