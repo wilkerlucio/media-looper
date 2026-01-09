@@ -5,7 +5,6 @@
   import {download, pickFile, readFileText} from "@/lib/misc/browser-file";
   import MediaAdmin from "@/entrypoints/dashboard/components/MediaAdmin.svelte";
   import type {Media} from "@/lib/model";
-  import YoutubeEmbed from "@/lib/components/YoutubeEmbed.svelte";
   import ImportEntry from "@/entrypoints/dashboard/components/ImportEntry.svelte";
   import {channelListener, runtimeOnMessageListener} from "@/lib/misc/browser-network";
   import deburr from "lodash/deburr";
@@ -15,7 +14,6 @@
 
   const store = getTinyContextForce('store') as MergeableStore
 
-  let media: string | false = $state(false)
   let search = $state("")
   let toImport: { [key: string]: any } | false = $state(false)
 
@@ -97,18 +95,10 @@
     </TableHead>
     <TableBody tableBodyClass="divide-y">
       {#each ids as id (id)}
-        <MediaAdmin {id} on:click={() => media = id}/>
+        <MediaAdmin {id} />
       {/each}
     </TableBody>
   </TableSearch>
-
-  <Modal bind:open={media} autoclose outsideclose dismissable={false} size={'xl'} classDialog="outline-0">
-    {#if media}
-      <YoutubeEmbed videoId={media.substring(8)} />
-    {:else}
-      <div>Something is wrong, no media selected.</div>
-    {/if}
-  </Modal>
 
   <Modal title="Import medias" bind:open={toImport} autoclose outsideclose classDialog="outline-0">
     <div class="flex flex-row flex-wrap justify-between">
