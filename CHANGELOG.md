@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026.1.9
+- Fix YouTube embed error in dashboard
+  - Removed modal video preview that was causing YouTube Error 153
+  - Clicking video thumbnails now opens videos directly in YouTube in a new tab
+  - Provides better user experience while avoiding Chrome extension embedding limitations
+
 ## 2026.1.8
 - Chapter loops are managed differently now, they wont be stored in DB.
   - This will solve an issue that YouTube Looper was creating entries even without the user interacting with the looper.

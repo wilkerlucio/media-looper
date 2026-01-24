@@ -31,7 +31,7 @@
 
   </script>
 
-<TableBodyRow on:click>
+<TableBodyRow>
   <TableBodyCell class="min-w-[120px]">
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank" on:click={sp}>
       <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}" />
