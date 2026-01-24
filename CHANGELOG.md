@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026.1.24
+- Add bulk delete feature in dashboard
+  - Select multiple items using checkboxes
+  - "Select all" checkbox in table header
+  - "Delete selected" button appears when items are selected
+  - Confirmation modal before bulk deletion
+
 ## 2026.1.9
 - Fix YouTube embed error in dashboard
   - Removed modal video preview that was causing YouTube Error 153
