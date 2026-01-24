@@ -23,3 +23,16 @@ export function deleteMedia(store: Store, relationships: Relationships, mediaId:
     store.delRow('medias', mediaId)
   })
 }
+
+export function deleteMediaBulk(store: Store, relationships: Relationships, mediaIds: Id[]) {
+  store.transaction(() => {
+    for (const mediaId of mediaIds) {
+      const loopIds = relationships.getLocalRowIds('mediaLoops', mediaId)
+
+      for (const loopId of loopIds)
+        store.delRow('loops', loopId)
+
+      store.delRow('medias', mediaId)
+    }
+  })
+}

@@ -1,13 +1,13 @@
 <script lang="ts">
   import {getTinyContextForce, useQueriesResultTable, useRow} from "@/lib/tinybase/tinybase-stores";
-  import {A, Button, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";
+  import {A, Button, Checkbox, Modal, TableBodyCell, TableBodyRow} from "flowbite-svelte";
   import {ExclamationCircleOutline, TrashBinOutline} from "flowbite-svelte-icons";
   import {deleteMedia} from "@/lib/controller";
   import {getThumbUrl} from "@/lib/helpers/youtube";
   import {sp} from "@/lib/helpers/events";
   import type {Media} from "@/lib/model";
 
-  let {id}: {id: string} = $props()
+  let {id, selected = $bindable()}: {id: string, selected?: boolean} = $props()
 
   let showDeleteModal = $state(false)
   let videoId = $derived(id.substring(8))
@@ -32,6 +32,9 @@
   </script>
 
 <TableBodyRow>
+  <TableBodyCell class="w-4 p-4">
+    <Checkbox checked={selected ?? false} on:change={() => selected = !selected} />
+  </TableBodyCell>
   <TableBodyCell class="min-w-[120px]">
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank" on:click={sp}>
       <img src={getThumbUrl(videoId, 'default')} alt="{$media.title}" />
