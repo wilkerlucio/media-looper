@@ -41,6 +41,6 @@
       </div>
     {/if}
 
-    <div>{media.loops.length} loop{media.loops.length === 1 ? '' : 's'}</div>
+    <div>{media.loops?.length} loop{media.loops?.length === 1 ? '' : 's'}</div>
   </div>
 {/if}
