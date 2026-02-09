@@ -22,6 +22,18 @@
   let selection: {[key: string]: boolean} = $state({})
   let showBulkDeleteModal = $state(false)
 
+  let sortColumn: 'channel' | 'title' | 'loopCount' = $state('channel')
+  let sortDirection: 'asc' | 'desc' = $state('asc')
+
+  function toggleSort(column: typeof sortColumn) {
+    if (sortColumn === column) {
+      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortColumn = column
+      sortDirection = 'asc'
+    }
+  }
+
   function downloadDatabase() {
     download('media-looper-backup.json', new Blob([JSON.stringify(exportDatabase(store))], {type: "application/json"}))
   }
@@ -47,16 +59,28 @@
 
   const mediaIds = useTable(store, 'medias')
 
-  let medias = $derived(sortBy(Object.entries($mediaIds).filter(([id, r]) => {
-    if (search === '') return true
+  let medias = $derived.by(() => {
+    const filtered = Object.entries($mediaIds).filter(([id, r]) => {
+      if (search === '') return true
 
-    const media = r as unknown as Media
+      const media = r as unknown as Media
 
-    if (media.title?.toLowerCase().indexOf(search) > -1) return true
-    if (media.channel?.toLowerCase().indexOf(search) > -1) return true
+      if (media.title?.toLowerCase().indexOf(search) > -1) return true
+      if (media.channel?.toLowerCase().indexOf(search) > -1) return true
 
-    return false
-  }), ([id, r]) => [deburr(r.channel?.toLowerCase() || ''), deburr(r.title?.toLowerCase() || '')]))
+      return false
+    })
+
+    const sorted = sortBy(filtered, ([id, r]) => {
+      if (sortColumn === 'loopCount') {
+        return relationships.getLocalRowIds('mediaLoops', id).length
+      }
+      const field = sortColumn === 'channel' ? r.channel : r.title
+      return deburr(field?.toLowerCase() || '')
+    })
+
+    return sortDirection === 'desc' ? sorted.reverse() : sorted
+  })
 
   let ids = $derived(medias.map(([id]) => id))
 
@@ -117,9 +141,21 @@
         <Checkbox checked={allSelected} indeterminate={someSelected} on:click={toggleSelectAll} />
       </TableHeadCell>
       <TableHeadCell></TableHeadCell>
-      <TableHeadCell>Channel</TableHeadCell>
-      <TableHeadCell>Title</TableHeadCell>
-      <TableHeadCell>Loop Count</TableHeadCell>
+      <TableHeadCell>
+        <button class="cursor-pointer select-none" onclick={() => toggleSort('channel')}>
+          Channel {sortColumn === 'channel' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+        </button>
+      </TableHeadCell>
+      <TableHeadCell>
+        <button class="cursor-pointer select-none" onclick={() => toggleSort('title')}>
+          Title {sortColumn === 'title' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+        </button>
+      </TableHeadCell>
+      <TableHeadCell>
+        <button class="cursor-pointer select-none" onclick={() => toggleSort('loopCount')}>
+          Loop Count {sortColumn === 'loopCount' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+        </button>
+      </TableHeadCell>
       <TableHeadCell></TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
