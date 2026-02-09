@@ -7,7 +7,7 @@
   import {sp} from "@/lib/helpers/events";
   import type {Media} from "@/lib/model";
 
-  let {id, selected = $bindable()}: {id: string, selected?: boolean} = $props()
+  let {id, selected = false, onrowclick}: {id: string, selected?: boolean, onrowclick?: (e: MouseEvent) => void} = $props()
 
   let showDeleteModal = $state(false)
   let videoId = $derived(id.substring(8))
@@ -31,9 +31,9 @@
 
   </script>
 
-<TableBodyRow on:click={() => selected = !selected} class="cursor-pointer">
+<TableBodyRow on:click={(e) => onrowclick?.(e)} class="cursor-pointer">
   <TableBodyCell class="w-4 p-4">
-    <Checkbox checked={selected ?? false} on:change={() => selected = !selected} />
+    <Checkbox checked={selected} />
   </TableBodyCell>
   <TableBodyCell class="min-w-[120px]">
     <A href="https://www.youtube.com/watch?v={videoId}" target="_blank" on:click={sp}>

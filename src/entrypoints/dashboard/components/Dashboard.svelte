@@ -21,6 +21,21 @@
   let toImport: { [key: string]: any } | false = $state(false)
   let selection: {[key: string]: boolean} = $state({})
   let showBulkDeleteModal = $state(false)
+  let lastClickedIndex: number | null = $state(null)
+
+  function handleRowClick(id: string, index: number, e: MouseEvent) {
+    if (e.shiftKey && lastClickedIndex !== null) {
+      const from = Math.min(lastClickedIndex, index)
+      const to = Math.max(lastClickedIndex, index)
+      for (let i = from; i <= to; i++) {
+        selection[ids[i]] = true
+      }
+    } else {
+      selection[id] = !selection[id]
+    }
+
+    lastClickedIndex = index
+  }
 
   let sortColumn: 'channel' | 'title' | 'loopCount' = $state('channel')
   let sortDirection: 'asc' | 'desc' = $state('asc')
@@ -98,7 +113,9 @@
 
   function bulkDelete() {
     deleteMediaBulk(store, relationships, selectedIds)
-    selection = {}
+    for (const key of Object.keys(selection)) {
+      delete selection[key]
+    }
     showBulkDeleteModal = false
   }
 
@@ -159,8 +176,8 @@
       <TableHeadCell></TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
-      {#each ids as id (id)}
-        <MediaAdmin {id} bind:selected={selection[id]} />
+      {#each ids as id, index (id)}
+        <MediaAdmin {id} selected={selection[id] ?? false} onrowclick={(e) => handleRowClick(id, index, e)} />
       {/each}
     </TableBody>
   </TableSearch>
