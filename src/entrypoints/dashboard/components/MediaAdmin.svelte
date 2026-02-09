@@ -31,7 +31,7 @@
 
   </script>
 
-<TableBodyRow>
+<TableBodyRow on:click={() => selected = !selected} class="cursor-pointer">
   <TableBodyCell class="w-4 p-4">
     <Checkbox checked={selected ?? false} on:change={() => selected = !selected} />
   </TableBodyCell>
