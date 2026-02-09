@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026.2.9
+- Add clickable column sorting in dashboard (Channel, Title, Loop Count)
+- Click table rows to select/deselect items
+- Shift-click to select a range of items
+- Fix selection state after bulk delete
+
 ## 2026.1.24
 - Add bulk delete feature in dashboard
   - Select multiple items using checkboxes
