@@ -9,6 +9,7 @@
   import {partition} from "@/lib/helpers/array";
   import {secondsFromTime} from "@/lib/helpers/time";
   import type {Loop} from "@/lib/model";
+  import {formatTime} from "@/lib/helpers/time";
   import {sourceInfo, videoChapters, videoIdFromSourceId} from "@/lib/youtube/ui";
   import {channelSender, runtimeOnMessageSender} from "@/lib/misc/browser-network";
   import ConnectionStatusIndicator from "@/lib/components/ConnectionStatusIndicator.svelte";
@@ -19,10 +20,13 @@
 
   const dashboardUrl = browser.runtime.getURL('/dashboard.html')
 
-  let {sourceId, activeLoop = null, onselect}: {
+  let {sourceId, activeLoop = null, onselect, urlLoop = null, onsaveUrlLoop, ondismissUrlLoop}: {
     sourceId: string,
     activeLoop: Id | null,
-    onselect: (e: any) => void
+    onselect: (e: any) => void,
+    urlLoop?: Loop | null,
+    onsaveUrlLoop?: () => void,
+    ondismissUrlLoop?: () => void
   } = $props()
 
   let recorderComponent: Recorder
@@ -176,6 +180,11 @@
     return mergedLoops[id]
   }
 
+  // Persist a loop payload (used to save an ephemeral URL loop into the library).
+  export function saveLoop(loop: Partial<Loop>) {
+    createLoop(loop)
+  }
+
   // broadcast the media info from this page so it can be used in places like the import screen to get the name of
   // media being imported
   $effect(() => {
@@ -215,6 +224,16 @@
 </script>
 
 <div class="container">
+  {#if urlLoop}
+    <div class="url-loop-banner">
+      <div class="url-loop-info">
+        <div class="url-loop-title">Loop from URL</div>
+        <div class="url-loop-range">{formatTime(urlLoop.startTime)} – {formatTime(urlLoop.endTime)}{urlLoop.repeatCount && urlLoop.repeatCount > 0 ? ` · ×${urlLoop.repeatCount}` : ''}</div>
+      </div>
+      <button type="button" class="url-loop-save" onclick={() => onsaveUrlLoop?.()}>Save</button>
+      <button type="button" class="url-loop-dismiss" aria-label="Dismiss" onclick={() => ondismissUrlLoop?.()}>×</button>
+    </div>
+  {/if}
   <Recorder {video} onNewLoop={createLoop} bind:this={recorderComponent}/>
   <div class="loops">
     {#each sortedLoops as [id, loop] (id)}
@@ -272,6 +291,66 @@
 
     .spacer {
         flex: 1;
+    }
+
+    .url-loop-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 6px 10px;
+        background: rgba(5, 255, 0, 0.14);
+        border: 1px solid rgba(5, 255, 0, 0.45);
+        border-radius: 6px;
+        color: #fff;
+        font-size: 12px;
+    }
+
+    .url-loop-info {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .url-loop-title {
+        font-weight: 600;
+    }
+
+    .url-loop-range {
+        font-variant-numeric: tabular-nums;
+        opacity: 0.85;
+    }
+
+    .url-loop-save {
+        font: inherit;
+        color: #000;
+        background: rgb(5, 255, 0);
+        border: none;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .url-loop-save:hover {
+        background: rgb(50, 220, 50);
+    }
+
+    .url-loop-dismiss {
+        font: inherit;
+        color: #fff;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        padding: 0 4px;
+        opacity: 0.7;
+    }
+
+    .url-loop-dismiss:hover {
+        opacity: 1;
     }
 
 </style>
