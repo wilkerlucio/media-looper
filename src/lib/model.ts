@@ -10,6 +10,8 @@ export interface Loop {
   label: string;
   source: string;
   readonly?: boolean;
+  // Number of times to play the loop (>=1). Undefined or 0 = infinite.
+  repeatCount?: number;
 }
 
 export type IdentifiedLoop = Loop & Identified

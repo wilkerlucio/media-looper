@@ -12,6 +12,8 @@
   import type {Id} from "tinybase";
   import ActiveLoop from "@/lib/components/ActiveLoop.svelte";
   import JumpBack from "@/lib/components/JumpBack.svelte";
+  import type {Loop} from "@/lib/model";
+  import {clearUrlLoopParams, readUrlLoopParams} from "@/lib/helpers/url-loop";
 
   const ctx = setupStore({
     listener: channelListener(pullListener(), 'tiny-sync'),
@@ -32,10 +34,15 @@
   let activeLoop = $state(null) as Id | null;
   let popupVisible = $state(false) as boolean;
 
+  // Ephemeral loop from URL params (?start=&end=&loop=). Not persisted.
+  let urlLoop = $state<Loop | null>(null)
+  const URL_LOOP_ID = '__url_loop__'
+
   $effect.pre(() => {
     sourceId
     activeLoop = null
     popupVisible = false
+    urlLoop = null
   })
 
   let activeComponent: ActiveLoop | undefined = $state()
@@ -43,7 +50,102 @@
   let jumpBackComponent: JumpBack | undefined = $state();
 
   // Get loop data from controller (includes both persisted and memory-only chapter loops)
-  let activeLoopData = $derived(activeLoop && controllerComponent ? controllerComponent.getLoop(activeLoop) : undefined)
+  let activeLoopData = $derived(
+    activeLoop === URL_LOOP_ID
+      ? urlLoop ?? undefined
+      : (activeLoop && controllerComponent ? controllerComponent.getLoop(activeLoop) : undefined)
+  )
+
+  // Apply URL params when the video for this sourceId is ready.
+  $effect(() => {
+    sourceId // re-run when video changes
+    if (!sourceId) return
+
+    const params = readUrlLoopParams()
+    if (params.start == null && params.end == null && params.repeatCount == null) return
+
+    const video = document.querySelector('video') as HTMLVideoElement | null
+    if (!video) return
+
+    const armed = { done: false, cancelled: false }
+
+    const arm = () => {
+      if (armed.done || armed.cancelled) return
+      const duration = video.duration
+      if (!isFinite(duration) || duration <= 0) return
+
+      // Require at least one of start/end to define a real segment. Bare ?loop=N
+      // without start/end is ambiguous — ignore and clear.
+      if (params.start == null && params.end == null) {
+        clearUrlLoopParams()
+        armed.done = true
+        return
+      }
+
+      const start = params.start != null ? Math.max(0, Math.min(params.start, duration)) : 0
+      const end = params.end != null ? Math.max(0, Math.min(params.end, duration)) : duration
+      if (!(end > start)) {
+        clearUrlLoopParams()
+        armed.done = true
+        return
+      }
+
+      // Wait for the persister to finish hydrating before we look for a match —
+      // otherwise store.getTable('loops') can be empty on first paint and we'd
+      // incorrectly fall through to the Save banner.
+      ctx.ready.then(() => {
+        if (armed.done || armed.cancelled) return
+
+        // If a saved loop for this video already matches (within 1s on each side),
+        // just activate it and skip the ephemeral loop + Save banner.
+        const MATCH_TOLERANCE = 1.0
+        const loopsTable = ctx.store.getTable('loops') as {[k: Id]: any}
+        let matchId: Id | null = null
+        for (const [rowId, row] of Object.entries(loopsTable)) {
+          if (row?.source !== sourceId) continue
+          if (row.readonly) continue
+          const dStart = Math.abs((row.startTime ?? 0) - start)
+          const dEnd = Math.abs((row.endTime ?? 0) - end)
+          if (dStart <= MATCH_TOLERANCE && dEnd <= MATCH_TOLERANCE) { matchId = rowId; break }
+        }
+
+        if (matchId) {
+          ctx.store.setCell('medias', sourceId!, 'lastLoopPlay', Date.now())
+          activeLoop = matchId
+          clearUrlLoopParams()
+          log('start_loop', {label: 'url-param-match'})
+          armed.done = true
+          return
+        }
+
+        urlLoop = {
+          startTime: start,
+          endTime: end,
+          label: 'Loop from URL',
+          source: sourceId!,
+          readonly: true,
+          repeatCount: params.repeatCount ?? 0,
+        }
+        activeLoop = URL_LOOP_ID
+        clearUrlLoopParams()
+        log('start_loop', {label: 'url-param'})
+        armed.done = true
+      })
+    }
+
+    // Try now, then wait for metadata if needed.
+    arm()
+    if (!armed.done) {
+      const onReady = () => arm()
+      video.addEventListener('loadedmetadata', onReady, { once: true })
+      video.addEventListener('durationchange', onReady, { once: true })
+      return () => {
+        armed.cancelled = true
+        video.removeEventListener('loadedmetadata', onReady)
+        video.removeEventListener('durationchange', onReady)
+      }
+    }
+  })
 
   function log(event: string, details?: {[key: string]: any}) {
     trackEvent(event, {
@@ -90,6 +192,35 @@
 
       playLoop(id)
     }
+  }
+
+  function saveUrlLoop() {
+    if (!urlLoop || !controllerComponent) return
+    // Label from the time range, e.g. "0:43 – 1:15"
+    const fmt = (t: number) => {
+      const m = Math.floor(t / 60)
+      const s = Math.floor(t % 60).toString().padStart(2, '0')
+      return `${m}:${s}`
+    }
+    const label = `${fmt(urlLoop.startTime)} – ${fmt(urlLoop.endTime)}`
+    const payload: Partial<Loop> = {
+      startTime: urlLoop.startTime,
+      endTime: urlLoop.endTime,
+      label,
+    }
+    if (urlLoop.repeatCount && urlLoop.repeatCount > 0) {
+      payload.repeatCount = urlLoop.repeatCount
+    }
+    log('save_url_loop', {label})
+    controllerComponent.saveLoop(payload)
+    // saveLoop -> createLoop -> onselect fires and sets activeLoop to the new id.
+    // Clear the ephemeral loop so the banner disappears.
+    urlLoop = null
+  }
+
+  function dismissUrlLoop() {
+    if (activeLoop === URL_LOOP_ID) activeLoop = null
+    urlLoop = null
   }
 
   function shortcutsHandler(e: KeyboardEvent) {
@@ -167,6 +298,9 @@
             {sourceId}
             {activeLoop}
             onselect={selectLoop}
+            urlLoop={activeLoop === URL_LOOP_ID ? urlLoop : null}
+            onsaveUrlLoop={saveUrlLoop}
+            ondismissUrlLoop={dismissUrlLoop}
             bind:this={controllerComponent}
         />
         <JumpBack bind:this={jumpBackComponent} />

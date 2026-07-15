@@ -63,6 +63,14 @@ On the right side of each loop you can see a `...`, mouse over it to reveal the 
 
 Use the duplicate action to create a copy from the loop.
 
+### Copy link to loop
+
+Copies a shareable YouTube URL with the loop's start/end times (and repeat
+count, if finite) baked in as query parameters. The recipient can paste it into
+any browser; if they have this extension installed, the loop starts
+automatically. If they don't, YouTube's own `t=<start>s` param still seeks the
+video to the loop start.
+
 ### Delete loop
 
 Click on this action to delete the loop. Loops created from markers can't be deleted.
@@ -93,6 +101,34 @@ Click on the label `Speed` to return it to 100%.
 * `alt+f` - Reset speed to 100%
 * `alt+g` - Set speed to 200%
 * `alt+NUMBER` - Set speed to 0.NUMBER
+
+## URL parameters
+
+You can share a loop-configured YouTube URL by appending query parameters. When
+the extension detects them on page load, it starts a one-shot loop for that
+segment (the loop is **not** saved to your library — refresh the page without
+the params and it's gone).
+
+| Param   | Example    | Meaning                                                        |
+|---------|------------|----------------------------------------------------------------|
+| `start` | `00:10`    | Start of the loop segment (`mm:ss`, `hh:mm:ss`, or raw seconds) |
+| `end`   | `01:00`    | End of the loop segment (same format)                          |
+| `loop`  | `5`        | Number of times to play the segment (`0` or omitted = infinite) |
+
+Example: `https://www.youtube.com/watch?v=dQw4w9WgXcQ&start=00:43&end=01:15&loop=3`
+
+Notes:
+- At least one of `start` or `end` must be provided; missing values default to
+  the start / end of the video.
+- The params are stripped from the URL bar after they've been applied, so a
+  refresh doesn't retrigger the loop.
+- URL-triggered loops are **ephemeral by default** — they play but aren't saved
+  to your library. When one is active, open the YouTube Looper panel (click the
+  loop icon in the player toolbar) and click **Save** on the green banner at
+  the top to persist it. Saved loops are labeled with their time range
+  (e.g. `0:43 – 1:15`) and are editable like any other loop.
+- If the URL's `start`/`end` match an existing saved loop for the video
+  (within ±1s), that loop is activated directly and no Save banner is shown.
 
 ## Popup Window
 
