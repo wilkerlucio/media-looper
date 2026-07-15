@@ -4,10 +4,11 @@
   import type {Id} from "tinybase";
   import type {Loop} from "@/lib/model";
 
-  let {video = document.querySelector("video"), id, loop: loopProp}: {
+  let {video = document.querySelector("video"), id, loop: loopProp, oncomplete}: {
     video?: HTMLVideoElement | null,
     id: Id,
-    loop?: Loop
+    loop?: Loop,
+    oncomplete?: () => void
   } = $props()
 
   const store = getTinyContextForce('store')
@@ -23,10 +24,28 @@
   let left = $derived(loop.startTime / duration * 100)
   let width = $derived((loop.endTime - loop.startTime) / duration * 100)
 
+  // Remaining plays for finite loops. undefined/0 = infinite.
+  // repeatCount = N plays the segment N times, then stops.
+  let remaining = $state(0)
+
+  $effect(() => {
+    // Reset counter whenever the underlying loop id or its repeatCount changes.
+    id
+    remaining = loop.repeatCount && loop.repeatCount > 0 ? loop.repeatCount : 0
+  })
+
   function ticker() {
     if (!video) return
 
     if (video.currentTime > loop.endTime) {
+      const finite = loop.repeatCount && loop.repeatCount > 0
+      if (finite) {
+        remaining -= 1
+        if (remaining <= 0) {
+          oncomplete?.()
+          return
+        }
+      }
       video.currentTime = loop.startTime
     }
   }

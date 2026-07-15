@@ -37,6 +37,24 @@
   let formatPrecision = $derived($shiftKeyMod ? 3 : undefined)
   let imActive = $derived(active === id)
 
+  // Repeat-count inline editor state
+  let editingRepeat: boolean = $state(false)
+  let repeatInput: HTMLInputElement | undefined = $state()
+
+  function openRepeatEditor() {
+    editingRepeat = true
+    // focus after DOM update
+    queueMicrotask(() => { repeatInput?.focus(); repeatInput?.select() })
+  }
+
+  function commitRepeat(e: FocusEvent) {
+    const raw = (e.target as HTMLInputElement).value
+    const n = raw.trim() === '' ? 0 : parseInt(raw, 10)
+    // 0 or blank -> infinite (stored as 0). >0 keeps the finite count.
+    $loopSource!.repeatCount = isNaN(n) || n <= 0 ? 0 : n
+    editingRepeat = false
+  }
+
   // precision
   function p(e: MouseEvent) {
     return e.shiftKey ? 0.1 : 1
@@ -76,6 +94,32 @@
     <Icon icon="minus-circle" onclick={(e: MouseEvent) => $loopSource!.endTime = Math.max(loop.endTime - p(e), loop.startTime)} />
     <EditableTime bind:value={$loopSource!.endTime} {formatPrecision} />
     <Icon icon="plus-circle" onclick={(e: MouseEvent) => $loopSource!.endTime = Math.min(loop.endTime + p(e), video?.duration || 0)} />
+  {/if}
+
+  {#if !loop.readonly}
+    {#if editingRepeat}
+      <span class="repeat-wrap" title="Repeat count. Enter 0 or blank to loop infinitely.">
+        <i class="fa fa-repeat repeat-icon" aria-hidden="true"></i>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          class="repeat-count"
+          aria-label="Repeat count"
+          placeholder="∞"
+          bind:this={repeatInput}
+          value={loop.repeatCount || ''}
+          onkeydowncapture={(e: KeyboardEvent) => { if (e.code === 'Enter' || e.code === 'Escape') { (e.target as HTMLInputElement).blur() } e.stopPropagation() }}
+          onkeyupcapture={sp}
+          onblur={commitRepeat}
+        />
+      </span>
+    {:else}
+      <button type="button" class="repeat-chip" title="Repeat count. Click to edit ({(loop.repeatCount ?? 0) > 0 ? loop.repeatCount + ' times' : 'infinite'})." onclick={openRepeatEditor} aria-label="Edit repeat count">
+        <i class="fa fa-repeat repeat-icon" aria-hidden="true"></i>
+        <span class="repeat-value">{(loop.repeatCount ?? 0) > 0 ? loop.repeatCount : '∞'}</span>
+      </button>
+    {/if}
   {/if}
 
   <div class="looper-dropdown" role="button" tabindex="0" aria-label="Loop actions" onmouseenter={() => showActions = true} onmouseleave={() => showActions = false}>
@@ -157,6 +201,74 @@
         position: relative;
         display: inline-block;
         float: right;
+    }
+
+    .repeat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 10px;
+        padding: 1px 8px;
+        font: inherit;
+        font-size: 11px;
+        line-height: 1.5;
+        cursor: pointer;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .repeat-chip:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .repeat-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .repeat-icon {
+        font-size: 10px;
+        opacity: 0.85;
+    }
+
+    .repeat-value {
+        font-weight: 600;
+    }
+
+    .repeat-count {
+        width: 34px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 3px;
+        padding: 1px 3px;
+        font-size: 11px;
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    .repeat-count::-webkit-outer-spin-button,
+    .repeat-count::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    :global(.ytp-big-mode) .repeat-chip,
+    :global(.ytp-big-mode) .repeat-count {
+        font-size: 15px;
+    }
+
+    :global(.ytp-big-mode) .repeat-icon {
+        font-size: 13px;
+    }
+
+    :global(.ytp-big-mode) .repeat-count {
+        width: 44px;
     }
 
 </style>
