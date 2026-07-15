@@ -47,6 +47,18 @@ precise adjustment, that iterates in 100ms offsets.
 
 You can also click in the time to edit as a text.
 
+#### Repeat count
+
+Each loop shows a small `↻` chip next to its time controls that indicates how
+many times the segment plays before stopping on its own — useful for practice
+drills ("play this passage 5 times, then move on") without having to watch the
+clock.
+
+- The chip shows `↻ ∞` by default (loop forever, matches previous behavior).
+- Click the chip to set a finite count. `↻ 5` means "play the segment 5 times,
+  then stop."
+- Set the count to `0` (or leave the input blank) to go back to infinite.
+
 ### Tree View
 
 When a loop time is contained inside the range of another loop, this loop will be displayed as a child of the parent

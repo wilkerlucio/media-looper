@@ -159,7 +159,7 @@
     </button>
 
     {#if activeLoop}
-      <ActiveLoop id={activeLoop} loop={activeLoopData} bind:this={activeComponent}/>
+      <ActiveLoop id={activeLoop} loop={activeLoopData} bind:this={activeComponent} oncomplete={() => { if (activeLoop) { log('stop_loop', loopLogDetail(activeLoop)); activeLoop = null } }}/>
     {/if}
 
       <div class="ytp-popup ytp-settings-menu ml-popup" use:portal={{target: ".html5-video-player"}} style="display: {popupVisible ? 'block' : 'none'}">
